@@ -29,17 +29,15 @@
   - Catatan terbaru
   - Progress belajar minggu ini
 
----
-
-## 🧩 Teknologi yang Digunakan
-| Komponen | Teknologi |
-|-----------|------------|
-| Framework | Flutter (Dart) |
-| Database | Firebase Firestore |
-| Authentication | Firebase Auth |
-| State Management | Provider / Bloc |
-| Notifikasi | flutter_local_notifications |
-| Version Control | Git & GitHub |
+## ✨ Fitur Tambahan
+ 
+### 📈 5. Nilai & Progress Akademik
+- Catat nilai per mata pelajaran/mata kuliah dengan input manual.
+- Menampilkan **grafik kotak naik-turun (bar chart)** untuk memantau progres akademik.
+- Fitur **rata-rata otomatis (average)**:
+  - Siswa → nilai rata-rata per pelajaran.
+  - Mahasiswa → konversi ke **Indeks Prestasi (IP) per semester**.
+- Dapat menampilkan tren performa dari waktu ke waktu secara visual.
 
 ---
 
@@ -53,3 +51,21 @@ Proyek **MyStudyMate** dikembangkan sebagai bagian dari **Project Based Learning
 | 🧪 PMPL (Pengujian & QA) | Pengujian fungsional, integrasi, dan metrik kualitas perangkat lunak |
 
 ---
+
+## 👥 Tim Pengembang 
+| Nama | Peran | Tanggung Jawab |
+|------|--------|----------------|
+| **Ahmad Yazid Ilham Zulfiqor** | UI/UX Designer & FrontEnd | Mendesain antarmuka aplikasi, mengimplementasikan tampilan Flutter, serta memastikan pengalaman pengguna yang konsisten dan menarik. |
+| **Azaria Cindy Sahasika** | Database & Quality Assurance | Mengelola struktur dan relasi data di Firebase, memastikan integrasi berjalan lancar, serta melakukan pengujian fungsional dan dokumentasi hasil QA. |
+| **Sabrina Rahmadini** | Project Manager & Database | Mengatur perencanaan proyek, pembagian tugas, serta membantu dalam perancangan dan pengelolaan database aplikasi. |
+| **Satriya Viar Citta Purnama** | Backend & UI/UX Designer | Mengembangkan logika backend, integrasi Firebase Authentication dan Firestore, serta membantu desain visual antarmuka. |
+
+---
+
+## 🧪 Quality Assurance (PMPL)
+| Level Pengujian | Tujuan | Tools |
+|------------------|--------|-------|
+| Unit Test | Menguji fungsi dan model | `flutter test` |
+| Integration Test | Menguji CRUD Firestore & UI | `flutter drive` |
+| UI/E2E Test | Menguji alur pengguna | Cypress |
+| Metrics | Code Coverage, Fault Detection Rate | – |
