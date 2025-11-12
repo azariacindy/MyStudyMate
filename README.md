@@ -1,71 +1,110 @@
-# 📚 MyStudyMate — Smart Academic Organizer App
+# 📚 MyStudyMate — Smart Academic Organizer for Polinema JTI Students
 
-> **MyStudyMate** adalah aplikasi mobile berbasis **Flutter** yang membantu mahasiswa mengatur kehidupan akademiknya dalam satu tempat.  
-> Aplikasi ini menggabungkan fitur **pencatatan materi kuliah, manajemen jadwal, dan pengingat tugas** agar mahasiswa tetap produktif setiap hari.
+> **MyStudyMate** adalah aplikasi mobile berbasis **Flutter** yang dikembangkan khusus untuk membantu mahasiswa **JTI Polinema** dalam mengatur kegiatan akademiknya secara efisien.  
+> Aplikasi ini menghadirkan fitur-fitur seperti manajemen tugas, jadwal kuliah, catatan belajar, hingga pemantauan progres akademik dengan tampilan modern dan notifikasi cerdas.
+
+---
+
+## 🧭 Deskripsi Singkat
+MyStudyMate dirancang untuk menjadi asisten belajar digital mahasiswa dengan berbagai fitur yang mendukung produktivitas dan konsistensi belajar.  
+Selain fitur utama seperti **Dashboard, Tugas, Jadwal, Study Plan, dan Nilai**, aplikasi ini juga menyediakan mode **Pomodoro** dan fitur **Community** (opsional) untuk belajar bersama dalam komunitas resmi Polinema JTI seperti **WRI** dan **ITDEC**.
 
 ---
 
 ## ✨ Fitur Utama
 
-### 🗓️ 1. Manajemen Jadwal
-- Tambah, ubah, dan hapus jadwal kuliah atau kegiatan.
-- Tersedia pengingat otomatis sebelum kelas dimulai.
-- Tampilan harian/mingguan dengan warna berbeda untuk tiap kegiatan.
-
-### 📝 2. Catatan Materi
-- Simpan dan kelola catatan kuliah atau topik belajar.
-- Dapat dikategorikan berdasarkan judul, tanggal, atau mata kuliah.
-- Mendukung format teks sederhana dan poin-poin.
-
-### 🎯 3. Pencatatan Tugas & Target Belajar
-- Tambah tugas atau target belajar dengan *deadline reminder*.
-- Tandai sebagai “selesai” atau “belum”.
-- Dapat digunakan untuk tugas kuliah, PR, atau milestone belajar mandiri.
-
-### 📊 4. Dashboard Utama
-- Menampilkan ringkasan semua hal penting:
-  - Jadwal hari ini
-  - Tugas mendekati deadline
-  - Catatan terbaru
-  - Progress belajar minggu ini
-
-## ✨ Fitur Tambahan
- 
-### 📈 5. Nilai & Progress Akademik
-- Catat nilai per mata pelajaran/mata kuliah dengan input manual.
-- Menampilkan **grafik kotak naik-turun (bar chart)** untuk memantau progres akademik.
-- Fitur **rata-rata otomatis (average)**:
-  - Siswa → nilai rata-rata per pelajaran.
-  - Mahasiswa → konversi ke **Indeks Prestasi (IP) per semester**.
-- Dapat menampilkan tren performa dari waktu ke waktu secara visual.
+### 🏠 1. Dashboard
+- Menampilkan:
+  - 🔥 *Streak* harian belajar
+  - 📈 Progress belajar mingguan
+  - 📅 Kalender mingguan (bukan bulanan) yang menampilkan jadwal & tugas secara real-time
+  - 📱 Menu navigasi menuju fitur utama
+- 🎖️ *Reward badge (opsional):* muncul jika pengguna berhasil mencapai target streak, misalnya streak 10 hari berturut-turut.
 
 ---
 
-## 🎯 Tujuan Proyek
-Proyek **MyStudyMate** dikembangkan sebagai bagian dari **Project Based Learning (PBL)** semester 5 yang mengintegrasikan tiga mata kuliah:
-
-| Mata Kuliah | Fokus Kontribusi |
-|--------------|------------------|
-| 📘 Manajemen Proyek | Perencanaan, timeline, dan dokumentasi proyek |
-| 💻 Pemrograman Mobile | Implementasi aplikasi menggunakan Flutter |
-| 🧪 PMPL (Pengujian & QA) | Pengujian fungsional, integrasi, dan metrik kualitas perangkat lunak |
+### 📝 2. Tugas (Assignment Manager)
+- CRUD (Create, Read, Update, Delete) data tugas.
+- Fitur pencarian tugas berdasarkan nama/keyword.
+- Notifikasi otomatis pada:
+  - H-3 sebelum deadline,
+  - Hari-H (D-day),
+  - H+3 setelah deadline (selama belum “mark as done”).
+- Menampilkan *progress tugas mingguan* (dalam persen) di halaman tugas & dashboard.
 
 ---
 
-## 👥 Tim Pengembang 
+### 🗓️ 3. Jadwal (Schedule Manager)
+- Menambahkan jadwal kuliah atau kegiatan per hari.
+- Pengingat otomatis **30 menit sebelum kelas dimulai**.
+- Tugas yang memiliki deadline akan otomatis tampil pada kalender mingguan.
+- CRUD jadwal + tampilan terintegrasi dengan dashboard.
+
+---
+
+### 📈 4. Nilai & Progress Akademik
+- Input nilai per mata kuliah atau mata pelajaran.
+- Menampilkan grafik garis naik-turun untuk melihat tren nilai atau IP setiap semester.
+- Sistem otomatis menghitung nilai rata-rata atau IP kumulatif.
+- Dapat digunakan untuk memantau performa akademik dari waktu ke waktu.
+
+---
+
+### 🎯 5. Study Plan (Learning Goal Generator)
+- Membantu pengguna mencapai *learning goals* dengan mengunggah materi belajar.
+- Sistem akan menghasilkan soal latihan (*auto-generated quiz*) berdasarkan file yang diunggah.
+- Dapat memantau tingkat pemahaman pengguna terhadap materi yang diunggah.
+
+---
+
+### ⏳ 6. Pomodoro Timer
+- Meningkatkan fokus belajar menggunakan teknik **Pomodoro (25 menit fokus, 5 menit istirahat)**.
+- Jika pengguna keluar dari aplikasi sebelum waktu habis:
+  - Muncul *alert warning*.
+  - “Streak api” (🔥) akan hilang jika keluar sebelum sesi selesai.
+
+---
+
+### 👥 7. Community (Optional)
+- Fitur opsional untuk mahasiswa Polinema JTI.
+- Secara default, tersedia dua komunitas resmi:
+  - **WRI (Workshop & Riset Informatika)**
+  - **ITDEC (Information Technology Development Community)**
+- Pengguna dapat berdiskusi, berbagi materi, atau belajar bersama layaknya komunitas Facebook.
+
+---
+
+## 🧩 Teknologi yang Digunakan
+| Komponen | Teknologi |
+|-----------|------------|
+| Framework | Flutter (Dart) |
+| Database | Firebase Firestore |
+| Authentication | Firebase Auth |
+| State Management | Provider / Bloc |
+| Notifikasi | flutter_local_notifications |
+| Grafik Nilai | fl_chart / charts_flutter |
+| Penyimpanan File | Firebase Storage |
+| Version Control | Git & GitHub |
+
+---
+
+## 👥 Tim Pengembang
+
 | Nama | Peran | Tanggung Jawab |
 |------|--------|----------------|
-| **Ahmad Yazid Ilham Zulfiqor** | UI/UX Designer & FrontEnd | Mendesain antarmuka aplikasi, mengimplementasikan tampilan Flutter, serta memastikan pengalaman pengguna yang konsisten dan menarik. |
-| **Azaria Cindy Sahasika** | Database & Quality Assurance | Mengelola struktur dan relasi data di Firebase, memastikan integrasi berjalan lancar, serta melakukan pengujian fungsional dan dokumentasi hasil QA. |
 | **Sabrina Rahmadini** | Project Manager & Database | Mengatur perencanaan proyek, pembagian tugas, serta membantu dalam perancangan dan pengelolaan database aplikasi. |
-| **Satriya Viar Citta Purnama** | Backend & UI/UX Designer | Mengembangkan logika backend, integrasi Firebase Authentication dan Firestore, serta membantu desain visual antarmuka. |
+| **Ahmad Yazid Ilham Zulfiqor** | UI/UX Designer & FrontEnd | Mendesain antarmuka aplikasi dan mengimplementasikan tampilan Flutter sesuai rancangan UI/UX. |
+| **Satriya Viar Citta Purnama** | Backend, API & UI/UX Designer | Mengembangkan logika backend, API Firebase, integrasi database, serta membantu desain UI. |
+| **Azaria Cindy Sahasika** | Database & Quality Assurance | Menyusun struktur database, melakukan pengujian aplikasi, serta membuat laporan QA (PMPL). |
 
 ---
 
 ## 🧪 Quality Assurance (PMPL)
 | Level Pengujian | Tujuan | Tools |
 |------------------|--------|-------|
-| Unit Test | Menguji fungsi dan model | `flutter test` |
-| Integration Test | Menguji CRUD Firestore & UI | `flutter drive` |
-| UI/E2E Test | Menguji alur pengguna | Cypress |
-| Metrics | Code Coverage, Fault Detection Rate | – |
+| Unit Test | Menguji fungsi dan model data | `flutter test` |
+| Integration Test | Menguji CRUD Firebase & UI | `flutter drive` |
+| UI/E2E Test | Menguji alur pengguna | Cypress / Appium |
+| Metrics | Code Coverage, Fault Detection Rate | — |
+
+---
