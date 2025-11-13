@@ -1,7 +1,59 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import '../utils/app_colors.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final authService = AuthService();
+
+    // Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // Perform logout
+    final result = await authService.signOut();
+
+    if (!context.mounted) return;
+
+    if (result['success']) {
+      // Navigate to welcome screen
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/welcome',
+        (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Logout failed'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,9 +63,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.blue,
         actions: [
           IconButton(
-            onPressed: () {
-              // Handle logout
-            },
+            onPressed: () => _handleLogout(context),
             icon: Icon(Icons.logout),
           ),
         ],
@@ -72,7 +122,8 @@ class HomeScreen extends StatelessWidget {
               leading: Icon(Icons.logout),
               title: Text('Logout'),
               onTap: () {
-                // Handle logout
+                Navigator.pop(context);
+                _handleLogout(context);
               },
             ),
           ],

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
+<!-- Native splash screen untuk MyStudyMate -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white" />
+    <!-- Background biru primary sesuai dengan app -->
+    <item android:drawable="@color/primary_color" />
 
-    <!-- You can insert your own image assets here -->
+    <!-- Bisa ditambahkan logo di tengah jika diperlukan -->
     <!-- <item>
         <bitmap
             android:gravity="center"
