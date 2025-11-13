@@ -42,22 +42,14 @@ Selain fitur utama seperti **Dashboard, Tugas, Jadwal, Study Plan, dan Nilai**, 
 
 ---
 
-### 📈 4. Nilai & Progress Akademik
-- Input nilai per mata kuliah atau mata pelajaran.
-- Menampilkan grafik garis naik-turun untuk melihat tren nilai atau IP setiap semester.
-- Sistem otomatis menghitung nilai rata-rata atau IP kumulatif.
-- Dapat digunakan untuk memantau performa akademik dari waktu ke waktu.
-
----
-
-### 🎯 5. Study Plan (Learning Goal Generator)
+### 🎯 4. Study Plan (Learning Goal Generator)
 - Membantu pengguna mencapai *learning goals* dengan mengunggah materi belajar.
 - Sistem akan menghasilkan soal latihan (*auto-generated quiz*) berdasarkan file yang diunggah.
 - Dapat memantau tingkat pemahaman pengguna terhadap materi yang diunggah.
 
 ---
 
-### ⏳ 6. Pomodoro Timer
+### ⏳ 5. Pomodoro Timer
 - Meningkatkan fokus belajar menggunakan teknik **Pomodoro (25 menit fokus, 5 menit istirahat)**.
 - Jika pengguna keluar dari aplikasi sebelum waktu habis:
   - Muncul *alert warning*.
@@ -65,7 +57,7 @@ Selain fitur utama seperti **Dashboard, Tugas, Jadwal, Study Plan, dan Nilai**, 
 
 ---
 
-### 👥 7. Community (Optional)
+### 👥 6. Community (Optional)
 - Fitur opsional untuk mahasiswa Polinema JTI.
 - Secara default, tersedia dua komunitas resmi:
   - **WRI (Workshop & Riset Informatika)**
