@@ -20,6 +20,7 @@ dependencies:
   supabase_flutter: ^2.7.0
   flutter_secure_storage: ^9.2.4
   dio: ^5.9.0
+  table_calendar: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +39,4 @@ flutter:
     - assets/ui_design/
     - assets/ui_design/element_onboarding/
     - assets/ui_design/vector/
+    - assets/ui_design/element_splash/
