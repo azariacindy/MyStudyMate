@@ -8,7 +8,7 @@ class HomeScreen extends StatelessWidget {
   Future<void> _handleLogout(BuildContext context) async {
     final authService = AuthService();
 
-    // Show confirmation dialog
+    // Konfirmasi logout
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -33,22 +33,23 @@ class HomeScreen extends StatelessWidget {
 
     if (confirm != true) return;
 
-    // Perform logout
-    final result = await authService.signOut();
+    try {
+      // ✅ Panggil logout dari AuthService (hapus token di secure storage)
+      await authService.signout();
 
-    if (!context.mounted) return;
+      if (!context.mounted) return;
 
-    if (result['success']) {
-      // Navigate to welcome screen
+      // ✅ Langsung navigasi ke welcome screen
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/welcome',
         (route) => false,
       );
-    } else {
+    } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? 'Logout failed'),
+          content: const Text('Failed to log out. Please try again.'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -59,12 +60,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: const Text('Home'),
         backgroundColor: Colors.blue,
         actions: [
           IconButton(
             onPressed: () => _handleLogout(context),
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
           ),
         ],
       ),

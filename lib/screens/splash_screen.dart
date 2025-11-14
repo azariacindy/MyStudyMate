@@ -48,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       // Check auth state: if user is logged in, go to home
-      if (authService.isLoggedIn) {
+      if (await authService.isLoggedIn) {
         Navigator.pushReplacementNamed(context, '/home');
         return;
       }

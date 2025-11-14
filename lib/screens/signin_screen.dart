@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
+import '../models/user_model.dart';
 
 /// Sign In Screen - Design sesuai UI Figma dengan header biru
 class SignInScreen extends StatefulWidget {
@@ -31,43 +32,36 @@ class _SignInScreenState extends State<SignInScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _authService.signIn(
-        emailOrUsername: _emailController.text.trim(),
+      final User user = await _authService.signin(
+        loginIdentifier: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      if (result['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message']),
-            backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      // ✅ Sukses: notifikasi & navigasi
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Login successful!'),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
 
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Sign in failed'),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
-    } catch (e) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/home');
+    } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
+      // ✅ Error: tampilkan pesan dari exception
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text('Login failed: ${e.toString()}'),
           backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 4),
         ),
       );
     }
@@ -185,13 +179,18 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 16),
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
                           ),
-                          validator: (v) =>
-                              v!.isEmpty ? 'Please enter your email' : null,
+                          validator:
+                              (v) =>
+                                  v == null || v.isEmpty
+                                      ? 'Please enter your email'
+                                      : null,
                         ),
 
                         const SizedBox(height: 24),
@@ -214,7 +213,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            hintText: '••••••••••••••••',
+                            hintText: 'Your password',
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: Image.asset(
@@ -224,25 +223,33 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 16),
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                             suffixIcon: IconButton(
                               icon: Image.asset(
                                 'assets/ui_design/vector/eye icon.png',
                                 width: 20,
                                 height: 20,
-                                color: _obscurePassword ? AppColors.textLight : AppColors.primary,
+                                color:
+                                    _obscurePassword
+                                        ? AppColors.textLight
+                                        : AppColors.primary,
                               ),
-                              onPressed: () =>
-                                  setState(() => _obscurePassword =
-                                      !_obscurePassword),
+                              onPressed:
+                                  () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
                           ),
-                          validator: (v) => v!.length < 6
-                              ? 'Password must be at least 6 characters'
-                              : null,
+                          validator:
+                              (v) =>
+                                  (v == null || v.length < 6)
+                                      ? 'Password must be at least 6 characters'
+                                      : null,
                         ),
 
                         const SizedBox(height: 32),
@@ -255,14 +262,20 @@ class _SignInScreenState extends State<SignInScreen> {
                             onPressed: _isLoading ? null : _handleSignIn,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
                             ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2)
-                                : const Text(
-                                    'Continue',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
+                            child:
+                                _isLoading
+                                    ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    )
+                                    : const Text(
+                                      'Continue',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
                           ),
                         ),
 
@@ -274,9 +287,11 @@ class _SignInScreenState extends State<SignInScreen> {
                           children: [
                             const Text("Don't have an account? "),
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pushReplacementNamed(
-                                      context, '/signup'),
+                              onPressed:
+                                  () => Navigator.pushReplacementNamed(
+                                    context,
+                                    '/signup',
+                                  ),
                               child: const Text(
                                 'Sign Up',
                                 style: TextStyle(color: AppColors.primary),

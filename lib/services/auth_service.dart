@@ -1,207 +1,120 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../utils/supabase_config.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../models/user_model.dart';
+import 'dio_client.dart';
 
-/// Service untuk handle authentication dengan Supabase
 class AuthService {
-  // Singleton pattern
-  static final AuthService _instance = AuthService._internal();
-  factory AuthService() => _instance;
-  AuthService._internal();
+  final Dio _dio = DioClient.getInstance();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  static const String _tokenKey = 'auth_token';
 
-  /// Check if Supabase is configured
-  bool get isConfigured =>
-      kSupabaseUrl.isNotEmpty && kSupabaseAnonKey.isNotEmpty;
+  Future<bool> get isLoggedIn async {
+    final token = await _storage.read(key: _tokenKey);
+    return token != null && token.isNotEmpty;
+  }
 
-  /// Get current user
-  User? get currentUser => isConfigured ? supabase.auth.currentUser : null;
+  Future<String?> get currentToken async {
+    return await _storage.read(key: _tokenKey);
+  }
 
-  /// Check if user is logged in
-  bool get isLoggedIn => currentUser != null;
-
-  /// Sign Up dengan email dan password
-  Future<Map<String, dynamic>> signUp({
+  /// Register user via Laravel
+  Future<User> signup({
+    required String name,
+    required String username,
     required String email,
     required String password,
-    required String fullName,
-    required String username,
+  }) async {
+    print('🎯 URL: ${_dio.options.baseUrl}');
+    print('📦 Data: name=$name, username=$username, email=$email');
+    try {
+      final response = await _dio.post('/register', data: {
+        'name': name,
+        'username': username,
+        'email': email,
+        'password': password,
+      });
+      
+       // 🔍 DEBUG: Cetak respons sukses
+      print('✅ Respons sukses: ${response.data}');
+
+
+      // Ambil data user dari respons Laravel
+      final userData = response.data['user'] as Map<String, dynamic>;
+      return User.fromJson(userData);
+    } on DioException catch (e) {
+      print('❌ Error message: ${e.message}');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response body: ${e.response?.data}');
+      final message = _extractErrorMessage(e);
+      throw Exception(message);
+    }
+  }
+
+  /// Login dengan email ATAU username
+  Future<User> signin({
+    required String loginIdentifier,
+    required String password,
   }) async {
     try {
-      if (!isConfigured) {
-        return {
-          'success': false,
-          'error': 'Supabase not configured',
-          'message': 'Please configure Supabase in supabase_config.dart'
-        };
-      }
-
-      final response = await supabase.auth.signUp(
-        email: email,
-        password: password,
+      final response = await _dio.post(
+        '/login',
         data: {
-          'full_name': fullName,
-          'username': username,
+          'login_identifier': loginIdentifier,
+          'password': password,
         },
       );
 
-      if (response.user == null) {
-        return {
-          'success': false,
-          'error': 'Sign up failed',
-          'message': 'Failed to create account. Please try again.'
-        };
-      }
+      final data = response.data as Map<String, dynamic>;
+      final user = User.fromJson(data['user']);
+      final token = data['token'] as String;
 
-      return {
-        'success': true,
-        'user': response.user,
-        'message': 'Account created successfully!',
-      };
-    } on AuthException catch (e) {
-      return {
-        'success': false,
-        'error': e.message,
-        'message': _getReadableErrorMessage(e.message),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'error': e.toString(),
-        'message': 'An unexpected error occurred. Please try again.',
-      };
-    }
-  }
+      // Simpan token
+      await _storage.write(key: _tokenKey, value: token);
 
-  /// Sign In dengan email dan password
-  Future<Map<String, dynamic>> signIn({
-    required String emailOrUsername,
-    required String password,
-  }) async {
-    try {
-      if (!isConfigured) {
-        return {
-          'success': false,
-          'error': 'Supabase not configured',
-          'message': 'Please configure Supabase in supabase_config.dart'
-        };
-      }
-
-      String email = emailOrUsername;
-      if (!emailOrUsername.contains('@')) {
-        return {
-          'success': false,
-          'error': 'Username login not implemented',
-          'message': 'Please use your email address to sign in.',
-        };
-      }
-
-      final response = await supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
+      // Set interceptor
+      _dio.interceptors.clear();
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            options.headers['Authorization'] = 'Bearer $token';
+            return handler.next(options);
+          },
+        ),
       );
 
-      if (response.user == null) {
-        return {
-          'success': false,
-          'error': 'Sign in failed',
-          'message': 'Invalid credentials. Please try again.',
-        };
-      }
-
-      return {
-        'success': true,
-        'user': response.user,
-        'session': response.session,
-        'message': 'Welcome back!',
-      };
-    } on AuthException catch (e) {
-      return {
-        'success': false,
-        'error': e.message,
-        'message': _getReadableErrorMessage(e.message),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'error': e.toString(),
-        'message': 'An unexpected error occurred. Please try again.',
-      };
+      return user;
+    } on DioException catch (e) {
+      final message = _extractErrorMessage(e);
+      throw Exception(message);
     }
   }
 
-  /// Sign Out
-  Future<Map<String, dynamic>> signOut() async {
+  /// Logout
+  Future<void> signout() async {
     try {
-      if (!isConfigured) {
-        return {
-          'success': false,
-          'error': 'Supabase not configured',
-        };
-      }
-
-      await supabase.auth.signOut();
-
-      return {
-        'success': true,
-        'message': 'Signed out successfully',
-      };
+      await _dio.post('/logout');
     } catch (e) {
-      return {
-        'success': false,
-        'error': e.toString(),
-        'message': 'Failed to sign out. Please try again.',
-      };
+      // Abaikan error server
     }
+
+    await _storage.delete(key: _tokenKey);
+    _dio.interceptors.clear();
+    _dio.options.headers.remove('Authorization');
   }
 
-  /// Reset Password
-  Future<Map<String, dynamic>> resetPassword({required String email}) async {
-    try {
-      if (!isConfigured) {
-        return {
-          'success': false,
-          'error': 'Supabase not configured',
-        };
+  String _extractErrorMessage(DioException e) {
+    if (e.response != null) {
+      final data = e.response?.data;
+      if (data is Map) {
+        if (data.containsKey('message')) return data['message'] as String;
+        if (data.containsKey('errors') && data['errors'] is Map) {
+          final firstError = data['errors'].values.first;
+          if (firstError is List && firstError.isNotEmpty) {
+            return firstError[0].toString();
+          }
+        }
       }
-
-      await supabase.auth.resetPasswordForEmail(email);
-
-      return {
-        'success': true,
-        'message': 'Password reset email sent. Please check your inbox.',
-      };
-    } on AuthException catch (e) {
-      return {
-        'success': false,
-        'error': e.message,
-        'message': _getReadableErrorMessage(e.message),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'error': e.toString(),
-        'message': 'Failed to send reset email. Please try again.',
-      };
     }
-  }
-
-  /// Convert error messages to user-friendly messages
-  String _getReadableErrorMessage(String error) {
-    final errorLower = error.toLowerCase();
-
-    if (errorLower.contains('invalid login credentials') ||
-        errorLower.contains('invalid email or password')) {
-      return 'Invalid email or password. Please try again.';
-    } else if (errorLower.contains('email not confirmed')) {
-      return 'Please verify your email address before signing in.';
-    } else if (errorLower.contains('user already registered') ||
-        errorLower.contains('email already exists')) {
-      return 'An account with this email already exists.';
-    } else if (errorLower.contains('password')) {
-      return 'Password must be at least 6 characters long.';
-    } else if (errorLower.contains('network')) {
-      return 'Network error. Please check your internet connection.';
-    }
-
-    return error;
+    return 'Network error or server unavailable.';
   }
 }

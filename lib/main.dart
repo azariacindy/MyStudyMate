@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/welcome': (_) => const WelcomeScreen(),
         '/signin': (_) => const SignInScreen(),
-        '/signup': (_) => const RegisterScreen(),
+        '/register': (_) => const RegisterScreen(),
         '/login': (_) => const SignInScreen(), // Alias untuk backward compatibility
         '/home': (_) => const HomeScreen(),
         '/onboarding': (_) => const OnboardingScreen(),
