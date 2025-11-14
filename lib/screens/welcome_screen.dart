@@ -1,126 +1,115 @@
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 
-/// Welcome Screen - ditampilkan setelah onboarding
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // === TOP BLUE SECTION ===
-            Expanded(
-              flex: 5,
+            // ======== BAGIAN ATAS BIRU DENGAN LENGKUNGAN ========
+            ClipPath(
+              clipper: TopCurveClipper(),
               child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4A90E2),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(48),
-                    bottomRight: Radius.circular(48),
-                  ),
-                ),
+                height: MediaQuery.of(context).size.height * 0.42,
+                color: AppColors.primary,
               ),
             ),
 
-            // === WHITE CIRCLE WITH ICON (OVERLAPPING) ===
+            const SizedBox(height: 0),
+
+            // ======== LOGO DI DALAM CIRCLE PUTIH ========
             Transform.translate(
-              offset: const Offset(0, -70),
+              offset: const Offset(0, -100), // minus = ke atas
               child: Container(
-                width: 140,
-                height: 140,
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 0,
-                      blurRadius: 20,
+                      color: Colors.black.withAlpha(20),
+                      blurRadius: 12,
                       offset: const Offset(0, 4),
-                    ),
+                    )
                   ],
                 ),
-                child: Center(child: _buildCalendarGraduationIcon()),
+                child: Image.asset(
+                  'assets/images/logo_mystudymate.png',
+                  width: 95,
+                  height: 95,
+                ),
               ),
             ),
 
-            // === BOTTOM WHITE SECTION ===
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 0),
+            // ======== TEKS APP NAME ========
+            const Text(
+              'MyStudyMate',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.text,
+              ),
+            ),
 
-                    // Title
-                    const Text(
-                      'MyStudyMate',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
-                        letterSpacing: -0.5,
-                      ),
+            const SizedBox(height: 12),
+
+            // ======== TAGLINE ========
+            const Text(
+              'A smart companion to organize your\nacademic journey',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.4,
+                color: AppColors.textSecondary,
+              ),
+            ),
+
+            const Spacer(),
+
+            // ======== TOMBOL START ========
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/signin'),
+                child: Container(
+                  width: 250,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    gradient: const LinearGradient(
+                      colors: [AppColors.gradientStart, AppColors.gradientEnd],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-
-                    const SizedBox(height: 16),
-
-                    // Subtitle
-                    const Text(
-                      'A smart companion to organize your\nacademic journey',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF475569),
-                        height: 1.5,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withAlpha(77),
+                        offset: const Offset(0, 6),
+                        blurRadius: 10,
                       ),
-                    ),
-
-                    const Spacer(),
-
-                    // Get Started Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Navigate to Home Screen
-                          Navigator.pushReplacementNamed(context, '/signin');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4A90E2),
-                          foregroundColor: Colors.white,
-                          elevation: 2,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Get Started for Free',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, size: 20),
-                          ],
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Get Started for Free',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 40),
-                  ],
+                      SizedBox(width: 6),
+                      Icon(Icons.arrow_forward_ios,
+                          color: Colors.white, size: 17),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -129,29 +118,26 @@ class WelcomeScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  // Calendar with Graduation Cap Icon
-  Widget _buildCalendarGraduationIcon() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Calendar Icon
-        Icon(Icons.calendar_today_rounded, size: 70, color: Color(0xFF1E88E5)),
 
-        // Graduation Cap on top right
-        Positioned(
-          top: 5,
-          right: 15,
-          child: Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.school, size: 32, color: Color(0xFF1E88E5)),
-          ),
-        ),
-      ],
+// ======== CUSTOM CLIPPER ========
+class TopCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 80);
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height,
+      size.width,
+      size.height - 80,
     );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
   }
+
+  @override
+  bool shouldReclip(_) => false;
 }
