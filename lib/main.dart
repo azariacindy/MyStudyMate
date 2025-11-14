@@ -6,6 +6,8 @@ import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'utils/supabase_config.dart';
+import 'screens/manage_task_screen.dart';
+import 'screens/plan_task_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,9 +43,12 @@ class MyApp extends StatelessWidget {
         '/welcome': (_) => const WelcomeScreen(),
         '/signin': (_) => const SignInScreen(),
         '/signup': (_) => const RegisterScreen(),
-        '/login': (_) => const SignInScreen(), // Alias untuk backward compatibility
+        '/login':
+            (_) => const SignInScreen(), // Alias untuk backward compatibility
         '/home': (_) => const HomeScreen(),
         '/onboarding': (_) => const OnboardingScreen(),
+        '/manage_task': (_) => const ManageTaskScreen(),
+        '/plan_task': (_) => const PlanTaskScreen(),
       },
     );
   }

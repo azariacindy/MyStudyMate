@@ -91,7 +91,7 @@ class WelcomeScreen extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () {
                           // Navigate to Home Screen
-                          Navigator.pushReplacementNamed(context, '/home');
+                          Navigator.pushReplacementNamed(context, '/signin');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4A90E2),
