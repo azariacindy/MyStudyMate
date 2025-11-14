@@ -208,7 +208,7 @@ class HomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
-                        'Study Plan',
+                        'Study Cards',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
