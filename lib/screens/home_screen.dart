@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: Colors.blue.withAlpha(77),
                       spreadRadius: 0,
                       blurRadius: 10,
                       offset: const Offset(0, 4),
@@ -108,7 +108,7 @@ class HomeScreen extends StatelessWidget {
                     Container(
                       height: 8,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withAlpha(77),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: FractionallySizedBox(
@@ -145,7 +145,7 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.2),
+                      color: Colors.blue.withAlpha(51),
                       spreadRadius: 0,
                       blurRadius: 8,
                       offset: const Offset(0, 3),
@@ -280,7 +280,7 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.15),
+                        color: Colors.blue.withAlpha(38),
                         spreadRadius: 0,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -348,7 +348,7 @@ class HomeScreen extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha(26),
               spreadRadius: 0,
               blurRadius: 10,
               offset: const Offset(0, -2),
@@ -366,7 +366,7 @@ class HomeScreen extends StatelessWidget {
                   icon: Icons.home,
                   isActive: true,
                   onTap: () {
-                    // sudah di Home, jadi kosong saja
+                    // Sudah di Home, tidak perlu navigate
                   },
                 ),
 
