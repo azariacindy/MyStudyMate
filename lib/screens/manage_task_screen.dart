@@ -333,10 +333,30 @@ class _ManageTaskScreenState extends State<ManageTaskScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildNavItem(Icons.home_outlined, false),
-                _buildNavItem(Icons.calendar_today_outlined, false),
-                _buildNavItem(Icons.assignment, true),
-                _buildNavItem(Icons.person_outline, false),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacementNamed(context, '/home');
+                  },
+                  child: _buildNavItem(Icons.home_outlined, false),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // TODO: Navigate to Calendar
+                  },
+                  child: _buildNavItem(Icons.calendar_today_outlined, false),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // Already in Manage Task
+                  },
+                  child: _buildNavItem(Icons.assignment, true),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // TODO: Navigate to Profile
+                  },
+                  child: _buildNavItem(Icons.person_outline, false),
+                ),
               ],
             ),
           ),
