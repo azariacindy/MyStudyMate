@@ -2,10 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 
-// Simple splash that uses the design asset and then routes to onboarding/login/home
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -15,8 +13,15 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _fade;
+  late AnimationController _controller;
+
+  late Animation<double> _ovalWidth;
+  late Animation<double> _ovalHeight;
+  late Animation<double> _ovalRadius;
+  late Animation<double> _ovalOpacity;
+
+  late Animation<double> _logoScale;
+  late Animation<double> _logoOpacity;
 
   @override
   void initState() {
@@ -24,22 +29,64 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(seconds: 3),
     );
 
-    _fade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    // ====== OVAL ANIMATION ======
+    _ovalWidth = Tween<double>(begin: 200, end: 60).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.75, curve: Curves.easeInOut),
+      ),
+    );
+    _ovalHeight = Tween<double>(begin: 100, end: 60).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.75, curve: Curves.easeInOut),
+      ),
+    );
+    _ovalRadius = Tween<double>(begin: 50, end: 0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.5, 0.75, curve: Curves.easeInOut),
+      ),
+    );
+    _ovalOpacity = Tween<double>(begin: 1, end: 0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.75, 1.0, curve: Curves.easeInOut),
+      ),
+    );
+
+    // ====== LOGO ANIMATION ======
+    _logoScale = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.33, 1.0, curve: Curves.easeOutBack),
+      ),
+    );
+    _logoOpacity = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.33, 1.0, curve: Curves.easeIn),
+      ),
     );
 
     _controller.forward();
 
-    // Start routing after a short delay so the splash is visible
-    _startRouting();
+    // Setelah animasi selesai → jalankan logic routing
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (!mounted) return;
+          _startRouting();
+        });
+      }
+    });
   }
 
+  /// Logic pindah halaman (sama seperti splash sebelumnya)
   Future<void> _startRouting() async {
-    await Future.delayed(const Duration(milliseconds: 3000));
-
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasOnboarded = prefs.getBool('hasOnboarded') ?? false;
@@ -47,14 +94,15 @@ class _SplashScreenState extends State<SplashScreen>
 
       if (!mounted) return;
 
-      // Check auth state: if user is logged in, go to home
+      // kalau sudah login → ke home
       if (authService.isLoggedIn) {
         Navigator.pushReplacementNamed(context, '/home');
         return;
       }
 
-      // If not logged in, check onboarding
+      // belum login: cek sudah onboarding atau belum
       if (!hasOnboarded) {
+        // sesuaikan dengan nama route Onboarding di main.dart
         Navigator.pushReplacementNamed(context, '/onboarding');
       } else {
         Navigator.pushReplacementNamed(context, '/welcome');
@@ -73,112 +121,62 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    const backgroundColor = Color(0xFFF0F7FF); // #f0f7ff
+    const navyColor = Color(0xFF2C2C44); // #2c2c44
+    const blueColor = Color(0xFF1A75FF); // #1a75ff
 
     return Scaffold(
-      backgroundColor: AppColors.primary, // Ubah ke primary blue agar match dengan native splash
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fade,
-          child: SizedBox(
-            width: size.width,
-            height: size.height,
-            child: Stack(
+      backgroundColor: backgroundColor,
+      body: Center(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Stack(
+              alignment: Alignment.center,
               children: [
-                // Background design - menggunakan SplasScreen.png dari Figma
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/ui_design/SplasScreen.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback jika gambar tidak ada
-                      return Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0xFF4C84F1),
-                              Color(0xFF3B6FD8),
-                            ],
-                          ),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Logo
-                              Image.asset(
-                                'assets/images/logo_mystudymate.png',
-                                width: 140,
-                                height: 140,
-                                fit: BoxFit.contain,
-                                errorBuilder: (ctx, err, stack) {
-                                  return Container(
-                                    width: 140,
-                                    height: 140,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(28),
-                                    ),
-                                    child: const Icon(
-                                      Icons.school_rounded,
-                                      size: 70,
-                                      color: AppColors.primary,
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // App Name
-                              const Text(
-                                'MyStudyMate',
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // Tagline
-                              Text(
-                                'Plan • Focus • Progress',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // Loading indicator di bawah
-                Positioned(
-                  bottom: 60,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3,
-                      valueColor: AlwaysStoppedAnimation(
-                        Colors.white.withValues(alpha: 0.9),
+                // OVAL
+                Opacity(
+                  opacity: _ovalOpacity.value,
+                  child: Container(
+                    width: _ovalWidth.value,
+                    height: _ovalHeight.value,
+                    decoration: BoxDecoration(
+                      color: navyColor,
+                      borderRadius: BorderRadius.circular(
+                        _ovalRadius.value * 2,
                       ),
                     ),
                   ),
                 ),
+                // LOGO + TEXT
+                Opacity(
+                  opacity: _logoOpacity.value,
+                  child: Transform.scale(
+                    scale: _logoScale.value,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.calendar_month_rounded,
+                          size: 60,
+                          color: blueColor,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'MyStudyMate',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: blueColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
