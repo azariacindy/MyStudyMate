@@ -39,4 +39,6 @@ flutter:
     - assets/ui_design/
     - assets/ui_design/element_onboarding/
     - assets/ui_design/vector/
-    - assets/ui_design/element_splash/
+    - assets/ui_design/element_splash/LogoApp.png
+    - assets/ui_design/element_splash/Union.png
+    - assets/ui_design/element_welcome/Arrow.png

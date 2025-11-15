@@ -1,0 +1,15 @@
+{
+    "chat.mcp.serverSampling": {
+        "MyStudyMate/.vscode/mcp.json: Figma Desktop": {
+            "allowedModels": [
+                "copilot/claude-haiku-4.5"
+            ]
+        },
+        "MyStudyMate/.vscode/mcp.json: Figma-Desktop": {
+            "allowedModels": [
+                "copilot/auto",
+                "copilot/claude-haiku-4.5"
+            ]
+        }
+    }
+}
