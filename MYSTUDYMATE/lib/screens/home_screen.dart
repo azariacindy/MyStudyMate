@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: Stack(
                   children: [
-                    // Decorative circles in background
+                    // dekor bulat
                     Positioned(
                       right: -20,
                       top: -20,
@@ -61,11 +61,10 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Content
+                    // isi header
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Profile section
                         Row(
                           children: [
                             Container(
@@ -110,10 +109,9 @@ class HomeScreen extends StatelessWidget {
                               ],
                             ),
                             const Spacer(),
-                            // Streak indicator
                             Row(
-                              children: [
-                                const Text(
+                              children: const [
+                                Text(
                                   '5',
                                   style: TextStyle(
                                     color: Colors.white,
@@ -121,8 +119,8 @@ class HomeScreen extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-                                const Icon(
+                                SizedBox(width: 4),
+                                Icon(
                                   Icons.local_fire_department,
                                   color: Color(0xFFFF9800),
                                   size: 20,
@@ -131,10 +129,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 24),
-
-                        // Progress
                         const Text(
                           'Today Progress',
                           style: TextStyle(
@@ -144,7 +139,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        // Progress bar with percentage overlay
                         Stack(
                           children: [
                             Container(
@@ -197,7 +191,6 @@ class HomeScreen extends StatelessWidget {
               // === SCHEDULE SECTION ===
               Column(
                 children: [
-                  // Schedule Button
                   Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -219,7 +212,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Horizontal scrollable schedule cards
                   SizedBox(
                     height: 180,
                     child: ListView.builder(
@@ -234,9 +226,7 @@ class HomeScreen extends StatelessWidget {
                         ];
                         return Container(
                           width: screenWidth * 0.75,
-                          margin: EdgeInsets.only(
-                            right: index < 3 ? 12 : 0,
-                          ),
+                          margin: EdgeInsets.only(right: index < 3 ? 12 : 0),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: const Color(0xFF5B9FED),
@@ -262,7 +252,6 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              // Schedule entries
                               _buildScheduleEntry(
                                 'Management Project',
                                 '12:20 - 10:30',
@@ -300,9 +289,13 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
+                  // Study Cards -> misalnya nanti ke halaman flashcard /schedule
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // nanti kalau ada halaman khusus study cards, ganti route di sini
+                        Navigator.pushNamed(context, '/schedule');
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE3F2FD),
                         foregroundColor: const Color(0xFF5B9FED),
@@ -322,9 +315,12 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
+                  // Pomodoro -> ke /pomodoro
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/pomodoro');
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE3F2FD),
                         foregroundColor: const Color(0xFF5B9FED),
@@ -394,7 +390,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      // Yellow outlined circle (checkbox)
                       Container(
                         width: 24,
                         height: 24,
@@ -466,25 +461,14 @@ class HomeScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // HOME
-                _buildNavItem(
-                  icon: Icons.home,
-                  isActive: true,
-                  onTap: () {
-                    // Sudah di Home, tidak perlu navigate
-                  },
-                ),
-
-                // CALENDAR
+                _buildNavItem(icon: Icons.home, isActive: true, onTap: () {}),
                 _buildNavItem(
                   icon: Icons.calendar_today_outlined,
                   isActive: false,
                   onTap: () {
-                    // TODO: nanti arahkan ke halaman Calendar kalau sudah ada
+                    Navigator.pushNamed(context, '/schedule');
                   },
                 ),
-
-                // 🔵 MIDDLE CIRCLE - MANAGE TASK
                 GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, '/manage_task');
@@ -493,7 +477,7 @@ class HomeScreen extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF6BA5EF), // sama seperti item lain
+                      color: const Color(0xFF6BA5EF),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -503,13 +487,11 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // PROFILE
                 _buildNavItem(
                   icon: Icons.person_outline,
                   isActive: false,
                   onTap: () {
-                    // TODO: arahkan ke Profile kalau sudah ada
+                    Navigator.pushNamed(context, '/profile');
                   },
                 ),
               ],
@@ -520,7 +502,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Helper method untuk schedule entry
   Widget _buildScheduleEntry(String title, String time) {
     return Row(
       children: [
@@ -552,7 +533,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Reusable nav item (kotak rounded)
   Widget _buildNavItem({
     required IconData icon,
     required bool isActive,
