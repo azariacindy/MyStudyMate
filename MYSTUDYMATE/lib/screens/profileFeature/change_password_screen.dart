@@ -35,7 +35,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       right: 16,
                     ),
                     decoration: const BoxDecoration(
-                      color: Colors.blue,
+                      color: const Color(0xFF5B9FED),
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(48),
                         bottomRight: Radius.circular(48),
@@ -76,9 +76,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 height: 96,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.blue.withOpacity(0.1),
+                  color: const Color(0xFF5B9FED).withOpacity(0.1),
                 ),
-                child: const Icon(Icons.lock, size: 48, color: Colors.blue),
+                child: const Icon(Icons.lock, size: 48, color: Colors.white),
               ),
 
               const SizedBox(height: 32),
@@ -90,11 +90,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Password',
+                      'New Password',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey,
+                        color: const Color(0xFF5B9FED),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -105,12 +105,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         filled: true,
                         fillColor: Colors.grey.shade50,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
+                        enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(
+                        color: Colors.grey.shade300,
+                         ),
+                        ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.blue),
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: const Color(0xFF5B9FED)),
                         ),
                         suffixIcon: IconButton(
                           onPressed: () {
@@ -149,7 +155,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _isSaveEnabled
-                                  ? Colors.blue
+                                  ? const Color(0xFF5B9FED)
                                   : Colors.grey.shade300,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -174,8 +180,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           ); // Kembali ke halaman sebelumnya
                         },
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.blue,
-                          side: const BorderSide(color: Colors.blue),
+                              backgroundColor: const Color(0xFF5B9FED),
+                              foregroundColor: Colors.white,
+                              side: BorderSide.none, 
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(999),
@@ -197,7 +204,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               // BOTTOM NAVIGATION BAR
               Container(
                 decoration: const BoxDecoration(
-                  color: Colors.blue,
+                  color: const Color(0xFF5B9FED),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(32),
                     bottomRight: Radius.circular(32),
@@ -211,26 +218,29 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _BottomNavItem(
-                      icon: Icons.home_filled,
-                      label: 'Home',
+                      icon: Icons.home_rounded,
                       isActive: false,
-                      onTap: () {},
+                      onTap: () {
+                      Navigator.pushNamed(context, '/home');
+                      },
                     ),
                     _BottomNavItem(
                       icon: Icons.calendar_today,
-                      label: 'Calendar',
+                      
                       isActive: false,
-                      onTap: () {},
+                      onTap: () {
+                      Navigator.pushNamed(context, '/schedule');
+                      },
                     ),
                     _BottomNavItem(
-                      icon: Icons.menu_book_rounded,
-                      label: 'Book',
+                      icon: Icons.assignment,
                       isActive: false,
-                      onTap: () {},
+                      onTap: () {
+                      Navigator.pushNamed(context, '/manage_task');
+                      },
                     ),
                     _BottomNavItem(
                       icon: Icons.person,
-                      label: 'Profile',
                       isActive: true,
                       onTap: () {},
                     ),
@@ -248,13 +258,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 // Komponen Reusable: Bottom Nav Item
 class _BottomNavItem extends StatelessWidget {
   final IconData icon;
-  final String label;
   final bool isActive;
   final VoidCallback onTap;
 
   const _BottomNavItem({
     required this.icon,
-    required this.label,
     required this.isActive,
     required this.onTap,
   });
@@ -276,14 +284,6 @@ class _BottomNavItem extends StatelessWidget {
             child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
         ],
       ),
     );

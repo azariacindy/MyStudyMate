@@ -36,7 +36,6 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: Stack(
                   children: [
-                    // dekor bulat
                     Positioned(
                       right: -20,
                       top: -20,
@@ -61,6 +60,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     // isi header
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,6 +130,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
+
                         const Text(
                           'Today Progress',
                           style: TextStyle(
@@ -139,6 +140,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
+
                         Stack(
                           children: [
                             Container(
@@ -212,6 +214,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   SizedBox(
                     height: 180,
                     child: ListView.builder(
@@ -224,6 +227,7 @@ class HomeScreen extends StatelessWidget {
                           '17 December 2025',
                           '18 December 2025',
                         ];
+
                         return Container(
                           width: screenWidth * 0.75,
                           margin: EdgeInsets.only(right: index < 3 ? 12 : 0),
@@ -252,16 +256,19 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 12),
+
                               _buildScheduleEntry(
                                 'Management Project',
                                 '12:20 - 10:30',
                               ),
                               const SizedBox(height: 8),
+
                               _buildScheduleEntry(
                                 'Mobile Practicum',
                                 '9:20 - 12:30',
                               ),
                               const SizedBox(height: 8),
+
                               _buildScheduleEntry(
                                 'Mobile Practicum',
                                 '9:20 - 12:30',
@@ -287,13 +294,12 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+
               Row(
                 children: [
-                  // Study Cards -> misalnya nanti ke halaman flashcard /schedule
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // nanti kalau ada halaman khusus study cards, ganti route di sini
                         Navigator.pushNamed(context, '/schedule');
                       },
                       style: ElevatedButton.styleFrom(
@@ -315,7 +321,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Pomodoro -> ke /pomodoro
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -357,7 +362,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/manage_task');
+                    },
                     child: const Text(
                       'View All',
                       style: TextStyle(
@@ -369,6 +376,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+
               const SizedBox(height: 8),
 
               ...List.generate(
@@ -461,34 +469,35 @@ class HomeScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildNavItem(icon: Icons.home, isActive: true, onTap: () {}),
+                // HOME
                 _buildNavItem(
-                  icon: Icons.calendar_today_outlined,
+                  icon: Icons.home_rounded,
+                  isActive: true,
+                  onTap: () {},
+                ),
+
+                // SCHEDULE (PAKE STASHED CHANGES)
+                _buildNavItem(
+                  icon: Icons.calendar_today,
                   isActive: false,
                   onTap: () {
                     Navigator.pushNamed(context, '/schedule');
                   },
                 ),
+
                 GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, '/manage_task');
                   },
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6BA5EF),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                     child: const Icon(
-                      Icons.checklist_rounded,
+                      Icons.assignment,
                       color: Colors.white,
                       size: 24,
                     ),
                   ),
-                ),
+
                 _buildNavItem(
-                  icon: Icons.person_outline,
+                  icon: Icons.person,
                   isActive: false,
                   onTap: () {
                     Navigator.pushNamed(context, '/profile');
@@ -502,6 +511,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // === SCHEDULE ENTRY (clean) ===
   Widget _buildScheduleEntry(String title, String time) {
     return Row(
       children: [
@@ -520,9 +530,9 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 time,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 11,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -533,26 +543,27 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required bool isActive,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: isActive ? Colors.white : const Color(0xFF6BA5EF),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: isActive ? const Color(0xFF5B9FED) : Colors.white,
-          size: 24,
-        ),
+  // === NAV ITEM ===
+Widget _buildNavItem({
+  required IconData icon,
+  required bool isActive,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isActive ? Colors.white : Colors.transparent,
       ),
-    );
-  }
+      child: Icon(
+        icon,
+        color: isActive ? const Color(0xFF5B9FED) : Colors.white70,
+        size: 28,
+      ),
+    ),
+  );
+}
+
 }

@@ -42,7 +42,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
+              primary: const Color(0xFF5B9FED),
               onPrimary: Colors.white,
             ),
           ),
@@ -65,7 +65,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
+              primary: const Color(0xFF5B9FED),
               onPrimary: Colors.white,
             ),
           ),
@@ -88,7 +88,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
+              primary: const Color(0xFF5B9FED),
               onPrimary: Colors.white,
             ),
           ),
@@ -166,7 +166,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF5B9FED),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
@@ -188,24 +188,31 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title Field
+            const Text(
+              'Schedule Title',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF5B9FED),
+              ),
+            ),
+            const SizedBox(height: 12),
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: 'Schedule Title',
                   hintText: 'e.g., Management Project',
-                  labelStyle: const TextStyle(color: AppColors.primary),
+                  labelStyle: const TextStyle(color: const Color(0xFF5B9FED)),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24),
                     borderSide: const BorderSide(color: AppColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24),
                     borderSide: const BorderSide(color: AppColors.border),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: const Color(0xFF5B9FED), width: 2),
                   ),
                   filled: true,
                   fillColor: AppColors.surface,
@@ -226,7 +233,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text,
+                  color: Color(0xFF5B9FED),
                 ),
               ),
               const SizedBox(height: 12),
@@ -236,12 +243,12 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today, color: AppColors.primary),
+                      const Icon(Icons.calendar_today, color: const Color(0xFF5B9FED)),
                       const SizedBox(width: 12),
                       Text(
                         _selectedDate != null
@@ -269,7 +276,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text,
+                  color: Color(0xFF5B9FED),
                 ),
               ),
               const SizedBox(height: 12),
@@ -283,13 +290,13 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: AppColors.border),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.access_time, color: AppColors.primary, size: 20),
+                            const Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 20),
                             const SizedBox(width: 8),
                             Text(
                               _startTime != null
@@ -330,7 +337,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.access_time, color: AppColors.primary, size: 20),
+                            const Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 20),
                             const SizedBox(width: 8),
                             Text(
                               _endTime != null
@@ -360,11 +367,11 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                 child: ElevatedButton(
                   onPressed: _saveSchedule,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: const Color(0xFF5B9FED),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                   ),
                   child: const Text(

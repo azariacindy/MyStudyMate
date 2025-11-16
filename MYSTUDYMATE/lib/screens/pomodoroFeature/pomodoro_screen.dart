@@ -1,4 +1,4 @@
-// lib/screens/pomodoro_screen.dart
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 
@@ -132,7 +132,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('🎉 Pomodoro selesai! Istirahat yang cukup ya!'),
+        content: Text('Great job! You nailed this focus session. Now take a moment to rest and reset 🚀'),
       ),
     );
   }
@@ -145,21 +145,21 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     if (_isCompleted) return Colors.grey;
     return _currentMode == TimerMode.focus
         ? Colors.orange
-        : Colors.blue.withOpacity(0.7);
+        : const Color(0xFF5B9FED).withOpacity(0.7);
   }
 
   Color get _buttonColor {
     if (_isCompleted) return Colors.grey;
-    return _currentMode == TimerMode.focus ? Colors.orange : Colors.blue;
+    return _currentMode == TimerMode.focus ? Colors.orange : const Color(0xFF5B9FED);
   }
 
   String get _message {
-    if (_isCompleted) return 'Selesai!';
+    if (_isCompleted) return 'Done!';
     return _currentMode == TimerMode.focus ? 'Keep Going!' : 'Chill dulu bro!';
   }
 
   String get _title {
-    if (_isCompleted) return 'Pomodoro Selesai!';
+    if (_isCompleted) return 'Done!';
     return _currentMode == TimerMode.focus ? 'Focus Time!' : 'Rest Time!';
   }
 
@@ -179,7 +179,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
                 right: 16,
               ),
               decoration: const BoxDecoration(
-                color: Colors.blue,
+                color: const Color(0xFF5B9FED),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(48),
                   bottomRight: Radius.circular(48),
@@ -304,38 +304,50 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
             // BOTTOM NAV (dummy)
             Container(
               decoration: const BoxDecoration(
-                color: Colors.blue,
+                color: const Color(0xFF5B9FED),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(32),
                   bottomRight: Radius.circular(32),
                 ),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _BottomNavItem(
-                    icon: Icons.home_filled,
-                    label: 'Home',
-                    isActive: false,
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/home'),
+                    child: const _BottomNavItem(
+                      icon: Icons.home_rounded,
+                      isActive: false,
+                    ),
                   ),
-                  _BottomNavItem(
-                    icon: Icons.calendar_today,
-                    label: 'Calendar',
-                    isActive: false,
+
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/schedule'),
+                    child: const _BottomNavItem(
+                      icon: Icons.calendar_today,
+                      isActive: false,
+                    ),
                   ),
-                  _BottomNavItem(
-                    icon: Icons.menu_book_rounded,
-                    label: 'Book',
-                    isActive: true,
+
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/manage_task'),
+                    child: const _BottomNavItem(
+                      icon: Icons.assignment,
+                      isActive: false,
+                    ),
                   ),
-                  _BottomNavItem(
-                    icon: Icons.person,
-                    label: 'Profile',
-                    isActive: false,
+
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/profile'),
+                    child: const _BottomNavItem(
+                      icon: Icons.person,
+                      isActive: false,
+                    ),
                   ),
                 ],
               ),
+
             ),
           ],
         ),
@@ -346,12 +358,10 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
 class _BottomNavItem extends StatelessWidget {
   final IconData icon;
-  final String label;
   final bool isActive;
 
   const _BottomNavItem({
     required this.icon,
-    required this.label,
     required this.isActive,
   });
 
@@ -370,14 +380,6 @@ class _BottomNavItem extends StatelessWidget {
           child: Icon(icon, color: Colors.white, size: 24),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
       ],
     );
   }
