@@ -1,3 +1,4 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
@@ -11,16 +12,13 @@ import 'screens/taskManagerFeature/plan_task_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Try to initialize Supabase if the project owner filled in the values.
-  // If not provided, initialization is skipped and app still runs.
+  
   try {
     await initializeSupabaseIfConfigured();
   } catch (e) {
-    // ignore: avoid_print
     print('Warning: Supabase initialization failed: $e');
   }
-
+  
   runApp(const MyApp());
 }
 
@@ -35,15 +33,37 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4C84F1)),
         useMaterial3: true,
-        fontFamily: 'Inter', // optional: samakan dgn Figma
+        
+        // ✅ SET FONT DI TEXT THEME, BUKAN DI ROOT
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(fontFamily: 'Inter'),
+          displayMedium: TextStyle(fontFamily: 'Inter'),
+          displaySmall: TextStyle(fontFamily: 'Inter'),
+          headlineLarge: TextStyle(fontFamily: 'Poppins'),
+          headlineMedium: TextStyle(fontFamily: 'Poppins'),
+          headlineSmall: TextStyle(fontFamily: 'Poppins'),
+          titleLarge: TextStyle(fontFamily: 'Poppins'),
+          titleMedium: TextStyle(fontFamily: 'Poppins'),
+          titleSmall: TextStyle(fontFamily: 'Poppins'),
+          bodyLarge: TextStyle(fontFamily: 'Inter'),
+          bodyMedium: TextStyle(fontFamily: 'Inter'),
+          bodySmall: TextStyle(fontFamily: 'Inter'),
+          labelLarge: TextStyle(fontFamily: 'Inter'),
+          labelMedium: TextStyle(fontFamily: 'Inter'),
+          labelSmall: TextStyle(fontFamily: 'Inter'),
+        ),
+        
+        // ✅ ICON THEME TETAP MENGGUNAKAN MATERIAL ICONS
+        iconTheme: const IconThemeData(
+          color: Color(0xFF2B2D42),
+        ),
       ),
-      // Splash jadi entry point
       home: const SplashScreen(),
       routes: {
+        '/splash': (_) => const SplashScreen(),
         '/welcome': (_) => const WelcomeScreen(),
         '/signin': (_) => const SignInScreen(),
-        '/register': (_) => const RegisterScreen(),
-        '/login': (_) => const SignInScreen(), // Alias untuk backward compatibility
+        '/signup': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
         '/onboarding': (_) => const OnboardingScreen(),
         '/manage_task': (_) => const ManageTaskScreen(),

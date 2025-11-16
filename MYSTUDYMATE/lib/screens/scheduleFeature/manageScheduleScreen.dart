@@ -42,7 +42,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: const Color(0xFF5B9FED),
+              primary: AppColors.primary,
               onPrimary: Colors.white,
             ),
           ),

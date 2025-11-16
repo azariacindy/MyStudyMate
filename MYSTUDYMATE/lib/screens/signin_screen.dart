@@ -116,8 +116,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: Center(
                       child: Image.asset(
                         'assets/images/logo_mystudymate.png',
-                        width: 50,
-                        height: 50,
+                        width: 75,
+                        height: 75,
                       ),
                     ),
                   ),
