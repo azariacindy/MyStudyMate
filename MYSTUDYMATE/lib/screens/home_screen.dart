@@ -300,7 +300,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/schedule');
+                        Navigator.pushNamed(context, '/studyCards');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE3F2FD),

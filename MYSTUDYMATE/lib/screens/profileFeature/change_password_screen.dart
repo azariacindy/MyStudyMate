@@ -76,7 +76,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 height: 96,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF5B9FED).withOpacity(0.1),
+                  color: const Color(0xFF5B9FED).withOpacity(0.3),
                 ),
                 child: const Icon(Icons.lock, size: 48, color: Colors.white),
               ),
