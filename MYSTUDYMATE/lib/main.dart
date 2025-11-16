@@ -1,5 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:my_study_mate/screens/pomodoroFeature/pomodoro_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/signin_screen.dart';
@@ -9,6 +10,16 @@ import 'screens/onboarding_screen.dart';
 import 'utils/supabase_config.dart';
 import 'screens/taskManagerFeature/manage_task_screen.dart';
 import 'screens/taskManagerFeature/plan_task_screen.dart';
+import 'screens/profileFeature/edit_profile_screen.dart';
+import 'screens/profileFeature/profile_screen.dart';
+import 'screens/profileFeature/change_password_screen.dart';
+import 'screens/scheduleFeature/scheduleScreen.dart';
+import 'screens/scheduleFeature/manageScheduleScreen.dart';
+import 'screens/studyCardFeature/add_study_card_screen.dart';
+import 'screens/studyCardFeature/mistakes_screen.dart';
+import 'screens/studyCardFeature/quiz_question_screen.dart';
+import 'screens/studyCardFeature/quiz_result_screen.dart';
+import 'screens/studyCardFeature/study_cards_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +79,17 @@ class MyApp extends StatelessWidget {
         '/onboarding': (_) => const OnboardingScreen(),
         '/manage_task': (_) => const ManageTaskScreen(),
         '/plan_task': (_) => const PlanTaskScreen(),
+        '/pomodoro': (_) => const PomodoroScreen(), 
+        '/profile': (_) => const ProfileScreen(),
+        '/editProfile': (_) => const EditProfileScreen(),
+        '/changePassword': (_) => const ChangePasswordScreen(),
+        '/schedule': (_) => const ScheduleScreen(),
+        '/addSchedule': (_) => const ManageScheduleScreen(),
+        '/addStudyCard': (_) => const AddStudyCardScreen(),
+        '/mistake': (_) => const MistakesScreen(),
+        '/questionQuiz': (_) => const QuizQuestionScreen(),
+        '/resultQuiz': (_) => const QuizResultScreen(),
+        '/studyCards': (_) => const StudyCardsScreen(),
       },
     );
   }
