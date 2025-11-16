@@ -44,7 +44,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color(0xFF5B9BF3);
+    const primaryBlue = const Color(0xFF5B9FED);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -74,7 +74,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const Text(
                           'Name',
                           style: TextStyle(
-                            color: Color(0xFF5B9BF3),
+                            color: const Color(0xFF5B9FED),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -102,7 +102,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24),
                               borderSide: const BorderSide(
-                                color: Color(0xFF5B9BF3),
+                                color: const Color(0xFF5B9FED),
                                 width: 2,
                               ),
                             ),
@@ -115,7 +115,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const Text(
                           'Username',
                           style: TextStyle(
-                            color: Color(0xFF5B9BF3),
+                            color: const Color(0xFF5B9FED),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -143,7 +143,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24),
                               borderSide: const BorderSide(
-                                color: Color(0xFF5B9BF3),
+                                color: const Color(0xFF5B9FED),
                                 width: 2,
                               ),
                             ),
@@ -156,7 +156,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const Text(
                           'Email',
                           style: TextStyle(
-                            color: Color(0xFF5B9BF3),
+                            color: const Color(0xFF5B9FED),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -185,7 +185,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24),
                               borderSide: const BorderSide(
-                                color: Color(0xFF5B9BF3),
+                                color: const Color(0xFF5B9FED),
                                 width: 2,
                               ),
                             ),
@@ -225,7 +225,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           child: ElevatedButton(
                             onPressed: _handleCancel,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF5B9BF3),
+                              backgroundColor: const Color(0xFF5B9FED),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               elevation: 0,
@@ -251,7 +251,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
           ),
-          _buildBottomNav(primaryBlue),
+          _buildBottomNav(),
         ],
       ),
     );
@@ -274,7 +274,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             alignment: Alignment.centerLeft,
             child: IconButton(
               onPressed: () => Navigator.maybePop(context),
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+              icon: const Icon(Icons.chevron_left, color: Colors.white, size: 24),
               padding: EdgeInsets.zero,
             ),
           ),
@@ -320,50 +320,62 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ],
             ),
-            child: const Icon(Icons.edit, size: 18, color: Colors.black87),
+            child: const Icon(Icons.edit, size: 18, color: const Color(0xFF5B9FED)),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildBottomNav(Color primaryBlue) {
-    return Container(
-      decoration: BoxDecoration(
-        color: primaryBlue,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+Widget _buildBottomNav() {
+  return Container(
+    decoration: const BoxDecoration(
+    color: const Color(0xFF5B9FED),
+    borderRadius: BorderRadius.only(
+    bottomLeft: Radius.circular(32),
+    bottomRight: Radius.circular(32),
+    ),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _BottomNavItem(
+          icon: Icons.home_rounded,
+          isActive: activeNav == 'home',
+          onTap: () {
+            setState(() => activeNav = 'home');
+            Navigator.pushNamed(context, '/home');
+          },
         ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _BottomNavItem(
-            icon: Icons.home_rounded,
-            isActive: activeNav == 'home',
-            onTap: () => setState(() => activeNav = 'home'),
-          ),
-          _BottomNavItem(
-            icon: Icons.calendar_today_rounded,
-            isActive: activeNav == 'calendar',
-            onTap: () => setState(() => activeNav = 'calendar'),
-          ),
-          _BottomNavItem(
-            icon: Icons.menu_book_rounded,
-            isActive: activeNav == 'book',
-            onTap: () => setState(() => activeNav = 'book'),
-          ),
-          _BottomNavItem(
-            icon: Icons.person_rounded,
-            isActive: activeNav == 'profile',
-            onTap: () => setState(() => activeNav = 'profile'),
-          ),
-        ],
-      ),
-    );
-  }
+        _BottomNavItem(
+          icon: Icons.calendar_today,
+          isActive: activeNav == 'schedule',
+          onTap: () {
+            setState(() => activeNav = 'schedule');
+            Navigator.pushNamed(context, '/schedule');
+          },
+        ),
+        _BottomNavItem(
+          icon: Icons.assignment,
+          isActive: activeNav == 'assignment',
+          onTap: () {
+            setState(() => activeNav = 'assignment');
+            Navigator.pushNamed(context, '/manage_task');
+          },
+        ),
+        _BottomNavItem(
+          icon: Icons.person,
+          isActive: activeNav == 'profile',
+          onTap: () {
+            setState(() => activeNav = 'profile');
+          },
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 class _BottomNavItem extends StatelessWidget {

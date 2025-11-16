@@ -301,9 +301,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                       // PROFILE
                       _buildNavItem(
-                        icon: Icons.person_outline,
+                        icon: Icons.person,
                         isActive: false,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pushNamed(context, '/profile');
+                        },
                       ),
                     ],
                   ),
@@ -364,7 +366,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     height: 48,
     decoration: BoxDecoration(
       color: isActive ? Colors.white : const Color(0xFF6BA5EF),
-      borderRadius: BorderRadius.circular(12),
+      shape: BoxShape.circle,
     ),
     child: Icon(
       Icons.calendar_today,

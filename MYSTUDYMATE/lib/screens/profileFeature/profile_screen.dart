@@ -78,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.only(top: 48, bottom: 24, left: 16, right: 16),
       decoration: const BoxDecoration(
-        color: Color(0xFF2196F3),
+        color: const Color(0xFF5B9FED),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
@@ -88,12 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         alignment: Alignment.center,
         children: [
           Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              onPressed: () => Navigator.maybePop(context),
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-              padding: EdgeInsets.zero,
-            ),
+            alignment: Alignment.centerLeft
           ),
           const Text(
             'Profile',
@@ -117,8 +112,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.grey.shade300,
-            border: Border.all(color: const Color(0xFF2196F3), width: 3),
+            color: const Color(0xFF5B9FED),
+            border: Border.all(color: Colors.white),
           ),
           child: Icon(Icons.person, size: 36, color: Colors.grey.shade600),
         ),
@@ -128,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFF2196F3),
+              color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2),
             ),
@@ -278,19 +273,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _MenuItem(
             icon: Icons.edit_outlined,
             label: 'Edit Profile',
-            onTap: () => Navigator.pushNamed(context, '/edit_profile'),
+            onTap: () => Navigator.pushNamed(context, '/editProfile'),
+            showArrow: true,
           ),
           const SizedBox(height: 4),
           _MenuItem(
             icon: Icons.lock_outline,
             label: 'Change Password',
-            onTap: () => Navigator.pushNamed(context, '/change_password'),
+            onTap: () => Navigator.pushNamed(context, '/changePassword'),
+            showArrow: true,
           ),
           const SizedBox(height: 4),
           _MenuItem(
             icon: Icons.workspace_premium_outlined,
             label: 'Badges',
             onTap: () {},
+            showArrow: false,
           ),
         ],
       ),
@@ -349,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: const Icon(Icons.logout, size: 18),
           label: const Text('Logout'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2196F3),
+            backgroundColor: const Color(0xFF5B9FED),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
@@ -365,43 +363,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF2196F3),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+Widget _buildBottomNav() {
+  return Container(
+    decoration: const BoxDecoration(
+      color: const Color(0xFF5B9FED),
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(24),
+        topRight: Radius.circular(24),
+      ),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _BottomNavItem(
+          icon: Icons.home_rounded,
+          isActive: activeNav == 'home',
+          onTap: () {
+            setState(() => activeNav = 'home');
+            Navigator.pushNamed(context, '/home');
+          },
         ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _BottomNavItem(
-            icon: Icons.home_rounded,
-            isActive: activeNav == 'home',
-            onTap: () => setState(() => activeNav = 'home'),
-          ),
-          _BottomNavItem(
-            icon: Icons.calendar_today_rounded,
-            isActive: activeNav == 'calendar',
-            onTap: () => setState(() => activeNav = 'calendar'),
-          ),
-          _BottomNavItem(
-            icon: Icons.menu_book_rounded,
-            isActive: activeNav == 'book',
-            onTap: () => setState(() => activeNav = 'book'),
-          ),
-          _BottomNavItem(
-            icon: Icons.person_rounded,
-            isActive: activeNav == 'profile',
-            onTap: () => setState(() => activeNav = 'profile'),
-          ),
-        ],
-      ),
-    );
-  }
+        _BottomNavItem(
+          icon: Icons.calendar_today,
+          isActive: activeNav == 'calendar',
+          onTap: () {
+            setState(() => activeNav = 'calendar');
+            Navigator.pushNamed(context, '/schedule');
+          },
+        ),
+        _BottomNavItem(
+          icon: Icons.assignment,
+          isActive: activeNav == 'assignment',
+          onTap: () {
+            setState(() => activeNav = 'assignment');
+            Navigator.pushNamed(context, '/manage_task');
+          },
+        ),
+        _BottomNavItem(
+          icon: Icons.person,
+          isActive: activeNav == 'profile',
+          onTap: () {
+            setState(() => activeNav = 'profile');
+          },
+        ),
+      ],
+    ),
+  );
+}
 }
 
 class _DayHeader extends StatelessWidget {
@@ -432,11 +441,13 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool showArrow;
 
   const _MenuItem({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.showArrow = true,
   });
 
   @override
@@ -454,7 +465,7 @@ class _MenuItem extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: Color(0xFFE3F2FD),
               ),
-              child: Icon(icon, color: const Color(0xFF2196F3), size: 18),
+              child: Icon(icon, color: const Color(0xFF5B9FED), size: 18),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -467,7 +478,9 @@ class _MenuItem extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey.shade600, size: 20),
+            if (showArrow)
+              Icon(Icons.chevron_right,
+                  color: Colors.grey.shade600, size: 20),
           ],
         ),
       ),
@@ -494,9 +507,9 @@ class _BottomNavItem extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isActive ? Colors.white.withOpacity(0.2) : Colors.transparent,
+          color: isActive ? Colors.white : Colors.transparent,
         ),
-        child: Icon(icon, color: Colors.white, size: 24),
+        child: Icon(icon,color: isActive ? const Color(0xFF5B9FED) : Colors.white, size: 24),
       ),
     );
   }
