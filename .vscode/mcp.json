@@ -1,0 +1,13 @@
+{
+	"servers": {
+		"Figma-Desktop": {
+			"type": "http",
+			"url": "http://www.figma.com/design/mb1RvBkfaCUFl4SKoBB0aG/UI-LAB-PROFIL?node-id=1-2&m=dev"
+		},
+		"my-mcp-server-38c247fd": {
+			"url": "http://www.figma.com/design/mb1RvBkfaCUFl4SKoBB0aG/UI-LAB-PROFIL?node-id=1-2&m=dev",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}
