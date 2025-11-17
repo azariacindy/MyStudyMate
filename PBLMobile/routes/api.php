@@ -3,6 +3,7 @@
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,26 @@ Route::prefix('assignments')->group(function () {
 Route::prefix('schedules')->group(function () {
     Route::get('/', [ScheduleController::class, 'index']); // GET /api/schedules
     Route::post('/', [ScheduleController::class, 'store']);
+    Route::get('/stats', [ScheduleController::class, 'getStats']);
+    Route::get('/upcoming', [ScheduleController::class, 'getUpcoming']);
+    Route::get('/date/{date}', [ScheduleController::class, 'getByDate']);
+    Route::get('/range', [ScheduleController::class, 'getByDateRange']);
+    Route::post('/check-conflict', [ScheduleController::class, 'checkConflict']);
+    Route::get('/{id}', [ScheduleController::class, 'show']);
     Route::put('/{id}', [ScheduleController::class, 'update']);
+    Route::patch('/{id}/toggle-complete', [ScheduleController::class, 'toggleComplete']);
     Route::delete('/{id}', [ScheduleController::class, 'destroy']);
+});
+
+// 🔒 Task routes → prefix: /tasks
+Route::prefix('tasks')->group(function () {
+    Route::get('/', [TaskController::class, 'index']); // GET /api/tasks
+    Route::post('/', [TaskController::class, 'store']);
+    Route::get('/stats', [TaskController::class, 'getStats']);
+    Route::get('/upcoming', [TaskController::class, 'getUpcoming']);
+    Route::get('/range', [TaskController::class, 'getByDeadlineRange']);
+    Route::get('/{id}', [TaskController::class, 'show']);
+    Route::put('/{id}', [TaskController::class, 'update']);
+    Route::patch('/{id}/toggle-complete', [TaskController::class, 'toggleComplete']);
+    Route::delete('/{id}', [TaskController::class, 'destroy']);
 });
