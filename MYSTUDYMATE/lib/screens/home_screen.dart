@@ -1,185 +1,213 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+/// HomeScreen - Halaman utama MyStudyMate (Fixed Overflow)
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedNavIndex = 0;
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FE),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // === HEADER CARD ===
+              _buildHeaderCard(),
+              const SizedBox(height: 20),
+
+              // === QUICK ACTIONS ===
+              _buildQuickActions(context),
+              const SizedBox(height: 20),
+
+              // === SCHEDULE SECTION ===
+              _buildScheduleSection(screenWidth),
+              const SizedBox(height: 20),
+
+              // === UPCOMING TASKS ===
+              _buildUpcomingTasks(),
+              const SizedBox(height: 80),
+            ],
+          ),
+        ),
+      ),
+
+      // === BOTTOM NAVIGATION ===
+      bottomNavigationBar: _buildBottomNav(context),
+      floatingActionButton: _buildFAB(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  /// Header Card - Fixed Icons
+  Widget _buildHeaderCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color.fromARGB(255, 34, 3, 107), Color.fromARGB(255, 89, 147, 240)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withAlpha(77),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile Row - FIXED
+          Row(
+            children: [
+              // Avatar with Icon
               Container(
-                padding: const EdgeInsets.all(16),
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4A90E2), Color(0xFF5B9FED)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white,
+                  shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withAlpha(77),
-                      spreadRadius: 0,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withAlpha(38),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Stack(
+                child: const Icon(
+                  CupertinoIcons.person,
+                  color: Color(0xFF8B5CF6),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Greeting - FIXED Overflow
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Positioned(
-                      right: -20,
-                      top: -20,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: -30,
-                      bottom: -30,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-
-                    // isi header
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFAB8CE4),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Good Morning',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Satriya',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
-                            Row(
-                              children: const [
-                                Text(
-                                  '5',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Icon(
-                                  Icons.local_fire_department,
-                                  color: Color(0xFFFF9800),
-                                  size: 20,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
-                        const Text(
-                          'Today Progress',
+                        Text(
+                          'Good Morning',
                           style: TextStyle(
-                            color: Colors.white70,
+                            color: Colors.white.withAlpha(204),
                             fontSize: 12,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 8),
-
-                        Stack(
-                          children: [
-                            Container(
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(77),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                            FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: 0.5,
-                              child: Container(
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF3B6FD8),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    '50%',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 4),
+                        const Icon(
+                          CupertinoIcons.sun_max,
+                          color: Color(0xFFFFA726),
+                          size: 14,
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          '3 of 5 Task',
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Satriya',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Streak - Fixed Icon
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(38),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      CupertinoIcons.flame_fill,
+                      color: Color.fromRGBO(252, 149, 8, 1),
+                      size: 19,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      '5',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+
+          // Progress - FIXED
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Circular Progress
+              SizedBox(
+                width: 65,
+                height: 65,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 65,
+                      height: 65,
+                      child: CircularProgressIndicator(
+                        value: 0.6,
+                        strokeWidth: 5,
+                        backgroundColor: Colors.white.withAlpha(51),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                    const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '60%',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Done',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
+                            fontSize: 9,
                           ),
                         ),
                       ],
@@ -187,334 +215,344 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 14),
 
-              const SizedBox(height: 24),
-
-              // === SCHEDULE SECTION ===
-              Column(
-                children: [
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: const Text(
-                        'Schedule',
-                        style: TextStyle(
-                          color: Color(0xFF5B9FED),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    height: 180,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 4,
-                      itemBuilder: (context, index) {
-                        final dates = [
-                          '15 December 2025',
-                          '16 December 2025',
-                          '17 December 2025',
-                          '18 December 2025',
-                        ];
-
-                        return Container(
-                          width: screenWidth * 0.75,
-                          margin: EdgeInsets.only(right: index < 3 ? 12 : 0),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF5B9FED),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue.withOpacity(0.15),
-                                spreadRadius: 0,
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                dates[index],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              _buildScheduleEntry(
-                                'Management Project',
-                                '12:20 - 10:30',
-                              ),
-                              const SizedBox(height: 8),
-
-                              _buildScheduleEntry(
-                                'Mobile Practicum',
-                                '9:20 - 12:30',
-                              ),
-                              const SizedBox(height: 8),
-
-                              _buildScheduleEntry(
-                                'Mobile Practicum',
-                                '9:20 - 12:30',
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // === QUICK ACTION ===
-              const Text(
-                'Quick Action',
-                style: TextStyle(
-                  color: Color(0xFF2C2C44),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/studyCards');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE3F2FD),
-                        foregroundColor: const Color(0xFF5B9FED),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text(
-                        'Study Cards',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/pomodoro');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE3F2FD),
-                        foregroundColor: const Color(0xFF5B9FED),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text(
-                        'Pomodoro',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // === UPCOMING TASK ===
-              Row(
-                children: [
-                  const Text(
-                    'Upcoming Task',
-                    style: TextStyle(
-                      color: Color(0xFF2C2C44),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/manage_task');
-                    },
-                    child: const Text(
-                      'View All',
+              // Progress Text - FIXED Overflow
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Today Progress',
                       style: TextStyle(
-                        color: Color(0xFF4A90E2),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              ...List.generate(
-                4,
-                (index) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF5B9FED),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withAlpha(38),
-                        spreadRadius: 0,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                    const SizedBox(height: 4),
+                    Text(
+                      '3 of 5 Tasks',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(179),
+                        fontSize: 12,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFFFC107),
-                            width: 2,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          CupertinoIcons.graph_circle,
+                          color: Color(0xFF10B981),
+                          size: 19,
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            'Keep going!',
+                            style: TextStyle(
+                              color: Colors.white.withAlpha(204),
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Metodologi Penelitian',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              '02.00 AM - 3.30 AM',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 80),
             ],
           ),
-        ),
+        ],
       ),
+    );
+  }
 
-      // === BOTTOM NAVIGATION BAR ===
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF5B9FED),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
+  /// Quick Actions - Fixed Layout
+  Widget _buildQuickActions(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Quick Actions',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1F2937),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(26),
-              spreadRadius: 0,
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                context,
+                CupertinoIcons.book,
+                'Study Cards',
+                '12 Sets',
+                const Color(0xFF3B82F6),
+                '/schedule',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildActionCard(
+                context,
+                CupertinoIcons.clock_fill,
+                'Pomodoro',
+                '25 min',
+                const Color(0xFFEC4899),
+                '/pomodoro',
+              ),
             ),
           ],
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // HOME
-                _buildNavItem(
-                  icon: Icons.home_rounded,
-                  isActive: true,
-                  onTap: () {},
-                ),
-
-                // SCHEDULE (PAKE STASHED CHANGES)
-                _buildNavItem(
-                  icon: Icons.calendar_today,
-                  isActive: false,
-                  onTap: () {
-                    Navigator.pushNamed(context, '/schedule');
-                  },
-                ),
-
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/manage_task');
-                  },
-                    child: const Icon(
-                      Icons.assignment,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-
-                _buildNavItem(
-                  icon: Icons.person,
-                  isActive: false,
-                  onTap: () {
-                    Navigator.pushNamed(context, '/profile');
-                  },
-                ),
-              ],
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                context,
+                CupertinoIcons.create,
+                'Notes',
+                '8 Notes',
+                const Color(0xFF8B5CF6),
+                '/notes',
+              ),
             ),
-          ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildActionCard(
+                context,
+                CupertinoIcons.news_solid,
+                'Quiz',
+                '5 Active',
+                const Color(0xFF10B981),
+                '/quiz',
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color,
+    String route,
+  ) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, route),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withAlpha(38),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: color.withAlpha(26),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey.withAlpha(179),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // === SCHEDULE ENTRY (clean) ===
-  Widget _buildScheduleEntry(String title, String time) {
-    return Row(
+  /// Schedule Section - FIXED OVERFLOW
+  Widget _buildScheduleSection(double screenWidth) {
+    final scheduleColors = [
+      [const Color(0xFF3B82F6), const Color(0xFF06B6D4)],
+      [const Color(0xFF8B5CF6), const Color(0xFFEC4899)],
+      [const Color(0xFF10B981), const Color(0xFF3B82F6)],
+    ];
+
+    final dates = ['Today', 'Tomorrow', '17 Dec'];
+    
+    final scheduleData = [
+      [
+        {'icon': Icons.business, 'title': 'Management', 'time': '12:20 - 02:30'},
+        {'icon': Icons.phone_android, 'title': 'Mobile Dev', 'time': '09:20 - 12:00'},
+        {'icon': Icons.design_services, 'title': 'UI Design', 'time': '14:00 - 16:00'},
+      ],
+      [
+        {'icon': Icons.code, 'title': 'Programming', 'time': '08:00 - 10:00'},
+        {'icon': Icons.science, 'title': 'Research', 'time': '10:30 - 12:30'},
+        {'icon': Icons.group, 'title': 'Team Meet', 'time': '13:00 - 15:00'},
+      ],
+      [
+        {'icon': Icons.book, 'title': 'Study Group', 'time': '09:00 - 11:00'},
+        {'icon': Icons.laptop, 'title': 'Workshop', 'time': '13:00 - 15:00'},
+        {'icon': Icons.sports_esports, 'title': 'Break', 'time': '15:30 - 16:30'},
+      ],
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Schedule',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withAlpha(26),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'This Week',
+                style: TextStyle(
+                  color: Color(0xFF3B82F6),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // FIXED: Naikkan height dari 170 ke 195
+        SizedBox(
+          height: 195,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            itemBuilder: (context, index) {
+              return Container(
+                width: screenWidth * 0.65,
+                margin: EdgeInsets.only(right: index < 2 ? 10 : 0),
+                // FIXED: Kurangi padding dari 14 ke 12
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: scheduleColors[index],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheduleColors[index][0].withAlpha(51),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min, // FIXED: Tambahkan ini
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          dates[index],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(38),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            '3 Classes',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // FIXED: Kurangi spacing dari 12 ke 10
+                    const SizedBox(height: 10),
+                    // FIXED: Kurangi bottom padding dari 6 ke 5
+                    ...scheduleData[index].map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: _buildScheduleItem(
+                        item['icon'] as IconData,
+                        item['title'] as String,
+                        item['time'] as String,
+                      ),
+                    )),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScheduleItem(IconData icon, String title, String time) {
+  return Container(
+    // FIXED: Kurangi padding dari 8 ke 7
+    padding: const EdgeInsets.all(7),
+    decoration: BoxDecoration(
+      color: Colors.white.withAlpha(26),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: Colors.white, size: 15), // FIXED: size dari 16 ke 15
+        const SizedBox(width: 7), // FIXED: dari 8 ke 7
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -523,47 +561,301 @@ class HomeScreen extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1), // FIXED: dari 2 ke 1
               Text(
                 time,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
+                style: TextStyle(
+                  color: Colors.white.withAlpha(179),
+                  fontSize: 10,
                 ),
               ),
             ],
           ),
         ),
+        // === TOMBOL DETAIL BARU ===
+        GestureDetector(
+          onTap: () {
+            // Navigasi ke detail schedule
+            Navigator.pushNamed(
+              context, 
+              '/schedule_detail',
+              arguments: {
+                'title': title,
+                'time': time,
+                'icon': icon,
+              },
+            );
+            
+            // Atau bisa show bottom sheet untuk quick view
+            // _showScheduleDetails(title, time, icon);
+          },
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(38),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white.withAlpha(204),
+              size: 12,
+            ),
+          ),
+        ),
       ],
-    );
-  }
-
-  // === NAV ITEM ===
-Widget _buildNavItem({
-  required IconData icon,
-  required bool isActive,
-  required VoidCallback onTap,
-}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isActive ? Colors.white : Colors.transparent,
-      ),
-      child: Icon(
-        icon,
-        color: isActive ? const Color(0xFF5B9FED) : Colors.white70,
-        size: 28,
-      ),
     ),
   );
 }
 
+  /// Upcoming Tasks - Fixed
+  Widget _buildUpcomingTasks() {
+    final tasks = [
+      {
+        'title': 'Metodologi Penelitian',
+        'time': '02:00 - 03:30',
+        'priority': 'High',
+        'icon': Icons.article,
+        'color': const Color(0xFFEF4444),
+      },
+      {
+        'title': 'Mobile Development',
+        'time': '10:00 - 12:00',
+        'priority': 'Medium',
+        'icon': Icons.smartphone,
+        'color': const Color(0xFFF59E0B),
+      },
+      {
+        'title': 'UI/UX Design',
+        'time': '14:00 - 16:00',
+        'priority': 'Low',
+        'icon': Icons.palette,
+        'color': const Color(0xFF10B981),
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Upcoming Tasks',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            Text(
+              'View All',
+              style: TextStyle(
+                color: Color(0xFF3B82F6),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...tasks.map((task) => _buildTaskCard(
+              title: task['title'] as String,
+              time: task['time'] as String,
+              priority: task['priority'] as String,
+              icon: task['icon'] as IconData,
+              color: task['color'] as Color,
+            )),
+      ],
+    );
+  }
+
+  Widget _buildTaskCard({
+    required String title,
+    required String time,
+    required String priority,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withAlpha(51), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withAlpha(26),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Icon Circle
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 2),
+            ),
+            child: Center(
+              child: Icon(icon, color: color, size: 12),
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Task Info - FIXED Overflow
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withAlpha(26),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        priority,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 12,
+                      color: Colors.grey.withAlpha(179),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      time,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.withAlpha(179),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Bottom Navigation - Fixed
+  Widget _buildBottomNav(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(26),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildNavIcon(Icons.home, 0, true),
+          _buildNavIcon(Icons.calendar_today, 1, false),
+          const SizedBox(width: 45),
+          _buildNavIcon(Icons.notifications, 2, false),
+          _buildNavIcon(Icons.person, 3, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavIcon(IconData icon, int index, bool isActive) {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _selectedNavIndex = index);
+        if (index == 1) Navigator.pushNamed(context, '/schedule');
+        if (index == 3) Navigator.pushNamed(context, '/profile');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(9),
+        decoration: BoxDecoration(
+          gradient: isActive
+              ? const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                )
+              : null,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          color: isActive ? Colors.white : Colors.grey,
+          size: 22,
+        ),
+      ),
+    );
+  }
+
+  /// FAB - Fixed
+  Widget _buildFAB(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withAlpha(77),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/manage_task'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: const Icon(Icons.add, color: Colors.white, size: 26),
+      ),
+    );
+  }
 }

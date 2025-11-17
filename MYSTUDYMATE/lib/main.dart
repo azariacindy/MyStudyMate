@@ -1,6 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'package:my_study_mate/screens/pomodoroFeature/pomodoro_screen.dart';
+import 'package:my_study_mate/screens/scheduleFeature/scheduleScreen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/signin_screen.dart';
@@ -79,17 +79,7 @@ class MyApp extends StatelessWidget {
         '/onboarding': (_) => const OnboardingScreen(),
         '/manage_task': (_) => const ManageTaskScreen(),
         '/plan_task': (_) => const PlanTaskScreen(),
-        '/pomodoro': (_) => const PomodoroScreen(), 
-        '/profile': (_) => const ProfileScreen(),
-        '/editProfile': (_) => const EditProfileScreen(),
-        '/changePassword': (_) => const ChangePasswordScreen(),
         '/schedule': (_) => const ScheduleScreen(),
-        '/addSchedule': (_) => const ManageScheduleScreen(),
-        '/addStudyCard': (_) => const AddStudyCardScreen(),
-        '/mistake': (_) => const MistakesScreen(),
-        '/questionQuiz': (_) => const QuizQuestionScreen(),
-        '/resultQuiz': (_) => const QuizResultScreen(),
-        '/studyCards': (_) => const StudyCardsScreen(),
       },
     );
   }
