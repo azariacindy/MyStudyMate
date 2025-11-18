@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AssignmentController;
+// use App\Http\Controllers\AssignmentController; // Commented - file has double extension .php.php
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\TaskController;
@@ -29,15 +29,15 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
-// 🔒 Assignment routes → prefix: /assignments
-Route::prefix('assignments')->group(function () {
-    Route::get('/', [AssignmentController::class, 'index']); // GET /api/assignments
-    Route::post('/', [AssignmentController::class, 'store']);
-    Route::put('/{id}', [AssignmentController::class, 'update']);
-    Route::delete('/{id}', [AssignmentController::class, 'destroy']);
-    Route::patch('/{id}/mark-done', [AssignmentController::class, 'markAsDone']);
-    Route::get('/weekly-progress', [AssignmentController::class, 'weeklyProgress']);
-});
+// 🔒 Assignment routes → COMMENTED OUT - AssignmentController has wrong filename
+// Route::prefix('assignments')->group(function () {
+//     Route::get('/', [AssignmentController::class, 'index']); // GET /api/assignments
+//     Route::post('/', [AssignmentController::class, 'store']);
+//     Route::put('/{id}', [AssignmentController::class, 'update']);
+//     Route::delete('/{id}', [AssignmentController::class, 'destroy']);
+//     Route::patch('/{id}/mark-done', [AssignmentController::class, 'markAsDone']);
+//     Route::get('/weekly-progress', [AssignmentController::class, 'weeklyProgress']);
+// });
 
 // 🔒 Schedule routes → prefix: /schedules
 Route::prefix('schedules')->group(function () {

@@ -14,6 +14,7 @@ class ManageScheduleScreen extends StatefulWidget {
 class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   final _lecturerController = TextEditingController();
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
@@ -30,6 +31,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
     _lecturerController.dispose();
     super.dispose();
   }
@@ -124,7 +126,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         // Menggunakan ScheduleService untuk membuat jadwal baru
         final schedule = await _scheduleService.createSchedule(
           title: _titleController.text,
-          description: null, // Optional
+          description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
           date: _selectedDate!,
           startTime: _startTime!,
           endTime: _endTime!,
@@ -250,6 +252,44 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   }
                   return null;
                 },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Description Field
+              const Text(
+                'Description (Optional)',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5B9FED),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'e.g., Chapter 5: Project Planning and Execution',
+                  labelStyle: const TextStyle(color: Color(0xFF5B9FED)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF5B9FED),
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                ),
               ),
 
               const SizedBox(height: 24),

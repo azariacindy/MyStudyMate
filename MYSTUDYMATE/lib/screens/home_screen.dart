@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../widgets/custom_bottom_nav.dart';
 
 /// HomeScreen - Halaman utama MyStudyMate (Fixed Overflow)
 class HomeScreen extends StatefulWidget {
@@ -44,8 +45,17 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       // === BOTTOM NAVIGATION ===
-      bottomNavigationBar: _buildBottomNav(context),
-      floatingActionButton: _buildFAB(context),
+      bottomNavigationBar: CustomBottomNav(
+        currentIndex: _selectedNavIndex,
+        onTap: (index) {
+          setState(() => _selectedNavIndex = index);
+          if (index == 1) Navigator.pushNamed(context, '/schedule');
+          if (index == 3) Navigator.pushNamed(context, '/profile');
+        },
+      ),
+      floatingActionButton: CustomFAB(
+        onPressed: () => Navigator.pushNamed(context, '/manage_task'),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
@@ -502,8 +512,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
+                            horizontal: 1,
+                            vertical: 1,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white.withAlpha(38),
@@ -514,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 9,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
@@ -773,88 +783,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// Bottom Navigation - Fixed
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(14),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(26),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavIcon(Icons.home, 0, true),
-          _buildNavIcon(Icons.calendar_today, 1, false),
-          const SizedBox(width: 45),
-          _buildNavIcon(Icons.notifications, 2, false),
-          _buildNavIcon(Icons.person, 3, false),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavIcon(IconData icon, int index, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        setState(() => _selectedNavIndex = index);
-        if (index == 1) Navigator.pushNamed(context, '/schedule');
-        if (index == 3) Navigator.pushNamed(context, '/profile');
-      },
-      child: Container(
-        padding: const EdgeInsets.all(9),
-        decoration: BoxDecoration(
-          gradient: isActive
-              ? const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: isActive ? Colors.white : Colors.grey,
-          size: 22,
-        ),
-      ),
-    );
-  }
-
-  /// FAB - Fixed
-  Widget _buildFAB(BuildContext context) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-        ),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8B5CF6).withAlpha(77),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/manage_task'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: const Icon(Icons.add, color: Colors.white, size: 26),
       ),
     );
   }

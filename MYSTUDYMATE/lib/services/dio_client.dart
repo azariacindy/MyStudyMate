@@ -13,6 +13,18 @@ class DioClient {
     _dio.options.contentType = 'application/json';
     _dio.options.headers['Accept'] = 'application/json';
 
+    // Add logging interceptor for debugging
+    _dio.interceptors.clear();
+    _dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      error: true,
+      requestHeader: true,
+      responseHeader: false,
+      request: true,
+      logPrint: (obj) => print('🔵 DIO: $obj'),
+    ));
+
     return _dio;
   }
 }

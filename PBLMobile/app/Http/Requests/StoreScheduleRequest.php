@@ -22,7 +22,7 @@ class StoreScheduleRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'date' => 'required|date|after_or_equal:today',
+            'date' => 'required|date', // Remove after_or_equal:today for more flexibility
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'location' => 'nullable|string|max:255',
