@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_bottom_nav.dart';
+import '../services/schedule_service.dart';
+import '../models/schedule_model.dart';
 
 /// HomeScreen - Halaman utama MyStudyMate (Fixed Overflow)
 class HomeScreen extends StatefulWidget {
@@ -12,15 +14,42 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedNavIndex = 0;
+  final ScheduleService _scheduleService = ScheduleService();
+  late Future<List<Schedule>> _schedulesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _schedulesFuture = _loadSchedules();
+  }
+
+  Future<List<Schedule>> _loadSchedules() async {
+    try {
+      // Load schedules for the next 7 days
+      final today = DateTime.now();
+      final endDate = today.add(const Duration(days: 7));
+      return await _scheduleService.getSchedulesByDateRange(today, endDate);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading schedules: $e')),
+        );
+      }
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 100.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -38,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // === UPCOMING TASKS ===
               _buildUpcomingTasks(),
-              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -410,145 +438,208 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Schedule Section - FIXED OVERFLOW
   Widget _buildScheduleSection(double screenWidth) {
-    final scheduleColors = [
-      [const Color(0xFF3B82F6), const Color(0xFF06B6D4)],
-      [const Color(0xFF8B5CF6), const Color(0xFFEC4899)],
-      [const Color(0xFF10B981), const Color(0xFF3B82F6)],
-    ];
+    return FutureBuilder<List<Schedule>>(
+      future: _schedulesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(40.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
 
-    final dates = ['Today', 'Tomorrow', '17 Dec'];
-    
-    final scheduleData = [
-      [
-        {'icon': Icons.business, 'title': 'Management', 'time': '12:20 - 02:30'},
-        {'icon': Icons.phone_android, 'title': 'Mobile Dev', 'time': '09:20 - 12:00'},
-        {'icon': Icons.design_services, 'title': 'UI Design', 'time': '14:00 - 16:00'},
-      ],
-      [
-        {'icon': Icons.code, 'title': 'Programming', 'time': '08:00 - 10:00'},
-        {'icon': Icons.science, 'title': 'Research', 'time': '10:30 - 12:30'},
-        {'icon': Icons.group, 'title': 'Team Meet', 'time': '13:00 - 15:00'},
-      ],
-      [
-        {'icon': Icons.book, 'title': 'Study Group', 'time': '09:00 - 11:00'},
-        {'icon': Icons.laptop, 'title': 'Workshop', 'time': '13:00 - 15:00'},
-        {'icon': Icons.sports_esports, 'title': 'Break', 'time': '15:30 - 16:30'},
-      ],
-    ];
+        final schedules = snapshot.data ?? [];
+        
+        // Group schedules by date for the next 7 days
+        final today = DateTime.now();
+        final Map<String, List<Schedule>> groupedSchedules = {};
+        
+        for (int i = 0; i < 7; i++) {
+          final date = today.add(Duration(days: i));
+          final daySchedules = schedules.where((s) => _isSameDay(s.date, date)).toList();
+          
+          String label;
+          if (i == 0) {
+            label = 'Today';
+          } else if (i == 1) {
+            label = 'Tomorrow';
+          } else {
+            // Format: "Wed, Nov 20"
+            final weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.weekday % 7];
+            final month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1];
+            label = '$weekday, $month ${date.day}';
+          }
+          
+          groupedSchedules[label] = daySchedules;
+        }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        final scheduleColors = [
+          [const Color(0xFF3B82F6), const Color(0xFF06B6D4)],
+          [const Color(0xFF8B5CF6), const Color(0xFFEC4899)],
+          [const Color(0xFF10B981), const Color(0xFF3B82F6)],
+          [const Color(0xFFEF4444), const Color(0xFFF59E0B)],
+          [const Color(0xFF06B6D4), const Color(0xFF8B5CF6)],
+          [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
+          [const Color(0xFF8B5CF6), const Color(0xFF3B82F6)],
+        ];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Schedule',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withAlpha(26),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'This Week',
-                style: TextStyle(
-                  color: Color(0xFF3B82F6),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        // FIXED: Naikkan height dari 170 ke 195
-        SizedBox(
-          height: 195,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: 3,
-            itemBuilder: (context, index) {
-              return Container(
-                width: screenWidth * 0.65,
-                margin: EdgeInsets.only(right: index < 2 ? 10 : 0),
-                // FIXED: Kurangi padding dari 14 ke 12
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: scheduleColors[index],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Schedule',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
                   ),
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: scheduleColors[index][0].withAlpha(51),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min, // FIXED: Tambahkan ini
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          dates[index],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 1,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(38),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            '3 Classes',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/schedule'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withAlpha(26),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Color(0xFF3B82F6),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 210,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: groupedSchedules.length,
+                itemBuilder: (context, index) {
+                  final dateKey = groupedSchedules.keys.elementAt(index);
+                  final daySchedules = groupedSchedules[dateKey]!;
+                  
+                  return Container(
+                    width: screenWidth * 0.65,
+                    margin: EdgeInsets.only(right: index < 6 ? 10 : 0),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: scheduleColors[index % scheduleColors.length],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: scheduleColors[index % scheduleColors.length][0].withAlpha(51),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    // FIXED: Kurangi spacing dari 12 ke 10
-                    const SizedBox(height: 10),
-                    // FIXED: Kurangi bottom padding dari 6 ke 5
-                    ...scheduleData[index].map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 5),
-                      child: _buildScheduleItem(
-                        item['icon'] as IconData,
-                        item['title'] as String,
-                        item['time'] as String,
-                      ),
-                    )),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                dateKey,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withAlpha(38),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${daySchedules.length} ${daySchedules.length == 1 ? 'Class' : 'Classes'}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        if (daySchedules.isEmpty)
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                'No schedules',
+                                style: TextStyle(
+                                  color: Colors.white.withAlpha(179),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          ...daySchedules.take(3).map((schedule) => Padding(
+                            padding: const EdgeInsets.only(bottom: 5),
+                            child: _buildScheduleItem(
+                              _getIconForScheduleType(schedule.type),
+                              schedule.title,
+                              '${schedule.getFormattedStartTime()} - ${schedule.getFormattedEndTime()}',
+                            ),
+                          )),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
+  }
+
+  IconData _getIconForScheduleType(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'class':
+        return Icons.business;
+      case 'meeting':
+        return Icons.group;
+      case 'study':
+        return Icons.book;
+      case 'exam':
+        return Icons.assignment;
+      case 'lab':
+        return Icons.science;
+      default:
+        return Icons.event;
+    }
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   Widget _buildScheduleItem(IconData icon, String title, String time) {
