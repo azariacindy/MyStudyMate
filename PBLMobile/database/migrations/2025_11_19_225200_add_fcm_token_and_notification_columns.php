@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add FCM token to users table
-        Schema::table('users', function (Blueprint $table) {
-            $table->text('fcm_token')->nullable()->after('password');
-        });
+        // Add FCM token to users table (skip if exists)
+        if (!Schema::hasColumn('users', 'fcm_token')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->text('fcm_token')->nullable()->after('password');
+            });
+        }
 
         // Add notification_sent flag to schedules table
-        Schema::table('schedules', function (Blueprint $table) {
-            $table->boolean('notification_sent')->default(false)->after('reminder_minutes');
-        });
+        if (!Schema::hasColumn('schedules', 'notification_sent')) {
+            Schema::table('schedules', function (Blueprint $table) {
+                $table->boolean('notification_sent')->default(false);
+            });
+        }
     }
 
     /**
