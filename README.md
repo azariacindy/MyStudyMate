@@ -1,68 +1,121 @@
 # 📚 MyStudyMate — Smart Academic Organizer for Polinema JTI Students
 
-> **MyStudyMate** adalah aplikasi mobile berbasis **Flutter** yang dikembangkan khusus untuk membantu mahasiswa **JTI Polinema** dalam mengatur kegiatan akademiknya secara efisien.  
-> Aplikasi ini menghadirkan fitur-fitur seperti manajemen tugas, jadwal kuliah, catatan belajar, hingga pemantauan progres akademik dengan tampilan modern dan notifikasi cerdas.
+> **MyStudyMate** adalah aplikasi mobile berbasis **Flutter + Supabase** yang dikembangkan khusus untuk membantu mahasiswa **JTI Polinema** dalam mengatur kegiatan akademiknya secara efisien.  
+> Aplikasi ini menghadirkan fitur seperti manajemen tugas, jadwal kuliah, catatan belajar, study cards, hingga pemantauan progres akademik dengan tampilan modern dan notifikasi cerdas.
 
 ---
 
 ## 🧭 Deskripsi Singkat
-MyStudyMate dirancang untuk menjadi asisten belajar digital mahasiswa dengan berbagai fitur yang mendukung produktivitas dan konsistensi belajar.  
-Selain fitur utama seperti **Dashboard, Tugas, Jadwal, Study Plan, dan Nilai**, aplikasi ini juga menyediakan mode **Pomodoro** dan fitur **Community** (opsional) untuk belajar bersama dalam komunitas resmi Polinema JTI seperti **WRI** dan **ITDEC**.
+MyStudyMate dirancang untuk menjadi asisten belajar digital mahasiswa dengan berbagai fitur yang mendukung produktivitas, fokus, dan konsistensi belajar.  
+Fitur utama meliputi **Dashboard, Tugas, Jadwal, Study Cards, Pomodoro, Notes, dan Profile**, serta tambahan **Reward Badges** untuk memotivasi pengguna menjaga streak belajar.
 
 ---
 
 ## ✨ Fitur Utama
 
-### 🏠 1. Dashboard
-- Menampilkan:
-  - 🔥 *Streak* harian belajar
-  - 📈 Progress belajar mingguan
-  - 📅 Kalender mingguan (bukan bulanan) yang menampilkan jadwal & tugas secara real-time
-  - 📱 Menu navigasi menuju fitur utama
-- 🎖️ *Reward badge (opsional):* muncul jika pengguna berhasil mencapai target streak, misalnya streak 10 hari berturut-turut.
+---
+
+### 🧑‍💻 0. Authentication & User Flow
+#### **Splashscreen → Onboarding → Welcomescreen**
+- Splashscreen menampilkan logo
+- Onboarding menjelaskan fitur aplikasi
+- Welcomescreen menuju Sign In / Sign Up
+
+#### **Sign In**
+- Login menggunakan username/email + password
+
+#### **Sign Up**
+Input data lengkap:
+- Nama lengkap  
+- Username  
+- Email  
+- Password  
+- Confirm password  
 
 ---
 
-### 📝 2. Tugas (Assignment Manager)
-- CRUD (Create, Read, Update, Delete) data tugas.
-- Fitur pencarian tugas berdasarkan nama/keyword.
-- Notifikasi otomatis pada:
-  - H-3 sebelum deadline,
-  - Hari-H (D-day),
-  - H+3 setelah deadline (selama belum “mark as done”).
-- Menampilkan *progress tugas mingguan* (dalam persen) di halaman tugas & dashboard.
+### 👤 1. Profile
+- Update foto profil  
+- Edit nama, username, dan email  
+- Change Password  
+- Melihat seluruh badge reward yang didapat  
 
 ---
 
-### 🗓️ 3. Jadwal (Schedule Manager)
-- Menambahkan jadwal kuliah atau kegiatan per hari.
-- Pengingat otomatis **30 menit sebelum kelas dimulai**.
-- Tugas yang memiliki deadline akan otomatis tampil pada kalender mingguan.
-- CRUD jadwal + tampilan terintegrasi dengan dashboard.
+### 🏠 2. Dashboard
+Menampilkan informasi utama:
+- 🔥 Streak harian (bertambah saat user menyelesaikan tugas)
+- 📈 Progress belajar mingguan  
+- 📅 Kalender mingguan (scroll kiri/kanan) berisi jadwal & deadline tugas  
+- 📱 Menu fitur:
+  - Schedule  
+  - Study Cards  
+  - Pomodoro  
+  - Notes  
+- 🎖️ Reward Badges (opsional)
 
 ---
 
-### 🎯 4. Study Plan (Learning Goal Generator)
-- Membantu pengguna mencapai *learning goals* dengan mengunggah materi belajar.
-- Sistem akan menghasilkan soal latihan (*auto-generated quiz*) berdasarkan file yang diunggah.
-- Dapat memantau tingkat pemahaman pengguna terhadap materi yang diunggah.
+### 📝 3. Tugas (Assignment Manager)
+- CRUD tugas  
+- Pencarian tugas  
+- Notifikasi otomatis:
+  - H-3 sebelum deadline  
+  - D-day  
+  - H+3 setelah deadline (selama belum selesai)  
+- Progress belajar mingguan (dalam persen)
+- Mark as done:
+  - Streak +1  
+  - Progress meningkat  
+
+**Input tugas:**
+- Assignment Name  
+- Subject (mata kuliah)  
+- Deadline  
+- Notes  
 
 ---
 
-### ⏳ 5. Pomodoro Timer
-- Meningkatkan fokus belajar menggunakan teknik **Pomodoro (25 menit fokus, 5 menit istirahat)**.
-- Jika pengguna keluar dari aplikasi sebelum waktu habis:
-  - Muncul *alert warning*.
-  - “Streak api” (🔥) akan hilang jika keluar sebelum sesi selesai.
+### 🗓️ 4. Jadwal (Schedule Manager)
+- CRUD jadwal harian/kuliah  
+- Notifikasi otomatis **30 menit sebelum kelas**  
+- Jadwal muncul di kalender dashboard  
+
+**Input jadwal:**
+- Activity name  
+- Date (auto dari kalender)  
+- Time  
+- Description  
 
 ---
 
-### 👥 6. Community (Optional)
-- Fitur opsional untuk mahasiswa Polinema JTI.
-- Secara default, tersedia dua komunitas resmi:
-  - **WRI (Workshop & Riset Informatika)**
-  - **ITDEC (Information Technology Development Community)**
-- Pengguna dapat berdiskusi, berbagi materi, atau belajar bersama layaknya komunitas Facebook.
+### 🧠 5. Study Cards (Generate Quiz)
+- User memasukkan materi text  
+- Sistem menghasilkan quiz secara otomatis  
+- User bisa mengerjakan quiz langsung  
+
+**Input Study Cards:**
+- Title  
+- Notes  
+
+---
+
+### ⏳ 6. Pomodoro Timer
+- Timer fokus belajar (25 menit fokus, 5 menit istirahat)
+- Jika user keluar aplikasi sebelum timer selesai:
+  - Muncul alert  
+  - Streak tidak bertambah  
+- Jika selesai:
+  - Streak +1  
+
+---
+
+### 📒 7. Notes (Optional)
+Fitur untuk mencatat/merangkum materi:
+- CRUD Notes  
+- Input:  
+  - Title  
+  - Description  
 
 ---
 
@@ -70,12 +123,12 @@ Selain fitur utama seperti **Dashboard, Tugas, Jadwal, Study Plan, dan Nilai**, 
 | Komponen | Teknologi |
 |-----------|------------|
 | Framework | Flutter (Dart) |
-| Database | Firebase Firestore |
-| Authentication | Firebase Auth |
-| State Management | Provider / Bloc |
+| Backend | Supabase (PostgreSQL, Auth, Storage, Realtime) |
+| Authentication | Supabase Auth |
+| State Management | Provider / Riverpod / Bloc |
 | Notifikasi | flutter_local_notifications |
-| Grafik Nilai | fl_chart / charts_flutter |
-| Penyimpanan File | Firebase Storage |
+| Grafik | fl_chart |
+| Penyimpanan File | Supabase Storage |
 | Version Control | Git & GitHub |
 
 ---
@@ -84,19 +137,20 @@ Selain fitur utama seperti **Dashboard, Tugas, Jadwal, Study Plan, dan Nilai**, 
 
 | Nama | Peran | Tanggung Jawab |
 |------|--------|----------------|
-| **Sabrina Rahmadini** | Project Manager & Database | Mengatur perencanaan proyek, pembagian tugas, serta membantu dalam perancangan dan pengelolaan database aplikasi. |
-| **Ahmad Yazid Ilham Zulfiqor** | UI/UX Designer & FrontEnd | Mendesain antarmuka aplikasi dan mengimplementasikan tampilan Flutter sesuai rancangan UI/UX. |
-| **Satriya Viar Citta Purnama** | Backend, API & UI/UX Designer | Mengembangkan logika backend, API Firebase, integrasi database, serta membantu desain UI. |
-| **Azaria Cindy Sahasika** | Database & Quality Assurance | Menyusun struktur database, melakukan pengujian aplikasi, serta membuat laporan QA (PMPL). |
+| **Sabrina Rahmadini** | Project Manager & Database | Mengatur perencanaan, timeline, serta perancangan database. |
+| **Ahmad Yazid Ilham Zulfiqor** | UI/UX Designer & FrontEnd | Mendesain UI dan mengimplementasikan tampilan Flutter. |
+| **Satriya Viar Citta Purnama** | Backend, API & UI/UX Designer | Mengelola Supabase (DB, Auth, Storage), API, dan membantu UI. |
+| **Azaria Cindy Sahasika** | Database & Quality Assurance | Mendesain database, melakukan pengujian, serta dokumentasi QA PMPL. |
 
 ---
 
 ## 🧪 Quality Assurance (PMPL)
+
 | Level Pengujian | Tujuan | Tools |
 |------------------|--------|-------|
-| Unit Test | Menguji fungsi dan model data | `flutter test` |
-| Integration Test | Menguji CRUD Firebase & UI | `flutter drive` |
-| UI/E2E Test | Menguji alur pengguna | Cypress / Appium |
+| Unit Test | Validasi logika kecil, validator, model | `flutter test` |
+| Integration Test | CRUD Supabase + UI | `flutter drive` |
+| UI/E2E Test | Flow pengguna | Appium / custom driver |
 | Metrics | Code Coverage, Fault Detection Rate | — |
 
 ---
