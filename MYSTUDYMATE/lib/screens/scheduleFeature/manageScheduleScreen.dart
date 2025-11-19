@@ -138,6 +138,9 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
           reminderMinutes: 30,
         );
 
+        // Notifikasi akan dikirim otomatis dari backend via FCM
+        // saat waktu reminder tercapai
+
         // Menampilkan snackbar untuk konfirmasi sukses
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

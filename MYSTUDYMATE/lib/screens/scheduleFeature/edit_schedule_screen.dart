@@ -63,10 +63,10 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     _selectedDate = widget.schedule.date;
     _startTime = widget.schedule.startTime;
     _endTime = widget.schedule.endTime;
-    _selectedType = widget.schedule.type ?? 'lecture';
+    _selectedType = widget.schedule.type;
     _selectedColor = widget.schedule.color ?? '#5B9FED';
-    _hasReminder = widget.schedule.hasReminder ?? true;
-    _reminderMinutes = widget.schedule.reminderMinutes ?? 30;
+    _hasReminder = widget.schedule.hasReminder;
+    _reminderMinutes = widget.schedule.reminderMinutes;
   }
 
   @override
@@ -120,11 +120,14 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
         startTime: _startTime,
         endTime: _endTime,
         location: _locationController.text.trim(),
+        lecturer: _lecturerController.text.trim(),
         type: _selectedType,
         color: _selectedColor,
         hasReminder: _hasReminder,
         reminderMinutes: _reminderMinutes,
       );
+
+      // Notifikasi akan diupdate otomatis dari backend via FCM
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -174,6 +177,8 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     if (confirm == true) {
       setState(() => _isLoading = true);
       try {
+        // Notifikasi akan dibatalkan otomatis dari backend
+        
         await _scheduleService.deleteSchedule(widget.schedule.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('schedule:send-reminder')->everyMinute();
+        // Check for schedule reminders every minute
+        $schedule->command('schedule:check-reminders')->everyMinute();
     }
 
     /**

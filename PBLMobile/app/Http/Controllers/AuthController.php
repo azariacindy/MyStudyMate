@@ -117,6 +117,26 @@ class AuthController extends Controller
     }
 
     /**
+     * Save FCM token for push notifications
+     */
+    public function saveFCMToken(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'fcm_token' => 'required|string',
+        ]);
+
+        DB::table('users')
+            ->where('id', $request->user_id)
+            ->update(['fcm_token' => $request->fcm_token]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FCM token saved successfully.'
+        ]);
+    }
+
+    /**
      * Logout (opsional, karena token stateless)
      */
     public function logout()

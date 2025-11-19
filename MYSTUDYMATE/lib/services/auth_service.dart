@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
 import 'dio_client.dart';
+import 'firebase_messaging_service.dart';
 
 class AuthService {
   final Dio _dio = DioClient.getInstance();
@@ -106,10 +107,33 @@ class AuthService {
         ),
       );
 
+      // Save FCM token to backend
+      await _saveFCMToken();
+
       return user;
     } on DioException catch (e) {
       final message = _extractErrorMessage(e);
       throw Exception(message);
+    }
+  }
+
+  /// Save FCM token to backend
+  Future<void> _saveFCMToken() async {
+    try {
+      final fcmToken = FirebaseMessagingService().fcmToken;
+      final user = await getCurrentUser();
+      
+      if (fcmToken != null && user != null) {
+        await _dio.post('/save-fcm-token', data: {
+          'user_id': user.id,
+          'fcm_token': fcmToken,
+        });
+        print('[Auth] FCM token saved to backend: ${fcmToken.substring(0, 20)}...');
+      } else {
+        print('[Auth] Cannot save FCM token: token=$fcmToken, user=$user');
+      }
+    } catch (e) {
+      print('[Auth] Error saving FCM token: $e');
     }
   }
 

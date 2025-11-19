@@ -125,6 +125,7 @@ class ScheduleService {
     TimeOfDay? startTime,
     TimeOfDay? endTime,
     String? location,
+    String? lecturer,
     String? color,
     String? type,
     bool? hasReminder,
@@ -144,6 +145,7 @@ class ScheduleService {
         data['end_time'] = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
       }
       if (location != null) data['location'] = location;
+      if (lecturer != null) data['lecturer'] = lecturer;
       if (color != null) data['color'] = color;
       if (type != null) data['type'] = type;
       if (hasReminder != null) data['has_reminder'] = hasReminder;
