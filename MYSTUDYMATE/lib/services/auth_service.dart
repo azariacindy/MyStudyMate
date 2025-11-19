@@ -107,8 +107,11 @@ class AuthService {
         ),
       );
 
-      // Save FCM token to backend
-      await _saveFCMToken();
+      // Set user ID to DioClient
+      DioClient.setUserId(user.id);
+
+      // Save FCM token to backend (pass user directly)
+      await _saveFCMToken(user);
 
       return user;
     } on DioException catch (e) {
@@ -117,20 +120,24 @@ class AuthService {
     }
   }
 
-  /// Save FCM token to backend
-  Future<void> _saveFCMToken() async {
+  /// Save FCM token to backend (with retry for token availability)
+  Future<void> _saveFCMToken(User user) async {
     try {
-      final fcmToken = FirebaseMessagingService().fcmToken;
-      final user = await getCurrentUser();
+      // Wait for FCM token (retry up to 3 times with 500ms delay)
+      String? fcmToken = FirebaseMessagingService().fcmToken;
+      int retries = 0;
+      while (fcmToken == null && retries < 3) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        fcmToken = FirebaseMessagingService().fcmToken;
+        retries++;
+      }
       
-      if (fcmToken != null && user != null) {
+      if (fcmToken != null) {
         await _dio.post('/save-fcm-token', data: {
           'user_id': user.id,
           'fcm_token': fcmToken,
         });
-        print('[Auth] FCM token saved to backend: ${fcmToken.substring(0, 20)}...');
-      } else {
-        print('[Auth] Cannot save FCM token: token=$fcmToken, user=$user');
+        print('[Auth] FCM token saved for user ${user.id}');
       }
     } catch (e) {
       print('[Auth] Error saving FCM token: $e');

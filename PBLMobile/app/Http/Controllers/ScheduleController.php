@@ -175,7 +175,20 @@ class ScheduleController extends Controller
                 }
             }
 
-            $schedule->update($request->validated());
+            // Get validated data
+            $data = $request->validated();
+            
+            // Reset notification_sent if time/date/reminder changed
+            $shouldResetNotification = 
+                ($request->has('date') && $request->date != $schedule->date->format('Y-m-d')) ||
+                ($request->has('start_time') && $request->start_time != date('H:i', strtotime($schedule->start_time))) ||
+                ($request->has('reminder_minutes') && $request->reminder_minutes != $schedule->reminder_minutes);
+            
+            if ($shouldResetNotification) {
+                $data['notification_sent'] = false;
+            }
+
+            $schedule->update($data);
 
             return response()->json([
                 'success' => true,

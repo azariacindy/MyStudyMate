@@ -26,7 +26,6 @@ class Schedule extends Model
         'has_reminder',
         'reminder_minutes',
         'is_completed',
-        'reminder',
         'notification_sent',
     ];
 
@@ -35,7 +34,6 @@ class Schedule extends Model
         'has_reminder' => 'boolean',
         'is_completed' => 'boolean',
         'reminder_minutes' => 'integer',
-        'reminder' => 'boolean',
         'notification_sent' => 'boolean',
     ];
 

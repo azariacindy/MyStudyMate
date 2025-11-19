@@ -45,7 +45,7 @@ class CheckScheduleReminders extends Command
         // 1. Have reminder enabled
         // 2. Haven't been notified yet
         // 3. Start time is between now and (now + reminder_minutes)
-        $schedules = Schedule::where('reminder', true)
+        $schedules = Schedule::where('has_reminder', true)
             ->where('notification_sent', false)
             ->where('date', '>=', $now->toDateString())
             ->get()
@@ -54,7 +54,8 @@ class CheckScheduleReminders extends Command
                 $dateString = Carbon::parse($schedule->date)->format('Y-m-d');
                 $timeString = Carbon::parse($schedule->start_time)->format('H:i:s');
                 $scheduleDateTime = Carbon::parse($dateString . ' ' . $timeString);
-                $reminderTime = $scheduleDateTime->copy()->subMinutes(30); // Fixed 30 minutes
+                $reminderMinutes = $schedule->reminder_minutes ?? 30;
+                $reminderTime = $scheduleDateTime->copy()->subMinutes($reminderMinutes);
                 
                 // Check if current time is past reminder time and before schedule start
                 return $now->greaterThanOrEqualTo($reminderTime) && $now->lessThan($scheduleDateTime);
@@ -87,8 +88,9 @@ class CheckScheduleReminders extends Command
 
         // Format notification
         $scheduleTime = Carbon::parse($schedule->start_time)->format('H:i');
+        $reminderMinutes = $schedule->reminder_minutes ?? 30;
         $title = '⏰ Kelas Akan Dimulai!';
-        $body = "{$schedule->title} dimulai dalam 30 menit ({$scheduleTime})";
+        $body = "{$schedule->title} dimulai dalam {$reminderMinutes} menit ({$scheduleTime})";
         
         if ($schedule->location) {
             $body .= "\n📍 {$schedule->location}";
