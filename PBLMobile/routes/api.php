@@ -28,6 +28,8 @@ Route::get('/test', fn() => response()->json(['message' => 'Laravel reachable!']
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/current-user', [AuthController::class, 'getCurrentUser']);
+Route::post('/save-fcm-token', [AuthController::class, 'saveFCMToken']);
 
 // 🔒 Assignment routes → COMMENTED OUT - AssignmentController has wrong filename
 // Route::prefix('assignments')->group(function () {

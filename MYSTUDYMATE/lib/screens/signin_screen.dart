@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
+import '../services/dio_client.dart';
 import '../models/user_model.dart';
 
 /// Sign In Screen - Design sesuai UI Figma dengan header biru
@@ -40,10 +41,13 @@ class _SignInScreenState extends State<SignInScreen> {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
+      // ✅ Set user ID to DioClient for API requests
+      DioClient.setUserId(user.id);
+
       // ✅ Sukses: notifikasi & navigasi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Login successful!'),
+          content: Text('Welcome back, ${user.name}!'),
           backgroundColor: AppColors.success,
           duration: const Duration(seconds: 2),
         ),

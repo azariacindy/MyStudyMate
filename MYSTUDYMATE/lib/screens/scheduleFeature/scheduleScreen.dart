@@ -6,6 +6,7 @@ import '../../services/schedule_service.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/custom_bottom_nav.dart';
 import 'manageScheduleScreen.dart';
+import 'edit_schedule_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -349,26 +350,41 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Widget _buildScheduleItem(Schedule schedule, bool isToday) {
     final scheduleColor = Color(int.parse(schedule.color?.replaceAll('#', '0xFF') ?? '0xFF5B9FED'));
     
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: schedule.isCompleted 
-              ? Colors.green.withValues(alpha: 0.3)
-              : const Color(0xFFE2E8F0),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: scheduleColor.withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: () async {
+        // Navigate to edit schedule
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditScheduleScreen(schedule: schedule),
           ),
-        ],
-      ),
-      child: Padding(
+        );
+        
+        // Refresh data if schedule was updated or deleted
+        if (result == true) {
+          _loadData();
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: schedule.isCompleted 
+                ? Colors.green.withValues(alpha: 0.3)
+                : const Color(0xFFE2E8F0),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: scheduleColor.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
@@ -520,6 +536,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

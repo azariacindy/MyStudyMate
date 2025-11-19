@@ -14,13 +14,36 @@ use Carbon\Carbon;
 class ScheduleController extends Controller
 {
     /**
+     * Get authenticated user ID with fallback for testing
+     */
+    private function getUserId(Request $request)
+    {
+        // Priority: Auth ID > Header > Query Param > Default
+        if (Auth::id()) {
+            return Auth::id();
+        }
+        
+        // For testing: allow user_id in header or query
+        if ($request->header('X-User-Id')) {
+            return (int) $request->header('X-User-Id');
+        }
+        
+        if ($request->query('user_id')) {
+            return (int) $request->query('user_id');
+        }
+        
+        // Default fallback
+        return 1;
+    }
+
+    /**
      * Display a listing of schedules.
      * GET /api/schedules
      */
     public function index(Request $request)
     {
         try {
-            $userId = Auth::id() ?? 1; // Default to user ID 1 for testing
+            $userId = $this->getUserId($request);
             
             $schedules = Schedule::forUser($userId)
                 ->orderBy('date', 'desc')
@@ -48,7 +71,7 @@ class ScheduleController extends Controller
     public function store(StoreScheduleRequest $request)
     {
         try {
-            $userId = Auth::id() ?? 1; // Default to user ID 1 for testing
+            $userId = $this->getUserId($request);
 
             // Check for schedule conflicts
             $hasConflict = Schedule::checkConflict(
@@ -100,10 +123,10 @@ class ScheduleController extends Controller
      * Display the specified schedule.
      * GET /api/schedules/{id}
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
-            $schedule = Schedule::forUser(Auth::id() ?? 1)->findOrFail($id);
+            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
 
             return response()->json([
                 'success' => true,
@@ -126,7 +149,7 @@ class ScheduleController extends Controller
     public function update(UpdateScheduleRequest $request, $id)
     {
         try {
-            $userId = Auth::id() ?? 1;
+            $userId = $this->getUserId($request);
             $schedule = Schedule::forUser($userId)->findOrFail($id);
 
             // Check for conflicts (excluding current schedule)
@@ -172,10 +195,10 @@ class ScheduleController extends Controller
      * Remove the specified schedule.
      * DELETE /api/schedules/{id}
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         try {
-            $schedule = Schedule::forUser(Auth::id() ?? 1)->findOrFail($id);
+            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
             $schedule->delete();
 
             return response()->json([
@@ -195,10 +218,10 @@ class ScheduleController extends Controller
      * Get schedules by specific date.
      * GET /api/schedules/date/{date}
      */
-    public function getByDate($date)
+    public function getByDate(Request $request, $date)
     {
         try {
-            $schedules = Schedule::forUser(Auth::id() ?? 1)
+            $schedules = Schedule::forUser($this->getUserId($request))
                 ->onDate($date)
                 ->orderBy('start_time')
                 ->get();
@@ -229,7 +252,7 @@ class ScheduleController extends Controller
                 'end_date' => 'required|date|after_or_equal:start_date',
             ]);
 
-            $schedules = Schedule::forUser(Auth::id() ?? 1)
+            $schedules = Schedule::forUser($this->getUserId($request))
                 ->betweenDates($request->start_date, $request->end_date)
                 ->orderBy('date')
                 ->orderBy('start_time')
@@ -258,7 +281,7 @@ class ScheduleController extends Controller
         try {
             $limit = $request->input('limit', 5);
 
-            $schedules = Schedule::forUser(Auth::id() ?? 1)
+            $schedules = Schedule::forUser($this->getUserId($request))
                 ->upcoming()
                 ->incomplete()
                 ->limit($limit)
@@ -285,7 +308,7 @@ class ScheduleController extends Controller
     public function toggleComplete(Request $request, $id)
     {
         try {
-            $schedule = Schedule::forUser(Auth::id() ?? 1)->findOrFail($id);
+            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
             
             $schedule->is_completed = $request->input('is_completed', !$schedule->is_completed);
             $schedule->save();
@@ -319,7 +342,7 @@ class ScheduleController extends Controller
             ]);
 
             $hasConflict = Schedule::checkConflict(
-                Auth::id() ?? 1,
+                $this->getUserId($request),
                 $request->date,
                 $request->start_time,
                 $request->end_time,
@@ -344,10 +367,10 @@ class ScheduleController extends Controller
      * Get schedule statistics.
      * GET /api/schedules/stats
      */
-    public function getStats()
+    public function getStats(Request $request)
     {
         try {
-            $userId = Auth::id() ?? 1;
+            $userId = $this->getUserId($request);
             $today = Carbon::today();
 
             $stats = [

@@ -91,6 +91,32 @@ class AuthController extends Controller
     }
 
     /**
+     * Get current user (testing mode - using X-User-Id header)
+     */
+    public function getCurrentUser(Request $request)
+    {
+        // For testing: get user ID from header
+        $userId = $request->header('X-User-Id', 1);
+        
+        $user = DB::table('users')->where('id', $userId)->first();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'user' => [
+                'id' => (string) $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+            ]
+        ]);
+    }
+
+    /**
      * Logout (opsional, karena token stateless)
      */
     public function logout()

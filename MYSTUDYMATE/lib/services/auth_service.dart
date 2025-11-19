@@ -17,6 +17,30 @@ class AuthService {
     return await _storage.read(key: _tokenKey);
   }
 
+  /// Get current authenticated user from backend
+  Future<User?> getCurrentUser() async {
+    try {
+      final token = await currentToken;
+      if (token == null) return null;
+
+      // Set token in headers
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+
+      final response = await _dio.get('/current-user');
+      if (response.statusCode == 200) {
+        final user = User.fromJson(response.data['user']);
+        
+        // Set user ID to DioClient
+        DioClient.setUserId(user.id);
+        
+        return user;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Register user via Laravel
   Future<User> signup({
     required String name,
@@ -100,6 +124,9 @@ class AuthService {
     await _storage.delete(key: _tokenKey);
     _dio.interceptors.clear();
     _dio.options.headers.remove('Authorization');
+    
+    // Reset DioClient user ID to 0 (no user)
+    DioClient.setUserId(0);
   }
 
   String _extractErrorMessage(DioException e) {

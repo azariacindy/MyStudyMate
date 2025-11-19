@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../services/schedule_service.dart';
+import '../services/auth_service.dart';
 import '../models/schedule_model.dart';
+import 'scheduleFeature/edit_schedule_screen.dart';
 
 /// HomeScreen - Halaman utama MyStudyMate (Fixed Overflow)
 class HomeScreen extends StatefulWidget {
@@ -15,12 +17,28 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedNavIndex = 0;
   final ScheduleService _scheduleService = ScheduleService();
+  final AuthService _authService = AuthService();
   late Future<List<Schedule>> _schedulesFuture;
+  String _userName = 'User';
 
   @override
   void initState() {
     super.initState();
     _schedulesFuture = _loadSchedules();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    try {
+      final user = await _authService.getCurrentUser();
+      if (user != null && mounted) {
+        setState(() {
+          _userName = user.name;
+        });
+      }
+    } catch (e) {
+      // Silent fail - keep default name
+    }
   }
 
   Future<List<Schedule>> _loadSchedules() async {
@@ -28,7 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
       // Load schedules for the next 7 days
       final today = DateTime.now();
       final endDate = today.add(const Duration(days: 7));
-      return await _scheduleService.getSchedulesByDateRange(today, endDate);
+      final schedules = await _scheduleService.getSchedulesByDateRange(today, endDate);
+      
+      return schedules;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -160,9 +180,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Satriya',
-                      style: TextStyle(
+                    Text(
+                      _userName,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -173,34 +193,72 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Streak - Fixed Icon
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(38),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      CupertinoIcons.flame_fill,
-                      color: Color.fromRGBO(252, 149, 8, 1),
-                      size: 19,
+              // Logout Button
+              GestureDetector(
+                onTap: () async {
+                  // Show confirmation dialog
+                  final shouldLogout = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Logout'),
+                      content: const Text('Are you sure you want to logout?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          child: const Text('Logout'),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 4),
-                    Text(
-                      '5',
-                      style: TextStyle(
+                  );
+
+                  if (shouldLogout == true && mounted) {
+                    // Call logout service to clear token and reset user ID
+                    await _authService.signout();
+                    
+                    // Navigate to signin screen and clear all previous routes
+                    if (mounted) {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        '/signin',
+                        (route) => false,
+                      );
+                    }
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(38),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.logout,
                         color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        size: 19,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        'Logout',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -607,6 +665,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               _getIconForScheduleType(schedule.type),
                               schedule.title,
                               '${schedule.getFormattedStartTime()} - ${schedule.getFormattedEndTime()}',
+                              schedule,
                             ),
                           )),
                       ],
@@ -642,73 +701,65 @@ class _HomeScreenState extends State<HomeScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  Widget _buildScheduleItem(IconData icon, String title, String time) {
-  return Container(
-    // FIXED: Kurangi padding dari 8 ke 7
-    padding: const EdgeInsets.all(7),
-    decoration: BoxDecoration(
-      color: Colors.white.withAlpha(26),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Row(
-      children: [
-        Icon(icon, color: Colors.white, size: 15), // FIXED: size dari 16 ke 15
-        const SizedBox(width: 7), // FIXED: dari 8 ke 7
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 1), // FIXED: dari 2 ke 1
-              Text(
-                time,
-                style: TextStyle(
-                  color: Colors.white.withAlpha(179),
-                  fontSize: 10,
-                ),
-              ),
-            ],
-          ),
+  Widget _buildScheduleItem(IconData icon, String title, String time, Schedule schedule) {
+  return GestureDetector(
+    onTap: () async {
+      // Navigate to edit schedule
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditScheduleScreen(schedule: schedule),
         ),
-        // === TOMBOL DETAIL BARU ===
-        GestureDetector(
-          onTap: () {
-            // Navigasi ke detail schedule
-            Navigator.pushNamed(
-              context, 
-              '/schedule_detail',
-              arguments: {
-                'title': title,
-                'time': time,
-                'icon': icon,
-              },
-            );
-            
-            // Atau bisa show bottom sheet untuk quick view
-            // _showScheduleDetails(title, time, icon);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(38),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white.withAlpha(204),
-              size: 12,
+      );
+      
+      // Refresh data if schedule was updated or deleted
+      if (result == true && mounted) {
+        setState(() {
+          _schedulesFuture = _loadSchedules();
+        });
+      }
+    },
+    child: Container(
+      padding: const EdgeInsets.all(7),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(26),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 15),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  time,
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(179),
+                    fontSize: 10,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          Icon(
+            Icons.edit,
+            color: Colors.white.withAlpha(204),
+            size: 14,
+          ),
+        ],
+      ),
     ),
   );
 }
