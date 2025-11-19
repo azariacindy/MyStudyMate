@@ -49,8 +49,6 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    print('🎯 URL: ${_dio.options.baseUrl}');
-    print('📦 Data: name=$name, username=$username, email=$email');
     try {
       final response = await _dio.post('/register', data: {
         'name': name,
@@ -58,18 +56,10 @@ class AuthService {
         'email': email,
         'password': password,
       });
-      
-       // 🔍 DEBUG: Cetak respons sukses
-      print('✅ Respons sukses: ${response.data}');
 
-
-      // Ambil data user dari respons Laravel
       final userData = response.data['user'] as Map<String, dynamic>;
       return User.fromJson(userData);
     } on DioException catch (e) {
-      print('❌ Error message: ${e.message}');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response body: ${e.response?.data}');
       final message = _extractErrorMessage(e);
       throw Exception(message);
     }
