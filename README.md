@@ -127,7 +127,6 @@ Fitur untuk mencatat/merangkum materi:
 | Authentication | Supabase Auth |
 | State Management | Provider / Riverpod / Bloc |
 | Notifikasi | flutter_local_notifications |
-| Grafik | fl_chart |
 | Penyimpanan File | Supabase Storage |
 | Version Control | Git & GitHub |
 
@@ -154,3 +153,23 @@ Fitur untuk mencatat/merangkum materi:
 | Metrics | Code Coverage, Fault Detection Rate | — |
 
 ---
+
+## 🎨 UI Design (Preview From Figma)
+
+Berikut adalah beberapa tampilan UI yang telah diimplementasikan ke dalam project:
+
+### 🟦 Splash Screen
+![Splash Screen](assets/ui_design/vector/SplasScreen.png)
+
+### 🟦 Welcome Screen
+![Welcome Screen](assets/ui_design/vector/Welcome Screen.png)
+
+### 🟦 Sign In Screen
+![Sign In Screen](assets/ui_design/vector/SignIn Screen.png)
+
+### 🟦 Onboarding Screens
+![Onboarding 1](assets/ui_design/vector/Onboarding.png)
+![Onboarding 2](assets/ui_design/vector/Onboarding 2.png)
+![Onboarding 3](assets/ui_design/vector/Onboarding 3.png)
+![Onboarding 4](assets/ui_design/vector/Onboarding 4.png)
+![Onboarding 5](assets/ui_design/vector/Onboarding 5.png)
