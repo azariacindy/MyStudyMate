@@ -159,17 +159,17 @@ Fitur untuk mencatat/merangkum materi:
 Berikut adalah beberapa tampilan UI yang telah diimplementasikan ke dalam project:
 
 ### 🟦 Splash Screen
-![Splash Screen](assets/ui_design/vector/SplasScreen.png)
+![Splash Screen](MYSTUDYMATE/assets/ui_design/vector/SplasScreen.png)
 
 ### 🟦 Welcome Screen
-![Welcome Screen](assets/ui_design/vector/Welcome Screen.png)
+![Welcome Screen](MYSTUDYMATE/assets/ui_design/vector/WelcomeScreen.png)
 
 ### 🟦 Sign In Screen
-![Sign In Screen](assets/ui_design/vector/SignIn Screen.png)
+![Sign In Screen](MYSTUDYMATE/assets/ui_design/vector/SignInScreen.png)
 
 ### 🟦 Onboarding Screens
-![Onboarding 1](assets/ui_design/vector/Onboarding.png)
-![Onboarding 2](assets/ui_design/vector/Onboarding 2.png)
-![Onboarding 3](assets/ui_design/vector/Onboarding 3.png)
-![Onboarding 4](assets/ui_design/vector/Onboarding 4.png)
-![Onboarding 5](assets/ui_design/vector/Onboarding 5.png)
+![Onboarding 1](MYSTUDYMATE/assets/ui_design/vector/Onboarding.png)
+![Onboarding 2](MYSTUDYMATE/assets/ui_design/vector/Onboarding2.png)
+![Onboarding 3](MYSTUDYMATE/assets/ui_design/vector/Onboarding3.png)
+![Onboarding 4](MYSTUDYMATE/assets/ui_design/vector/Onboarding4.png)
+![Onboarding 5](MYSTUDYMATE/assets/ui_design/vector/Onboarding5.png)
