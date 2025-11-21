@@ -16,7 +16,6 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _lecturerController = TextEditingController();
-  final _locationController = TextEditingController();
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -27,12 +26,9 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   final ScheduleService _scheduleService = ScheduleService();
 
   final List<Map<String, dynamic>> _scheduleTypes = [
-    {'value': 'lecture', 'label': 'Lecture', 'icon': Icons.school},
-    {'value': 'lab', 'label': 'Lab', 'icon': Icons.science},
-    {'value': 'meeting', 'label': 'Meeting', 'icon': Icons.people},
     {'value': 'assignment', 'label': 'Assignment', 'icon': Icons.assignment},
+    {'value': 'lecture', 'label': 'Lecture', 'icon': Icons.school},
     {'value': 'event', 'label': 'Event', 'icon': Icons.event},
-    {'value': 'other', 'label': 'Other', 'icon': Icons.more_horiz},
   ];
 
   final List<Map<String, dynamic>> _colorOptions = [
@@ -55,7 +51,6 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _lecturerController.dispose();
-    _locationController.dispose();
     super.dispose();
   }
 
@@ -138,28 +133,47 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         ).showSnackBar(const SnackBar(content: Text('Please select a date')));
         return;
       }
-      if (_startTime == null || _endTime == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select start and end time')),
-        );
-        return;
+      
+      // For non-assignment types, validate time
+      if (_selectedType != 'assignment') {
+        if (_startTime == null || _endTime == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select start and end time')),
+          );
+          return;
+        }
       }
 
       try {
-        // Menggunakan ScheduleService untuk membuat jadwal baru
-        final schedule = await _scheduleService.createSchedule(
-          title: _titleController.text,
-          description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
-          date: _selectedDate!,
-          startTime: _startTime!,
-          endTime: _endTime!,
-          location: _locationController.text.isEmpty ? null : _locationController.text,
-          lecturer: _lecturerController.text.isEmpty ? null : _lecturerController.text,
-          color: _selectedColor,
-          type: _selectedType,
-          hasReminder: _hasReminder,
-          reminderMinutes: _reminderMinutes,
-        );
+        dynamic result;
+        
+        // Check if type is assignment - save to assignments table
+        if (_selectedType == 'assignment') {
+          result = await _scheduleService.createAssignment(
+            title: _titleController.text,
+            description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+            deadline: _selectedDate!,
+            color: _selectedColor,
+            hasReminder: _hasReminder,
+            reminderMinutes: _reminderMinutes,
+          );
+          result = result['data']; // Extract data from response
+        } else {
+          // For other types (lecture, event), save to schedules table
+          result = await _scheduleService.createSchedule(
+            title: _titleController.text,
+            description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+            date: _selectedDate!,
+            startTime: _startTime!,
+            endTime: _endTime!,
+            location: null,
+            lecturer: _lecturerController.text.isEmpty ? null : _lecturerController.text,
+            color: _selectedColor,
+            type: _selectedType,
+            hasReminder: _hasReminder,
+            reminderMinutes: _reminderMinutes,
+          );
+        }
 
         // Notifikasi akan dikirim otomatis dari backend via FCM
         // saat waktu reminder tercapai
@@ -167,21 +181,27 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         // Menampilkan snackbar untuk konfirmasi sukses
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Schedule saved successfully'),
+            SnackBar(
+              content: Text(_selectedType == 'assignment' 
+                  ? 'Assignment saved successfully' 
+                  : 'Schedule saved successfully'),
               backgroundColor: AppColors.success,
             ),
           );
 
           // Mengirimkan data kembali ke screen sebelumnya
-          Navigator.pop(context, schedule);
+          Navigator.pop(context, result);
         }
       } catch (e) {
         if (mounted) {
+          // Log detailed error for debugging
+          debugPrint('Error saving schedule/assignment: $e');
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: $e'),
+              content: Text('Failed to create ${_selectedType == 'assignment' ? 'assignment' : 'schedule'}: ${e.toString()}'),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
             ),
           );
         }
@@ -370,8 +390,8 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
 
               // Date & Time Card
               _buildSectionCard(
-                title: 'Date & Time',
-                icon: Icons.schedule,
+                title: _selectedType == 'assignment' ? 'Deadline' : 'Date & Time',
+                icon: _selectedType == 'assignment' ? Icons.event_note : Icons.schedule,
                 children: [
                   InkWell(
                     onTap: _selectDate,
@@ -398,9 +418,9 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Date',
-                                  style: TextStyle(
+                                Text(
+                                  _selectedType == 'assignment' ? 'Deadline Date' : 'Date',
+                                  style: const TextStyle(
                                     color: Color(0xFF6B7280),
                                     fontSize: 12,
                                   ),
@@ -422,127 +442,107 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: _selectStartTime,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFE5E7EB)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 18),
-                                    const SizedBox(width: 6),
-                                    const Text(
-                                      'Start',
-                                      style: TextStyle(
-                                        color: Color(0xFF6B7280),
-                                        fontSize: 12,
+                  // Show time pickers only for non-assignment types
+                  if (_selectedType != 'assignment') ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: _selectStartTime,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFE5E7EB)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 18),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        'Start',
+                                        style: TextStyle(
+                                          color: Color(0xFF6B7280),
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  _startTime != null ? _formatTime(_startTime!) : '--:--',
-                                  style: TextStyle(
-                                    color: _startTime != null ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                    ],
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _startTime != null ? _formatTime(_startTime!) : '--:--',
+                                    style: TextStyle(
+                                      color: _startTime != null ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: InkWell(
-                          onTap: _selectEndTime,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFE5E7EB)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.access_time_filled, color: const Color(0xFF5B9FED), size: 18),
-                                    const SizedBox(width: 6),
-                                    const Text(
-                                      'End',
-                                      style: TextStyle(
-                                        color: Color(0xFF6B7280),
-                                        fontSize: 12,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: InkWell(
+                            onTap: _selectEndTime,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFE5E7EB)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.access_time_filled, color: const Color(0xFF5B9FED), size: 18),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        'End',
+                                        style: TextStyle(
+                                          color: Color(0xFF6B7280),
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  _endTime != null ? _formatTime(_endTime!) : '--:--',
-                                  style: TextStyle(
-                                    color: _endTime != null ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                    ],
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _endTime != null ? _formatTime(_endTime!) : '--:--',
+                                    style: TextStyle(
+                                      color: _endTime != null ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 20),
 
-              // Additional Details Card
-              _buildSectionCard(
-                title: 'Additional Details',
-                icon: Icons.more_horiz,
-                children: [
-                  TextFormField(
-                    controller: _locationController,
-                    style: const TextStyle(fontSize: 15),
-                    decoration: InputDecoration(
-                      labelText: 'Location',
-                      hintText: 'e.g., Room 301',
-                      prefixIcon: const Icon(Icons.location_on, color: Color(0xFF5B9FED)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                  ),
-                  if (_selectedType == 'lecture' || _selectedType == 'lab') ...[
-                    const SizedBox(height: 16),
+              // Additional Details Card (Only for Lecture)
+              if (_selectedType == 'lecture') ...[
+                _buildSectionCard(
+                  title: 'Additional Details',
+                  icon: Icons.person_outline,
+                  children: [
                     TextFormField(
                       controller: _lecturerController,
                       style: const TextStyle(fontSize: 15),
@@ -566,9 +566,9 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       ),
                     ),
                   ],
-                ],
-              ),
-              const SizedBox(height: 20),
+                ),
+                const SizedBox(height: 20),
+              ],
 
               // Color Selection Card
               _buildSectionCard(

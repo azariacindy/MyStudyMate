@@ -1,10 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../services/schedule_service.dart';
 import '../services/auth_service.dart';
 import '../models/schedule_model.dart';
+import '../models/assignment_model.dart';
 import 'scheduleFeature/edit_schedule_screen.dart';
+import 'scheduleFeature/edit_assignment_screen.dart';
 
 /// HomeScreen - Halaman utama MyStudyMate (Fixed Overflow)
 class HomeScreen extends StatefulWidget {
@@ -19,12 +22,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScheduleService _scheduleService = ScheduleService();
   final AuthService _authService = AuthService();
   late Future<List<Schedule>> _schedulesFuture;
+  late Future<List<Assignment>> _assignmentsFuture;
   String _userName = 'User';
 
   @override
   void initState() {
     super.initState();
     _schedulesFuture = _loadSchedules();
+    _assignmentsFuture = _loadAssignments();
     _loadUserName();
   }
 
@@ -59,6 +64,30 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<List<Assignment>> _loadAssignments() async {
+    try {
+      final result = await _scheduleService.getAssignments(status: 'pending');
+      if (result['success'] == true && result['data'] != null) {
+        final assignments = (result['data'] as List)
+            .map((json) => Assignment.fromJson(json))
+            .where((a) => !a.isDone) // Filter out marked/done assignments
+            .toList();
+        
+        // Sort by priority: critical > high > medium > low
+        assignments.sort((a, b) {
+          const priorityOrder = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3};
+          return (priorityOrder[a.priority] ?? 99).compareTo(priorityOrder[b.priority] ?? 99);
+        });
+        
+        return assignments;
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Error loading assignments: $e');
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -85,8 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildScheduleSection(screenWidth),
               const SizedBox(height: 20),
 
-              // === UPCOMING TASKS ===
-              _buildUpcomingTasks(),
+              // === ASSIGNMENTS SECTION ===
+              _buildAssignmentsSection(),
             ],
           ),
         ),
@@ -761,168 +790,296 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 }
 
-  /// Upcoming Tasks - Fixed
-  Widget _buildUpcomingTasks() {
-    final tasks = [
-      {
-        'title': 'Metodologi Penelitian',
-        'time': '02:00 - 03:30',
-        'priority': 'High',
-        'icon': Icons.article,
-        'color': const Color(0xFFEF4444),
-      },
-      {
-        'title': 'Mobile Development',
-        'time': '10:00 - 12:00',
-        'priority': 'Medium',
-        'icon': Icons.smartphone,
-        'color': const Color(0xFFF59E0B),
-      },
-      {
-        'title': 'UI/UX Design',
-        'time': '14:00 - 16:00',
-        'priority': 'Low',
-        'icon': Icons.palette,
-        'color': const Color(0xFF10B981),
-      },
-    ];
+  /// Assignments Section with Priority
+  Widget _buildAssignmentsSection() {
+    return FutureBuilder<List<Assignment>>(
+      future: _assignmentsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        final assignments = snapshot.data ?? [];
+        final displayAssignments = assignments.take(5).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Upcoming Tasks',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Assignments',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (assignments.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${assignments.length}',
+                          style: const TextStyle(
+                            color: Color(0xFFEF4444),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    final result = await Navigator.pushNamed(context, '/schedule');
+                    if (result == true && mounted) {
+                      setState(() {
+                        _assignmentsFuture = _loadAssignments();
+                      });
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Color(0xFF3B82F6),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (displayAssignments.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.assignment_turned_in_outlined,
+                        size: 48,
+                        color: Colors.grey.withOpacity(0.3),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No pending assignments',
+                        style: TextStyle(
+                          color: Colors.grey.withOpacity(0.7),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...displayAssignments.map((assignment) => _buildAssignmentCard(assignment)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAssignmentCard(Assignment assignment) {
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditAssignmentScreen(assignment: assignment),
+          ),
+        );
+        if (result == true && mounted) {
+          setState(() {
+            _assignmentsFuture = _loadAssignments();
+          });
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: assignment.priorityColor.withOpacity(0.2),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: assignment.priorityColor.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Priority Icon
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    assignment.priorityColor.withOpacity(0.2),
+                    assignment.priorityColor.withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: assignment.priorityColor.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.assignment,
+                size: 20,
+                color: assignment.priorityColor,
               ),
             ),
-            Text(
-              'View All',
-              style: TextStyle(
-                color: Color(0xFF3B82F6),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            const SizedBox(width: 12),
+
+            // Assignment Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          assignment.title,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1F2937),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Priority Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: assignment.priorityColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: assignment.priorityColor.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              assignment.priority == 'critical'
+                                  ? Icons.priority_high
+                                  : assignment.priority == 'high'
+                                      ? Icons.alarm
+                                      : assignment.priority == 'medium'
+                                          ? Icons.schedule
+                                          : Icons.check_circle_outline,
+                              size: 10,
+                              color: assignment.priorityColor,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              assignment.priorityLabel,
+                              style: TextStyle(
+                                color: assignment.priorityColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 11,
+                        color: Colors.grey.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Deadline: ${assignment.deadline.day}/${assignment.deadline.month}/${assignment.deadline.year}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.withOpacity(0.7),
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.access_time,
+                        size: 11,
+                        color: Colors.grey.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        assignment.daysUntilDeadline >= 0
+                            ? '${assignment.daysUntilDeadline}d left'
+                            : '${-assignment.daysUntilDeadline}d overdue',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: assignment.daysUntilDeadline >= 0
+                              ? Colors.grey.withOpacity(0.7)
+                              : const Color(0xFFEF4444),
+                          fontWeight: assignment.daysUntilDeadline < 0
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        ...tasks.map((task) => _buildTaskCard(
-              title: task['title'] as String,
-              time: task['time'] as String,
-              priority: task['priority'] as String,
-              icon: task['icon'] as IconData,
-              color: task['color'] as Color,
-            )),
-      ],
-    );
-  }
-
-  Widget _buildTaskCard({
-    required String title,
-    required String time,
-    required String priority,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withAlpha(51), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: color.withAlpha(26),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Icon Circle
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: color, width: 2),
-            ),
-            child: Center(
-              child: Icon(icon, color: color, size: 12),
-            ),
-          ),
-          const SizedBox(width: 10),
-
-          // Task Info - FIXED Overflow
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: color.withAlpha(26),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        priority,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 12,
-                      color: Colors.grey.withAlpha(179),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      time,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.withAlpha(179),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
+
 }

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 import '../../utils/app_colors.dart';
 import '../../models/schedule_model.dart';
+import '../../models/assignment_model.dart';
 import '../../services/schedule_service.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/custom_bottom_nav.dart';
 import 'manageScheduleScreen.dart';
 import 'edit_schedule_screen.dart';
+import 'edit_assignment_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -24,6 +27,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   final NotificationService _notificationService = NotificationService();
 
   List<Schedule> _schedules = [];
+  List<Assignment> _assignments = [];
   bool _isLoading = false;
 
   @override
@@ -51,8 +55,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       // Load schedules
       final schedules = await _scheduleService.getSchedulesByDateRange(firstDay, lastDay);
       
+      // Load assignments with error handling
+      List<Assignment> assignments = [];
+      try {
+        final assignmentsResult = await _scheduleService.getAssignments();
+        if (assignmentsResult['success'] == true && assignmentsResult['data'] != null) {
+          assignments = (assignmentsResult['data'] as List)
+              .map((json) => Assignment.fromJson(json))
+              .where((assignment) => !assignment.isDone) // Filter completed assignments
+              .toList();
+        }
+      } catch (e) {
+        debugPrint('Error loading assignments: $e');
+        // Continue without assignments if fetch fails
+      }
+      
       setState(() {
         _schedules = schedules;
+        _assignments = assignments;
         
         // Schedule notifications for upcoming schedules
         for (var schedule in _schedules) {
@@ -72,13 +92,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
   }
 
-  List<Schedule> _getEventsForDay(DateTime day) {
+  List<dynamic> _getEventsForDay(DateTime day) {
     final normalizedDay = DateTime(day.year, day.month, day.day);
     
-    return _schedules.where((s) {
+    // Get schedules for the day
+    final schedules = _schedules.where((s) {
       final scheduleDate = DateTime(s.date.year, s.date.month, s.date.day);
       return scheduleDate == normalizedDay;
     }).toList();
+    
+    // Get assignments for the day (based on deadline)
+    final assignments = _assignments.where((a) {
+      final assignmentDate = DateTime(a.deadline.year, a.deadline.month, a.deadline.day);
+      return assignmentDate == normalizedDay;
+    }).toList();
+    
+    // Combine both lists
+    return [...schedules, ...assignments];
   }
 
   @override
@@ -291,7 +321,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                         ),
                                         // Items
                                         ...selectedEvents.map((event) {
-                                          return _buildScheduleItem(event, isToday);
+                                          if (event is Schedule) {
+                                            return _buildScheduleItem(event, isToday);
+                                          } else if (event is Assignment) {
+                                            return _buildAssignmentItem(event);
+                                          }
+                                          return const SizedBox.shrink();
                                         }),
                                       ],
                                     ),
@@ -537,6 +572,220 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       ),
     ),
+    );
+  }
+
+  Widget _buildAssignmentItem(Assignment assignment) {
+    final assignmentColor = Color(int.parse(assignment.color.replaceAll('#', '0xFF')));
+    
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditAssignmentScreen(assignment: assignment),
+          ),
+        );
+        if (result == true) {
+          _loadData(); // Reload if edited/deleted
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: assignment.isDone
+                ? Colors.green.withValues(alpha: 0.3)
+                : (assignment.isOverdue 
+                    ? Colors.red.withValues(alpha: 0.3)
+                    : const Color(0xFFE2E8F0)),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: assignmentColor.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Assignment icon badge
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      assignmentColor.withValues(alpha: 0.15),
+                      assignmentColor.withValues(alpha: 0.08),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: assignmentColor.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.assignment,
+                  size: 24,
+                  color: assignmentColor,
+                ),
+              ),
+              const SizedBox(width: 14),
+              
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            assignment.title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E293B),
+                              decoration: assignment.isDone
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // Priority badge with dynamic color
+                        if (!assignment.isDone)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: assignment.priorityColor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: assignment.priorityColor.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  assignment.priority == 'critical' 
+                                      ? Icons.priority_high 
+                                      : assignment.priority == 'high'
+                                          ? Icons.alarm
+                                          : assignment.priority == 'medium'
+                                              ? Icons.schedule
+                                              : Icons.check_circle_outline,
+                                  size: 12,
+                                  color: assignment.priorityColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  assignment.priorityLabel,
+                                  style: TextStyle(
+                                    color: assignment.priorityColor,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    if (assignment.description != null && assignment.description!.isNotEmpty)
+                      Text(
+                        assignment.description!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 12,
+                          color: Colors.grey[500],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Deadline: ${DateFormat('MMM dd, HH:mm').format(assignment.deadline)}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: assignmentColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Assignment',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: assignmentColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Checkbox
+              Container(
+                margin: const EdgeInsets.only(left: 8),
+                child: Transform.scale(
+                  scale: 1.2,
+                  child: Checkbox(
+                    value: assignment.isDone,
+                    onChanged: assignment.isDone
+                        ? null
+                        : (value) async {
+                            try {
+                              await _scheduleService.markAsDone(assignment.id.toString());
+                              _loadData();
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
+                              }
+                            }
+                          },
+                    activeColor: Colors.green,
+                    checkColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -1,39 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/schedule_model.dart';
+import '../../models/assignment_model.dart';
 import '../../services/schedule_service.dart';
 
-class EditScheduleScreen extends StatefulWidget {
-  final Schedule schedule;
+class EditAssignmentScreen extends StatefulWidget {
+  final Assignment assignment;
 
-  const EditScheduleScreen({super.key, required this.schedule});
+  const EditAssignmentScreen({super.key, required this.assignment});
 
   @override
-  State<EditScheduleScreen> createState() => _EditScheduleScreenState();
+  State<EditAssignmentScreen> createState() => _EditAssignmentScreenState();
 }
 
-class _EditScheduleScreenState extends State<EditScheduleScreen> {
+class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
   final _formKey = GlobalKey<FormState>();
   final ScheduleService _scheduleService = ScheduleService();
 
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  late TextEditingController _lecturerController;
   
-  late DateTime _selectedDate;
-  late TimeOfDay _startTime;
-  late TimeOfDay _endTime;
-  late String _selectedType;
+  late DateTime _deadline;
   late String _selectedColor;
   bool _hasReminder = true;
   int _reminderMinutes = 30;
   bool _isLoading = false;
-
-  final List<Map<String, dynamic>> _scheduleTypes = [
-    {'value': 'assignment', 'label': 'Assignment', 'icon': Icons.assignment},
-    {'value': 'lecture', 'label': 'Lecture', 'icon': Icons.school},
-    {'value': 'event', 'label': 'Event', 'icon': Icons.event},
-  ];
 
   final List<Map<String, dynamic>> _colorOptions = [
     {'value': '#5B9FED', 'label': 'Blue'},
@@ -47,98 +37,78 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeFromSchedule();
+    _initializeFromAssignment();
   }
 
-  void _initializeFromSchedule() {
-    _titleController = TextEditingController(text: widget.schedule.title);
-    _descriptionController = TextEditingController(text: widget.schedule.description ?? '');
-    _lecturerController = TextEditingController(text: widget.schedule.lecturer ?? '');
+  void _initializeFromAssignment() {
+    _titleController = TextEditingController(text: widget.assignment.title);
+    _descriptionController = TextEditingController(text: widget.assignment.description ?? '');
     
-    _selectedDate = widget.schedule.date;
-    _startTime = widget.schedule.startTime;
-    _endTime = widget.schedule.endTime;
-    _selectedType = widget.schedule.type;
-    _selectedColor = widget.schedule.color ?? '#5B9FED';
-    _hasReminder = widget.schedule.hasReminder;
-    _reminderMinutes = widget.schedule.reminderMinutes;
+    _deadline = widget.assignment.deadline;
+    _selectedColor = widget.assignment.color;
+    _hasReminder = widget.assignment.hasReminder;
+    _reminderMinutes = widget.assignment.reminderMinutes;
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _lecturerController.dispose();
     super.dispose();
   }
 
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _selectDeadline() async {
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: _deadline,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
+    
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_deadline),
+      );
+      
+      if (pickedTime != null) {
+        setState(() {
+          _deadline = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
     }
   }
 
-  Future<void> _selectTime(bool isStartTime) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: isStartTime ? _startTime : _endTime,
-    );
-    if (picked != null) {
-      setState(() {
-        if (isStartTime) {
-          _startTime = picked;
-        } else {
-          _endTime = picked;
-        }
-      });
-    }
-  }
-
-  Future<void> _updateSchedule() async {
+  Future<void> _updateAssignment() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // For assignment type, use default times (00:00 - 23:59)
-      final startTime = _selectedType == 'assignment' 
-          ? const TimeOfDay(hour: 0, minute: 0) 
-          : _startTime;
-      final endTime = _selectedType == 'assignment' 
-          ? const TimeOfDay(hour: 23, minute: 59) 
-          : _endTime;
-          
-      await _scheduleService.updateSchedule(
-        widget.schedule.id,
+      await _scheduleService.updateAssignment(
+        widget.assignment.id,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        date: _selectedDate,
-        startTime: startTime,
-        endTime: endTime,
-        location: null,
-        lecturer: _lecturerController.text.trim(),
-        type: _selectedType,
+        deadline: _deadline,
         color: _selectedColor,
         hasReminder: _hasReminder,
         reminderMinutes: _reminderMinutes,
       );
 
-      // Notifikasi akan diupdate otomatis dari backend via FCM
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Schedule updated successfully'),
+            content: Text('Assignment updated successfully'),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -146,6 +116,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
           SnackBar(
             content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -156,12 +127,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     }
   }
 
-  Future<void> _deleteSchedule() async {
+  Future<void> _deleteAssignment() async {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Schedule'),
-        content: const Text('Are you sure you want to delete this schedule?'),
+        title: const Text('Delete Assignment'),
+        content: const Text('Are you sure you want to delete this assignment?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -179,17 +150,15 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     if (confirm == true) {
       setState(() => _isLoading = true);
       try {
-        // Notifikasi akan dibatalkan otomatis dari backend
-        
-        await _scheduleService.deleteSchedule(widget.schedule.id);
+        await _scheduleService.deleteAssignment(widget.assignment.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Schedule deleted successfully'),
+              content: Text('Assignment deleted successfully'),
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context, true); // Return true to indicate deletion
+          Navigator.pop(context, true);
         }
       } catch (e) {
         if (mounted) {
@@ -213,7 +182,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
-        title: const Text('Edit Schedule'),
+        title: const Text('Edit Assignment'),
         backgroundColor: const Color(0xFF5B9FED),
         elevation: 0,
         foregroundColor: Colors.white,
@@ -237,7 +206,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                           style: const TextStyle(fontSize: 15),
                           decoration: InputDecoration(
                             labelText: 'Title *',
-                            hintText: 'e.g., Management Project',
+                            hintText: 'e.g., Math Homework',
                             prefixIcon: const Icon(Icons.title, color: Color(0xFF5B9FED)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -288,80 +257,13 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Schedule Type Card
+                    // Deadline Card
                     _buildSectionCard(
-                      title: 'Schedule Type',
-                      icon: Icons.category_outlined,
-                      children: [
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 1,
-                          ),
-                          itemCount: _scheduleTypes.length,
-                          itemBuilder: (context, index) {
-                            final type = _scheduleTypes[index];
-                            final isSelected = _selectedType == type['value'];
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() => _selectedType = type['value']);
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF5B9FED) : Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isSelected ? const Color(0xFF5B9FED) : const Color(0xFFE5E7EB),
-                                    width: 2,
-                                  ),
-                                  boxShadow: isSelected
-                                      ? [
-                                          BoxShadow(
-                                            color: const Color(0xFF5B9FED).withOpacity(0.3),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ]
-                                      : [],
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      type['icon'] as IconData,
-                                      color: isSelected ? Colors.white : const Color(0xFF5B9FED),
-                                      size: 28,
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      type['label'] as String,
-                                      style: TextStyle(
-                                        color: isSelected ? Colors.white : const Color(0xFF1F2937),
-                                        fontSize: 12,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Date & Time Card
-                    _buildSectionCard(
-                      title: _selectedType == 'assignment' ? 'Deadline' : 'Date & Time',
-                      icon: _selectedType == 'assignment' ? Icons.event_note : Icons.schedule,
+                      title: 'Deadline',
+                      icon: Icons.event_note,
                       children: [
                         InkWell(
-                          onTap: _selectDate,
+                          onTap: _selectDeadline,
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             padding: const EdgeInsets.all(16),
@@ -385,16 +287,16 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        _selectedType == 'assignment' ? 'Deadline Date' : 'Date',
-                                        style: const TextStyle(
+                                      const Text(
+                                        'Deadline Date & Time',
+                                        style: TextStyle(
                                           color: Color(0xFF6B7280),
                                           fontSize: 12,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        DateFormat('EEEE, MMM dd, yyyy').format(_selectedDate),
+                                        DateFormat('EEEE, MMM dd, yyyy - HH:mm').format(_deadline),
                                         style: const TextStyle(
                                           color: Color(0xFF1F2937),
                                           fontSize: 15,
@@ -409,133 +311,9 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                             ),
                           ),
                         ),
-                        // Show time pickers only for non-assignment types
-                        if (_selectedType != 'assignment') ...[
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () => _selectTime(true),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 18),
-                                            const SizedBox(width: 6),
-                                            const Text(
-                                              'Start',
-                                              style: TextStyle(
-                                                color: Color(0xFF6B7280),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          _startTime.format(context),
-                                          style: const TextStyle(
-                                            color: Color(0xFF1F2937),
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () => _selectTime(false),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Icon(Icons.access_time_filled, color: const Color(0xFF5B9FED), size: 18),
-                                            const SizedBox(width: 6),
-                                            const Text(
-                                              'End',
-                                              style: TextStyle(
-                                                color: Color(0xFF6B7280),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          _endTime.format(context),
-                                          style: const TextStyle(
-                                            color: Color(0xFF1F2937),
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
                       ],
                     ),
                     const SizedBox(height: 20),
-
-                    // Additional Details Card (Only for Lecture)
-                    if (_selectedType == 'lecture') ...[
-                      _buildSectionCard(
-                        title: 'Additional Details',
-                        icon: Icons.person_outline,
-                        children: [
-                          TextFormField(
-                            controller: _lecturerController,
-                            style: const TextStyle(fontSize: 15),
-                            decoration: InputDecoration(
-                              labelText: 'Lecturer / Instructor',
-                              hintText: 'e.g., Dr. John Doe',
-                              prefixIcon: const Icon(Icons.person, color: Color(0xFF5B9FED)),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                    ],
 
                     // Color Selection Card
                     _buildSectionCard(
@@ -613,7 +391,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                               ),
                             ),
                             subtitle: Text(
-                              _hasReminder ? 'You will be notified before the schedule' : 'No reminder will be sent',
+                              _hasReminder ? 'You will be notified before deadline' : 'No reminder will be sent',
                               style: const TextStyle(fontSize: 13),
                             ),
                             value: _hasReminder,
@@ -667,7 +445,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                           child: SizedBox(
                             height: 54,
                             child: OutlinedButton.icon(
-                              onPressed: _isLoading ? null : _deleteSchedule,
+                              onPressed: _isLoading ? null : _deleteAssignment,
                               icon: const Icon(Icons.delete_outline),
                               label: const Text('Delete'),
                               style: OutlinedButton.styleFrom(
@@ -686,9 +464,9 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                           child: SizedBox(
                             height: 54,
                             child: ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _updateSchedule,
+                              onPressed: _isLoading ? null : _updateAssignment,
                               icon: const Icon(Icons.check_circle_outline),
-                              label: const Text('Update Schedule'),
+                              label: const Text('Update Assignment'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF5B9FED),
                                 foregroundColor: Colors.white,
