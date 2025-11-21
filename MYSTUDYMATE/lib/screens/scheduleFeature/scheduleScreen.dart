@@ -646,63 +646,59 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            assignment.title,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1E293B),
-                              decoration: assignment.isDone
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    // Title
+                    Text(
+                      assignment.title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1E293B),
+                        decoration: assignment.isDone
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    // Priority badge with dynamic color
+                    if (!assignment.isDone)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: assignment.priorityColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: assignment.priorityColor.withOpacity(0.3),
+                            width: 1,
                           ),
                         ),
-                        // Priority badge with dynamic color
-                        if (!assignment.isDone)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: assignment.priorityColor.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: assignment.priorityColor.withOpacity(0.3),
-                                width: 1,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              assignment.priority == 'critical' 
+                                  ? Icons.priority_high 
+                                  : assignment.priority == 'high'
+                                      ? Icons.alarm
+                                      : assignment.priority == 'medium'
+                                          ? Icons.schedule
+                                          : Icons.check_circle_outline,
+                              size: 11,
+                              color: assignment.priorityColor,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              assignment.priorityLabel,
+                              style: TextStyle(
+                                color: assignment.priorityColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  assignment.priority == 'critical' 
-                                      ? Icons.priority_high 
-                                      : assignment.priority == 'high'
-                                          ? Icons.alarm
-                                          : assignment.priority == 'medium'
-                                              ? Icons.schedule
-                                              : Icons.check_circle_outline,
-                                  size: 12,
-                                  color: assignment.priorityColor,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  assignment.priorityLabel,
-                                  style: TextStyle(
-                                    color: assignment.priorityColor,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 4),
                     if (assignment.description != null && assignment.description!.isNotEmpty)
                       Text(
@@ -723,15 +719,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           color: Colors.grey[500],
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          'Deadline: ${DateFormat('MMM dd, HH:mm').format(assignment.deadline)}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
+                        Flexible(
+                          child: Text(
+                            'Deadline: ${DateFormat('MMM dd, HH:mm').format(assignment.deadline)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
@@ -741,7 +740,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           child: Text(
                             'Assignment',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 9,
                               color: assignmentColor,
                               fontWeight: FontWeight.bold,
                             ),

@@ -57,7 +57,12 @@ class AssignmentController extends Controller
                 });
             }
 
-            $assignments = $query->orderBy('deadline', 'asc')->get();
+            // Select only needed columns for better performance
+            $assignments = $query->select([
+                'id', 'user_id', 'title', 'description', 'deadline', 
+                'is_done', 'color', 'has_reminder', 'reminder_minutes',
+                'last_notification_type', 'created_at', 'updated_at'
+            ])->orderBy('deadline', 'asc')->get();
 
             return response()->json([
                 'success' => true,

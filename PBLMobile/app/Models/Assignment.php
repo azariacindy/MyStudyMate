@@ -29,6 +29,9 @@ class Assignment extends Model
         'reminder_minutes' => 'integer',
     ];
 
+    // Only append these attributes when explicitly requested
+    protected $appends = [];
+
     // Relationships
     public function user()
     {
@@ -78,7 +81,8 @@ class Assignment extends Model
                      ->orderBy('deadline', 'asc');
     }
 
-    // Accessors
+    // Accessors - These are NOT automatically appended to JSON to improve performance
+    // Frontend will calculate these values instead
     public function getIsOverdueAttribute()
     {
         return !$this->is_done && $this->deadline->isPast();
@@ -87,60 +91,5 @@ class Assignment extends Model
     public function getIsDueTodayAttribute()
     {
         return !$this->is_done && $this->deadline->isToday();
-    }
-
-    /**
-     * Get priority level based on deadline proximity
-     * Returns: 'critical', 'high', 'medium', 'low'
-     */
-    public function getPriorityAttribute()
-    {
-        if ($this->is_done) {
-            return 'completed';
-        }
-
-        $now = Carbon::now();
-        $daysUntilDeadline = $now->diffInDays($this->deadline, false);
-
-        if ($this->deadline->isPast()) {
-            // Overdue
-            return 'critical';
-        } elseif ($daysUntilDeadline <= 1) {
-            // Due today or tomorrow
-            return 'high';
-        } elseif ($daysUntilDeadline <= 3) {
-            // Due in 2-3 days
-            return 'medium';
-        } else {
-            // More than 3 days
-            return 'low';
-        }
-    }
-
-    /**
-     * Get priority label for display
-     */
-    public function getPriorityLabelAttribute()
-    {
-        $priority = $this->priority;
-        
-        $labels = [
-            'critical' => 'Overdue',
-            'high' => 'Urgent',
-            'medium' => 'Soon',
-            'low' => 'Upcoming',
-            'completed' => 'Done',
-        ];
-
-        return $labels[$priority] ?? 'Unknown';
-    }
-
-    /**
-     * Get days until deadline (negative if overdue)
-     */
-    public function getDaysUntilDeadlineAttribute()
-    {
-        $now = Carbon::now();
-        return (int) $now->diffInDays($this->deadline, false);
     }
 }
