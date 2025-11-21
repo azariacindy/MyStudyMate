@@ -161,62 +161,62 @@ Berikut adalah perkembangan tampilan aplikasi MyStudyMate yang sudah berhasil di
 ---
 
 ### 🟦 Splash Screen
-![Splash Screen](assets/images/progress1/splashscreen.jpg)
+![Splash Screen](MYSTUDYMATE/assets/images/progress1/splashscreen.jpg)
 
 ### 🟦 Welcome Screen
-![Welcome Screen](assets/images/progress1/welcomescreen.jpg)
+![Welcome Screen](MYSTUDYMATE/assets/images/progress1/welcomescreen.jpg)
 
 ---
 
 ## 🧭 Onboarding Screens
-![Onboarding 1](assets/images/progress1/onboarding1.jpg)
-![Onboarding 2](assets/images/progress1/onboarding2.jpg)
-![Onboarding 3](assets/images/progress1/onboarding3.jpg)
-![Onboarding 4](assets/images/progress1/onboarding4.jpg)
-![Onboarding 5](assets/images/progress1/onboarding5.jpg)
+![Onboarding 1](MYSTUDYMATE/assets/images/progress1/onboarding1.jpg)
+![Onboarding 2](MYSTUDYMATE/assets/images/progress1/onboarding2.jpg)
+![Onboarding 3](MYSTUDYMATE/assets/images/progress1/onboarding3.jpg)
+![Onboarding 4](MYSTUDYMATE/assets/images/progress1/onboarding4.jpg)
+![Onboarding 5](MYSTUDYMATE/assets/images/progress1/onboarding5.jpg)
 
 ---
 
 ## 🏠 Dashboard
-![Dashboard](assets/images/progress1/dashboard.jpg)
+![Dashboard](MYSTUDYMATE/assets/images/progress1/dashboard.jpg)
 
 ---
 
 ## 📝 Tugas (Assignment)
 ### Assignment List
-![Assignment Screen](assets/images/progress1/assignmentscreen.jpg)
+![Assignment Screen](MYSTUDYMATE/assets/images/progress1/assignmentscreen.jpg)
 
 ### Add Assignment
-![Add Assignment](assets/images/progress1/addassignmentscreen.jpg)
+![Add Assignment](MYSTUDYMATE/assets/images/progress1/addassignmentscreen.jpg)
 
 ---
 
 ## 🗓️ Jadwal (Schedule)
 ### Schedule List
-![Schedule Screen](assets/images/progress1/schedulescreen.jpg)
+![Schedule Screen](MYSTUDYMATE/assets/images/progress1/schedulescreen.jpg)
 
 ### Add Schedule
-![Add Schedule](assets/images/progress1/addschedulescreen.jpg)
+![Add Schedule](MYSTUDYMATE/assets/images/progress1/addschedulescreen.jpg)
 
 ### Edit Schedule
-![Edit Schedule](assets/images/progress1/editschedulescreen.jpg)
+![Edit Schedule](MYSTUDYMATE/assets/images/progress1/editschedulescreen.jpg)
 
 ---
 
 ## 👤 Profile
 ### Profile Page
-![Profile Screen](assets/images/progress1/profilescreen.jpg)
+![Profile Screen](MYSTUDYMATE/assets/images/progress1/profilescreen.jpg)
 
 ### Edit Profile
-![Edit Profile](assets/images/progress1/editprofilescreen.jpg)
+![Edit Profile](MYSTUDYMATE/assets/images/progress1/editprofilescreen.jpg)
 
 ### Change Password
-![Change Password](assets/images/progress1/changepasswordscreen.jpg)
+![Change Password](MYSTUDYMATE/assets/images/progress1/changepasswordscreen.jpg)
 
 ---
 
 ## ⏳ Pomodoro
-![Pomodoro Screen](assets/images/progress1/pomodoroscreen.jpg)
+![Pomodoro Screen](MYSTUDYMATE/assets/images/progress1/pomodoroscreen.jpg)
 
 ---
 
