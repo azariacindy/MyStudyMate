@@ -101,10 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 3) Navigator.pushNamed(context, '/profile');
         },
       ),
-      floatingActionButton: CustomFAB(
-        onPressed: () => Navigator.pushNamed(context, '/manage_task'),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // No FAB on home screen
     );
   }
 
