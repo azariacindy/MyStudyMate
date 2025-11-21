@@ -1,6 +1,6 @@
 // models/user_model.dart
 class User {
-  final String id;
+  final int id;
   final String name;
   final String username;
   final String email;
@@ -14,7 +14,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
       name: json['name'] ?? '',
       username: json['username'] ?? '',
       email: json['email'] ?? '',

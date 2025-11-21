@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
+import '../../services/schedule_service.dart';
 
 class ManageScheduleScreen extends StatefulWidget {
   final DateTime? selectedDate;
 
-  const ManageScheduleScreen({
-    super.key,
-    this.selectedDate,
-  });
+  const ManageScheduleScreen({super.key, this.selectedDate});
 
   @override
   State<ManageScheduleScreen> createState() => _ManageScheduleScreenState();
@@ -16,9 +14,13 @@ class ManageScheduleScreen extends StatefulWidget {
 class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _lecturerController = TextEditingController();
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
+  final ScheduleService _scheduleService =
+      ScheduleService(); // Service instance
 
   @override
   void initState() {
@@ -29,6 +31,8 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
+    _lecturerController.dispose();
     super.dispose();
   }
 
@@ -103,12 +107,12 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
     }
   }
 
-  void _saveSchedule() {
+  void _saveSchedule() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a date')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Please select a date')));
         return;
       }
       if (_startTime == null || _endTime == null) {
@@ -118,22 +122,47 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         return;
       }
 
-      // Return schedule data to parent
-      final scheduleData = {
-        'title': _titleController.text,
-        'date': _selectedDate,
-        'startTime': _startTime,
-        'endTime': _endTime,
-      };
+      try {
+        // Menggunakan ScheduleService untuk membuat jadwal baru
+        final schedule = await _scheduleService.createSchedule(
+          title: _titleController.text,
+          description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+          date: _selectedDate!,
+          startTime: _startTime!,
+          endTime: _endTime!,
+          location: null, // Optional
+          lecturer: _lecturerController.text.isEmpty ? null : _lecturerController.text,
+          color: "#5B9FED", // Example color
+          type: "lecture", // Example type
+          hasReminder: true,
+          reminderMinutes: 30,
+        );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Schedule saved successfully'),
-          backgroundColor: AppColors.success,
-        ),
-      );
+        // Notifikasi akan dikirim otomatis dari backend via FCM
+        // saat waktu reminder tercapai
 
-      Navigator.pop(context, scheduleData);
+        // Menampilkan snackbar untuk konfirmasi sukses
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Schedule saved successfully'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+
+          // Mengirimkan data kembali ke screen sebelumnya
+          Navigator.pop(context, schedule);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -156,7 +185,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
       'September',
       'October',
       'November',
-      'December'
+      'December',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -188,20 +217,20 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            const Text(
-              'Schedule Title',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF5B9FED),
+              const Text(
+                'Schedule Title',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5B9FED),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
                   hintText: 'e.g., Management Project',
-                  labelStyle: const TextStyle(color: const Color(0xFF5B9FED)),
+                  labelStyle: const TextStyle(color: Color(0xFF5B9FED)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -212,7 +241,10 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide: const BorderSide(color: const Color(0xFF5B9FED), width: 2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF5B9FED),
+                      width: 2,
+                    ),
                   ),
                   filled: true,
                   fillColor: AppColors.surface,
@@ -223,6 +255,81 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   }
                   return null;
                 },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Description Field
+              const Text(
+                'Description (Optional)',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5B9FED),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'e.g., Chapter 5: Project Planning and Execution',
+                  labelStyle: const TextStyle(color: Color(0xFF5B9FED)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF5B9FED),
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Lecturer Field
+              const Text(
+                'Lecturer / Instructor',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5B9FED),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _lecturerController,
+                decoration: InputDecoration(
+                  hintText: 'e.g., Dr. John Doe',
+                  labelStyle: const TextStyle(color: Color(0xFF5B9FED)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF5B9FED),
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -248,7 +355,10 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today, color: const Color(0xFF5B9FED)),
+                      const Icon(
+                        Icons.calendar_today,
+                        color: Color(0xFF5B9FED),
+                      ),
                       const SizedBox(width: 12),
                       Text(
                         _selectedDate != null
@@ -256,13 +366,17 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                             : 'Select date',
                         style: TextStyle(
                           fontSize: 15,
-                          color: _selectedDate != null
-                              ? AppColors.text
-                              : AppColors.textSecondary,
+                          color:
+                              _selectedDate != null
+                                  ? AppColors.text
+                                  : AppColors.textSecondary,
                         ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.textSecondary,
+                      ),
                     ],
                   ),
                 ),
@@ -296,7 +410,11 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 20),
+                            const Icon(
+                              Icons.access_time,
+                              color: Color(0xFF5B9FED),
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               _startTime != null
@@ -304,9 +422,10 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                                   : 'Start',
                               style: TextStyle(
                                 fontSize: 15,
-                                color: _startTime != null
-                                    ? AppColors.text
-                                    : AppColors.textSecondary,
+                                color:
+                                    _startTime != null
+                                        ? AppColors.text
+                                        : AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -337,17 +456,20 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 20),
+                            const Icon(
+                              Icons.access_time,
+                              color: Color(0xFF5B9FED),
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Text(
-                              _endTime != null
-                                  ? _formatTime(_endTime!)
-                                  : 'End',
+                              _endTime != null ? _formatTime(_endTime!) : 'End',
                               style: TextStyle(
                                 fontSize: 15,
-                                color: _endTime != null
-                                    ? AppColors.text
-                                    : AppColors.textSecondary,
+                                color:
+                                    _endTime != null
+                                        ? AppColors.text
+                                        : AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -376,10 +498,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   ),
                   child: const Text(
                     'Save Schedule',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -390,4 +509,3 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
     );
   }
 }
-

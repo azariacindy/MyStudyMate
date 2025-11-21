@@ -91,6 +91,52 @@ class AuthController extends Controller
     }
 
     /**
+     * Get current user (testing mode - using X-User-Id header)
+     */
+    public function getCurrentUser(Request $request)
+    {
+        // For testing: get user ID from header
+        $userId = $request->header('X-User-Id', 1);
+        
+        $user = DB::table('users')->where('id', $userId)->first();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'user' => [
+                'id' => (string) $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+            ]
+        ]);
+    }
+
+    /**
+     * Save FCM token for push notifications
+     */
+    public function saveFCMToken(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'fcm_token' => 'required|string',
+        ]);
+
+        DB::table('users')
+            ->where('id', $request->user_id)
+            ->update(['fcm_token' => $request->fcm_token]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FCM token saved successfully.'
+        ]);
+    }
+
+    /**
      * Logout (opsional, karena token stateless)
      */
     public function logout()

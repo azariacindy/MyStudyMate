@@ -1,6 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'package:my_study_mate/screens/scheduleFeature/scheduleScreen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/signin_screen.dart';
@@ -8,26 +8,24 @@ import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'utils/supabase_config.dart';
+import 'services/firebase_messaging_service.dart';
 import 'screens/taskManagerFeature/manage_task_screen.dart';
 import 'screens/taskManagerFeature/plan_task_screen.dart';
-import 'screens/profileFeature/edit_profile_screen.dart';
-import 'screens/profileFeature/profile_screen.dart';
-import 'screens/profileFeature/change_password_screen.dart';
 import 'screens/scheduleFeature/scheduleScreen.dart';
-import 'screens/scheduleFeature/manageScheduleScreen.dart';
-import 'screens/studyCardFeature/add_study_card_screen.dart';
-import 'screens/studyCardFeature/mistakes_screen.dart';
-import 'screens/studyCardFeature/quiz_question_screen.dart';
-import 'screens/studyCardFeature/quiz_result_screen.dart';
-import 'screens/studyCardFeature/study_cards_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Initialize Firebase Messaging
+  await FirebaseMessagingService().initialize();
+  
   try {
     await initializeSupabaseIfConfigured();
   } catch (e) {
-    print('Warning: Supabase initialization failed: $e');
+    // Supabase optional
   }
   
   runApp(const MyApp());

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
+import '../services/dio_client.dart';
 import '../utils/app_colors.dart';
 import '../models/user_model.dart';
 
@@ -62,9 +63,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       setState(() => _isLoading = false);
 
+      // Set user ID to DioClient
+      DioClient.setUserId(user.id);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Account created successfully!'),
+          content: Text('Welcome, ${user.name}!'),
           backgroundColor: AppColors.success,
           duration: const Duration(seconds: 2),
         ),

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
 import 'dio_client.dart';
+import 'firebase_messaging_service.dart';
 
 class AuthService {
   final Dio _dio = DioClient.getInstance();
@@ -17,6 +18,30 @@ class AuthService {
     return await _storage.read(key: _tokenKey);
   }
 
+  /// Get current authenticated user from backend
+  Future<User?> getCurrentUser() async {
+    try {
+      final token = await currentToken;
+      if (token == null) return null;
+
+      // Set token in headers
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+
+      final response = await _dio.get('/current-user');
+      if (response.statusCode == 200) {
+        final user = User.fromJson(response.data['user']);
+        
+        // Set user ID to DioClient
+        DioClient.setUserId(user.id);
+        
+        return user;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Register user via Laravel
   Future<User> signup({
     required String name,
@@ -24,8 +49,6 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    print('🎯 URL: ${_dio.options.baseUrl}');
-    print('📦 Data: name=$name, username=$username, email=$email');
     try {
       final response = await _dio.post('/register', data: {
         'name': name,
@@ -33,18 +56,10 @@ class AuthService {
         'email': email,
         'password': password,
       });
-      
-       // 🔍 DEBUG: Cetak respons sukses
-      print('✅ Respons sukses: ${response.data}');
 
-
-      // Ambil data user dari respons Laravel
       final userData = response.data['user'] as Map<String, dynamic>;
       return User.fromJson(userData);
     } on DioException catch (e) {
-      print('❌ Error message: ${e.message}');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response body: ${e.response?.data}');
       final message = _extractErrorMessage(e);
       throw Exception(message);
     }
@@ -82,10 +97,40 @@ class AuthService {
         ),
       );
 
+      // Set user ID to DioClient
+      DioClient.setUserId(user.id);
+
+      // Save FCM token to backend (pass user directly)
+      await _saveFCMToken(user);
+
       return user;
     } on DioException catch (e) {
       final message = _extractErrorMessage(e);
       throw Exception(message);
+    }
+  }
+
+  /// Save FCM token to backend (with retry for token availability)
+  Future<void> _saveFCMToken(User user) async {
+    try {
+      // Wait for FCM token (retry up to 3 times with 500ms delay)
+      String? fcmToken = FirebaseMessagingService().fcmToken;
+      int retries = 0;
+      while (fcmToken == null && retries < 3) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        fcmToken = FirebaseMessagingService().fcmToken;
+        retries++;
+      }
+      
+      if (fcmToken != null) {
+        await _dio.post('/save-fcm-token', data: {
+          'user_id': user.id,
+          'fcm_token': fcmToken,
+        });
+        print('[Auth] FCM token saved for user ${user.id}');
+      }
+    } catch (e) {
+      print('[Auth] Error saving FCM token: $e');
     }
   }
 
@@ -100,6 +145,9 @@ class AuthService {
     await _storage.delete(key: _tokenKey);
     _dio.interceptors.clear();
     _dio.options.headers.remove('Authorization');
+    
+    // Reset DioClient user ID to 0 (no user)
+    DioClient.setUserId(0);
   }
 
   String _extractErrorMessage(DioException e) {
