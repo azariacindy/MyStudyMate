@@ -161,45 +161,45 @@ Berikut adalah perkembangan tampilan aplikasi MyStudyMate yang sudah berhasil di
 ---
 
 ### 🟦 Splash Screen
-![Splash Screen](MYSTUDYMATE/assets/images/progress1/splashscreen.jpg)
+![Splash Screen](MYSTUDYMATE/assets/progress1/splashscreen.jpg)
 
 ### 🟦 Welcome Screen
-![Welcome Screen](MYSTUDYMATE/assets/images/progress1/welcomescreen.jpg)
+![Welcome Screen](MYSTUDYMATE/assets/progress1/welcomescreen.jpg)
 
 ---
 
 ## 🧭 Onboarding Screens
-![Onboarding 1](MYSTUDYMATE/assets/images/progress1/onboarding1.jpg)
-![Onboarding 2](MYSTUDYMATE/assets/images/progress1/onboarding2.jpg)
-![Onboarding 3](MYSTUDYMATE/assets/images/progress1/onboarding3.jpg)
-![Onboarding 4](MYSTUDYMATE/assets/images/progress1/onboarding4.jpg)
-![Onboarding 5](MYSTUDYMATE/assets/images/progress1/onboarding5.jpg)
+![Onboarding 1](MYSTUDYMATE/assets/progress1/onboarding1.jpg)
+![Onboarding 2](MYSTUDYMATE/assets/progress1/onboarding2.jpg)
+![Onboarding 3](MYSTUDYMATE/assets/progress1/onboarding3.jpg)
+![Onboarding 4](MYSTUDYMATE/assets/progress1/onboarding4.jpg)
+![Onboarding 5](MYSTUDYMATE/assets/progress1/onboarding5.jpg)
 
 ---
 
 ## 🏠 Dashboard
-![Dashboard](MYSTUDYMATE/assets/images/progress1/dashboard.jpg)
+![Dashboard](MYSTUDYMATE/assets/progress1/dashboard.jpg)
 
 ---
 
 ## 📝 Tugas (Assignment)
 ### Assignment List
-![Assignment Screen](MYSTUDYMATE/assets/images/progress1/assignmentscreen.jpg)
+![Assignment Screen](MYSTUDYMATE/assets/progress1/assignmentscreen.jpg)
 
 ### Add Assignment
-![Add Assignment](MYSTUDYMATE/assets/images/progress1/addassignmentscreen.jpg)
+![Add Assignment](MYSTUDYMATE/assets/progress1/addassignmentscreen.jpg)
 
 ---
 
 ## 🗓️ Jadwal (Schedule)
 ### Schedule List
-![Schedule Screen](MYSTUDYMATE/assets/images/progress1/schedulescreen.jpg)
+![Schedule Screen](MYSTUDYMATE/assets/progress1/schedulescreen.jpg)
 
 ### Add Schedule
-![Add Schedule](MYSTUDYMATE/assets/images/progress1/addschedulescreen.jpg)
+![Add Schedule](MYSTUDYMATE/assets/progress1/addschedulescreen.jpg)
 
 ### Edit Schedule
-![Edit Schedule](MYSTUDYMATE/assets/images/progress1/editschedulescreen.jpg)
+![Edit Schedule](MYSTUDYMATE/assets/progress1/editschedulescreen.jpg)
 
 ---
 
