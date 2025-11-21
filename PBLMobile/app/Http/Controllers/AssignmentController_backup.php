@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Assignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class AssignmentController extends Controller
@@ -31,15 +30,6 @@ class AssignmentController extends Controller
     }
 
     /**
-     * Clear user's assignments cache
-     */
-    private function clearAssignmentsCache($userId)
-    {
-        Cache::forget("assignments_pending_user_{$userId}");
-        Cache::forget("assignments_all_user_{$userId}");
-    }
-
-    /**
      * Display a listing of assignments
      * GET /api/assignments
      */
@@ -47,41 +37,32 @@ class AssignmentController extends Controller
     {
         try {
             $userId = $this->getUserId($request);
-            $status = $request->get('status', 'all');
-            $search = $request->get('search', '');
+            $query = Assignment::forUser($userId);
 
-            // Create cache key based on user, status, and search
-            $cacheKey = "assignments_{$status}_user_{$userId}";
-            if (!empty($search)) {
-                $cacheKey .= "_search_" . md5($search);
-            }
-
-            // Cache for 30 seconds (adjust as needed)
-            $assignments = Cache::remember($cacheKey, 30, function () use ($userId, $status, $request, $search) {
-                $query = Assignment::forUser($userId);
-
-                // Filter by status
-                if ($status === 'pending') {
+            // Filter by status
+            if ($request->has('status')) {
+                if ($request->status === 'pending') {
                     $query->pending();
-                } elseif ($status === 'done') {
+                } elseif ($request->status === 'done') {
                     $query->completed();
                 }
+            }
 
-                // Search by title or description
-                if (!empty($search)) {
-                    $query->where(function($q) use ($search) {
-                        $q->where('title', 'ILIKE', "%{$search}%")
-                          ->orWhere('description', 'ILIKE', "%{$search}%");
-                    });
-                }
+            // Search by title or description
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'ILIKE', "%{$search}%")
+                      ->orWhere('description', 'ILIKE', "%{$search}%");
+                });
+            }
 
-                // Select only needed columns for better performance
-                return $query->select([
-                    'id', 'user_id', 'title', 'description', 'deadline', 
-                    'is_done', 'color', 'has_reminder', 'reminder_minutes',
-                    'last_notification_type', 'created_at', 'updated_at'
-                ])->orderBy('deadline', 'asc')->get();
-            });
+            // Select only needed columns for better performance
+            $assignments = $query->select([
+                'id', 'user_id', 'title', 'description', 'deadline', 
+                'is_done', 'color', 'has_reminder', 'reminder_minutes',
+                'last_notification_type', 'created_at', 'updated_at'
+            ])->orderBy('deadline', 'asc')->get();
 
             return response()->json([
                 'success' => true,
@@ -126,9 +107,6 @@ class AssignmentController extends Controller
                 'is_done' => false,
             ]);
 
-            // Clear cache after creating new assignment
-            $this->clearAssignmentsCache($userId);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Assignment created successfully',
@@ -141,6 +119,7 @@ class AssignmentController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
+            \Log::error('Failed to create assignment: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create assignment',
@@ -179,8 +158,7 @@ class AssignmentController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $userId = $this->getUserId($request);
-            $assignment = Assignment::forUser($userId)->findOrFail($id);
+            $assignment = Assignment::forUser($this->getUserId($request))->findOrFail($id);
 
             $validated = $request->validate([
                 'title' => 'sometimes|required|string|max:255',
@@ -197,9 +175,6 @@ class AssignmentController extends Controller
             }
 
             $assignment->update($validated);
-
-            // Clear cache after updating
-            $this->clearAssignmentsCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -222,13 +197,9 @@ class AssignmentController extends Controller
     public function markAsDone(Request $request, $id)
     {
         try {
-            $userId = $this->getUserId($request);
-            $assignment = Assignment::forUser($userId)->findOrFail($id);
+            $assignment = Assignment::forUser($this->getUserId($request))->findOrFail($id);
             
             $assignment->update(['is_done' => true]);
-
-            // Clear cache after marking as done
-            $this->clearAssignmentsCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -251,12 +222,8 @@ class AssignmentController extends Controller
     public function destroy(Request $request, $id)
     {
         try {
-            $userId = $this->getUserId($request);
-            $assignment = Assignment::forUser($userId)->findOrFail($id);
+            $assignment = Assignment::forUser($this->getUserId($request))->findOrFail($id);
             $assignment->delete();
-
-            // Clear cache after deleting
-            $this->clearAssignmentsCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -280,25 +247,20 @@ class AssignmentController extends Controller
         try {
             $userId = $this->getUserId($request);
             
-            // Cache weekly progress for 60 seconds
-            $data = Cache::remember("weekly_progress_user_{$userId}", 60, function () use ($userId) {
-                $total = Assignment::forUser($userId)->weekly()->count();
-                $completed = Assignment::forUser($userId)->weekly()->completed()->count();
-                $pending = $total - $completed;
-                $percentage = $total > 0 ? ($completed / $total) * 100 : 0;
-
-                return [
-                    'total' => $total,
-                    'completed' => $completed,
-                    'pending' => $pending,
-                    'percentage' => round($percentage, 2),
-                ];
-            });
+            $total = Assignment::forUser($userId)->weekly()->count();
+            $completed = Assignment::forUser($userId)->weekly()->completed()->count();
+            $pending = $total - $completed;
+            $percentage = $total > 0 ? ($completed / $total) * 100 : 0;
 
             return response()->json([
                 'success' => true,
                 'message' => 'Weekly progress retrieved successfully',
-                'data' => $data,
+                'data' => [
+                    'total' => $total,
+                    'completed' => $completed,
+                    'pending' => $pending,
+                    'percentage' => round($percentage, 2),
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -318,19 +280,18 @@ class AssignmentController extends Controller
         try {
             $userId = $this->getUserId($request);
 
-            // Cache for 30 seconds
-            $data = Cache::remember("assignments_by_status_user_{$userId}", 30, function () use ($userId) {
-                return [
-                    'overdue' => Assignment::forUser($userId)->overdue()->get(),
-                    'due_today' => Assignment::forUser($userId)->dueToday()->get(),
-                    'upcoming' => Assignment::forUser($userId)->upcoming()->get(),
-                ];
-            });
+            $overdue = Assignment::forUser($userId)->overdue()->get();
+            $dueToday = Assignment::forUser($userId)->dueToday()->get();
+            $upcoming = Assignment::forUser($userId)->upcoming()->get();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Assignments by status retrieved successfully',
-                'data' => $data,
+                'data' => [
+                    'overdue' => $overdue,
+                    'due_today' => $dueToday,
+                    'upcoming' => $upcoming,
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

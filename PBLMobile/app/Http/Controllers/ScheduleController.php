@@ -9,10 +9,22 @@ use App\Http\Resources\ScheduleResource;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class ScheduleController extends Controller
 {
+    /**
+     * Clear user's schedules cache
+     */
+    private function clearSchedulesCache($userId)
+    {
+        Cache::forget("schedules_all_user_{$userId}");
+        Cache::forget("schedules_upcoming_user_{$userId}");
+        // Clear date range caches (wildcard not supported, so we clear key patterns)
+        Cache::flush(); // Or implement more granular cache tags
+    }
+
     /**
      * Get authenticated user ID with fallback for testing
      */
@@ -45,10 +57,13 @@ class ScheduleController extends Controller
         try {
             $userId = $this->getUserId($request);
             
-            $schedules = Schedule::forUser($userId)
-                ->orderBy('date', 'desc')
-                ->orderBy('start_time', 'asc')
-                ->get();
+            // Cache for 30 seconds
+            $schedules = Cache::remember("schedules_all_user_{$userId}", 30, function () use ($userId) {
+                return Schedule::forUser($userId)
+                    ->orderBy('date', 'desc')
+                    ->orderBy('start_time', 'asc')
+                    ->get();
+            });
 
             return response()->json([
                 'success' => true,
@@ -121,6 +136,9 @@ class ScheduleController extends Controller
 
             // Create schedule
             $schedule = Schedule::create($data);
+
+            // Clear cache after creating
+            $this->clearSchedulesCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -212,6 +230,9 @@ class ScheduleController extends Controller
 
             $schedule->update($data);
 
+            // Clear cache after updating
+            $this->clearSchedulesCache($this->getUserId($request));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Schedule updated successfully',
@@ -233,8 +254,12 @@ class ScheduleController extends Controller
     public function destroy(Request $request, $id)
     {
         try {
-            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
+            $userId = $this->getUserId($request);
+            $schedule = Schedule::forUser($userId)->findOrFail($id);
             $schedule->delete();
+
+            // Clear cache after deleting
+            $this->clearSchedulesCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -287,11 +312,17 @@ class ScheduleController extends Controller
                 'end_date' => 'required|date|after_or_equal:start_date',
             ]);
 
-            $schedules = Schedule::forUser($this->getUserId($request))
-                ->betweenDates($request->start_date, $request->end_date)
-                ->orderBy('date')
-                ->orderBy('start_time')
-                ->get();
+            $userId = $this->getUserId($request);
+            $cacheKey = "schedules_range_user_{$userId}_" . md5($request->start_date . $request->end_date);
+            
+            // Cache for 30 seconds
+            $schedules = Cache::remember($cacheKey, 30, function () use ($userId, $request) {
+                return Schedule::forUser($userId)
+                    ->betweenDates($request->start_date, $request->end_date)
+                    ->orderBy('date')
+                    ->orderBy('start_time')
+                    ->get();
+            });
 
             return response()->json([
                 'success' => true,
@@ -315,12 +346,17 @@ class ScheduleController extends Controller
     {
         try {
             $limit = $request->input('limit', 5);
+            $userId = $this->getUserId($request);
+            $cacheKey = "schedules_upcoming_user_{$userId}_limit_{$limit}";
 
-            $schedules = Schedule::forUser($this->getUserId($request))
-                ->upcoming()
-                ->incomplete()
-                ->limit($limit)
-                ->get();
+            // Cache for 30 seconds
+            $schedules = Cache::remember($cacheKey, 30, function () use ($userId, $limit) {
+                return Schedule::forUser($userId)
+                    ->upcoming()
+                    ->incomplete()
+                    ->limit($limit)
+                    ->get();
+            });
 
             return response()->json([
                 'success' => true,
@@ -343,10 +379,14 @@ class ScheduleController extends Controller
     public function toggleComplete(Request $request, $id)
     {
         try {
-            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
+            $userId = $this->getUserId($request);
+            $schedule = Schedule::forUser($userId)->findOrFail($id);
             
             $schedule->is_completed = $request->input('is_completed', !$schedule->is_completed);
             $schedule->save();
+
+            // Clear cache after status change
+            $this->clearSchedulesCache($userId);
 
             return response()->json([
                 'success' => true,
