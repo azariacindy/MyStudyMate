@@ -1,35 +1,116 @@
-// lib/models/schedule_model.dart
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 class Schedule {
   final int id;
   final int userId;
   final String title;
   final String? description;
-  final DateTime startTime;
-  final DateTime endTime;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime date;
+  final TimeOfDay startTime;
+  final TimeOfDay endTime;
+  final String? location;
+  final String? lecturer;
+  final String? color;
+  final String type;
+  final bool hasReminder;
+  final int reminderMinutes;
+  final bool isCompleted;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Schedule({
     required this.id,
     required this.userId,
     required this.title,
     this.description,
+    required this.date,
     required this.startTime,
     required this.endTime,
-    required this.createdAt,
-    required this.updatedAt,
+    this.location,
+    this.lecturer,
+    this.color,
+    required this.type,
+    required this.hasReminder,
+    required this.reminderMinutes,
+    required this.isCompleted,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     return Schedule(
-      id: json['id'],
-      userId: json['user_id'],
+      id: int.parse(json['id'].toString()),
+      userId: int.parse(json['user_id'].toString()),
       title: json['title'],
       description: json['description'],
-      startTime: DateTime.parse(json['start_time']),
-      endTime: DateTime.parse(json['end_time']),
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      date: DateTime.parse(json['date']),
+      startTime: _parseTimeOfDay(json['start_time']),
+      endTime: _parseTimeOfDay(json['end_time']),
+      location: json['location'],
+      lecturer: json['lecturer'],
+      color: json['color'],
+      type: json['type'],
+      hasReminder: json['has_reminder'] == true || json['has_reminder'] == 1,
+      reminderMinutes: int.parse(json['reminder_minutes'].toString()),
+      isCompleted: json['is_completed'] == true || json['is_completed'] == 1,
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
     );
+  }
+
+  // Parse time string (HH:mm) to TimeOfDay
+  static TimeOfDay _parseTimeOfDay(String time) {
+    final parts = time.split(':');
+    return TimeOfDay(
+      hour: int.parse(parts[0]),
+      minute: int.parse(parts[1]),
+    );
+  }
+
+  // Convert TimeOfDay to HH:mm string
+  static String _formatTimeOfDay(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'date': DateFormat('yyyy-MM-dd').format(date),
+      'start_time': _formatTimeOfDay(startTime),
+      'end_time': _formatTimeOfDay(endTime),
+      'location': location,
+      'lecturer': lecturer,
+      'color': color ?? '#5B9FED',
+      'type': type,
+      'has_reminder': hasReminder,
+      'reminder_minutes': reminderMinutes,
+      'is_completed': isCompleted,
+    };
+  }
+
+  // Helper to get formatted time string for display
+  String getFormattedStartTime() => _formatTimeOfDay(startTime);
+  String getFormattedEndTime() => _formatTimeOfDay(endTime);
+  
+  // Helper to check if schedule is today
+  bool isToday() {
+    final now = DateTime.now();
+    return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+
+  // Helper to get reminder datetime
+  DateTime getReminderDateTime() {
+    final scheduleDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      startTime.hour,
+      startTime.minute,
+    );
+    return scheduleDateTime.subtract(Duration(minutes: reminderMinutes));
   }
 }
