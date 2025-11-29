@@ -235,4 +235,188 @@ class ScheduleService {
       throw Exception('Failed to fetch stats: $e');
     }
   }
+
+  // Get assignments with optional search and filter
+  Future<Map<String, dynamic>> getAssignments({
+    String? search,
+    String? status, // 'pending' or 'done'
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+      if (status != null && status != 'all') {
+        queryParams['status'] = status;
+      }
+
+      final response = await _dio.get(
+        '/assignments',
+        queryParameters: queryParams,
+      );
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'data': response.data['data'],
+        };
+      }
+      throw Exception(response.data['message'] ?? 'Failed to fetch assignments');
+    } catch (e) {
+      throw Exception('Failed to fetch assignments: $e');
+    }
+  }
+
+  // Mark assignment as done
+  Future<Map<String, dynamic>> markAsDone(String scheduleId) async {
+    try {
+      final response = await _dio.patch('/assignments/$scheduleId/mark-done');
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'data': response.data['data'],
+        };
+      }
+      throw Exception(response.data['message'] ?? 'Failed to mark assignment as done');
+    } catch (e) {
+      throw Exception('Failed to mark assignment as done: $e');
+    }
+  }
+
+  // Get weekly progress
+  Future<Map<String, dynamic>> getWeeklyProgress() async {
+    try {
+      final response = await _dio.get('/assignments/weekly-progress');
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'data': response.data['data'],
+        };
+      }
+      throw Exception(response.data['message'] ?? 'Failed to fetch weekly progress');
+    } catch (e) {
+      throw Exception('Failed to fetch weekly progress: $e');
+    }
+  }
+
+  // Get assignments by status (overdue, due today, upcoming)
+  Future<Map<String, dynamic>> getAssignmentsByStatus() async {
+    try {
+      final response = await _dio.get('/assignments/by-status');
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'data': response.data['data'],
+        };
+      }
+      throw Exception(response.data['message'] ?? 'Failed to fetch assignments by status');
+    } catch (e) {
+      throw Exception('Failed to fetch assignments by status: $e');
+    }
+  }
+
+  // Create assignment
+  Future<Map<String, dynamic>> createAssignment({
+    required String title,
+    String? description,
+    required DateTime deadline,
+    String? color,
+    bool hasReminder = true,
+    int reminderMinutes = 30,
+  }) async {
+    try {
+      // Format deadline as date only (YYYY-MM-DD)
+      final deadlineStr = '${deadline.year}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}';
+      
+      final response = await _dio.post('/assignments', data: {
+        'title': title,
+        'description': description,
+        'deadline': deadlineStr,
+        'color': color ?? '#5B9FED',
+        'has_reminder': hasReminder,
+        'reminder_minutes': reminderMinutes,
+      });
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'data': response.data['data'],
+        };
+      }
+      throw Exception(response.data['message'] ?? 'Failed to create assignment');
+    } catch (e) {
+      if (e is DioException) {
+        if (e.response?.data != null) {
+          final errorData = e.response!.data;
+          if (errorData['errors'] != null) {
+            // Validation errors
+            final errors = errorData['errors'] as Map<String, dynamic>;
+            final firstError = errors.values.first;
+            throw Exception(firstError is List ? firstError.first : firstError);
+          }
+          throw Exception(errorData['message'] ?? errorData['error'] ?? 'Failed to create assignment');
+        }
+        throw Exception('Network error: ${e.message}');
+      }
+      throw Exception('Failed to create assignment: $e');
+    }
+  }
+
+  // Update assignment
+  Future<Map<String, dynamic>> updateAssignment(
+    int id, {
+    String? title,
+    String? description,
+    DateTime? deadline,
+    String? color,
+    bool? hasReminder,
+    int? reminderMinutes,
+    bool? isDone,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      
+      if (title != null) data['title'] = title;
+      if (description != null) data['description'] = description;
+      if (deadline != null) {
+        // Format deadline as date only (YYYY-MM-DD)
+        data['deadline'] = '${deadline.year}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}';
+      }
+      if (color != null) data['color'] = color;
+      if (hasReminder != null) data['has_reminder'] = hasReminder;
+      if (reminderMinutes != null) data['reminder_minutes'] = reminderMinutes;
+      if (isDone != null) data['is_done'] = isDone;
+
+      final response = await _dio.put('/assignments/$id', data: data);
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'data': response.data['data'],
+        };
+      }
+      throw Exception(response.data['message'] ?? 'Failed to update assignment');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response!.data['message'] ?? 'Failed to update assignment');
+      }
+      throw Exception('Failed to update assignment: $e');
+    }
+  }
+
+  // Delete assignment
+  Future<void> deleteAssignment(int id) async {
+    try {
+      final response = await _dio.delete('/assignments/$id');
+      
+      if (response.data['success'] != true) {
+        throw Exception(response.data['message'] ?? 'Failed to delete assignment');
+      }
+    } catch (e) {
+      throw Exception('Failed to delete assignment: $e');
+    }
+  }
 }
