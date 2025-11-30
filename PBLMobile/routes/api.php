@@ -30,6 +30,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::get('/current-user', [AuthController::class, 'getCurrentUser']);
 Route::post('/save-fcm-token', [AuthController::class, 'saveFCMToken']);
+Route::put('/update-profile', [AuthController::class, 'updateProfile']);
+Route::post('/change-password', [AuthController::class, 'changePassword']);
+Route::post('/upload-profile-photo', [AuthController::class, 'uploadProfilePhoto']);
 
 // 🔒 Assignment routes → prefix: /assignments (separate table)
 Route::prefix('assignments')->group(function () {
