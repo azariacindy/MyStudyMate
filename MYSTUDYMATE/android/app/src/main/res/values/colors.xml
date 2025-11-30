@@ -2,4 +2,5 @@
 <resources>
     <!-- MyStudyMate Primary Color - sesuai dengan AppColors di Flutter -->
     <color name="primary_color">#4C84F1</color>
+	<color name="ic_launcher_background">#FFFFFF</color>
 </resources>
