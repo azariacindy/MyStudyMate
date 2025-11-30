@@ -247,19 +247,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
-              // Profile Button (replaces Logout)
-              IconButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/profile');
-                },
-                icon: const Icon(
-                  CupertinoIcons.person_circle,
-                  color: Colors.white,
-                  size: 28,
-                ),
-                tooltip: 'Profile',
-              ),
             ],
           ),
           const SizedBox(height: 18),
