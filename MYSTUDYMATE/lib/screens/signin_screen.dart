@@ -168,10 +168,15 @@ class _SignInScreenState extends State<SignInScreen> {
 
                         TextFormField(
                           controller: _emailController,
+                          style: const TextStyle(
+                            // ← teks yang diketik user
+                            color: AppColors.textLight, // abu-abu
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'alexcrown@gmail.com',
                             hintStyle: const TextStyle(
-                              color: AppColors.textLight,
+                              color: AppColors.textLight, // placeholder abu-abu
                               fontSize: 14,
                             ),
                             prefixIcon: Padding(
@@ -190,20 +195,14 @@ class _SignInScreenState extends State<SignInScreen> {
                               borderRadius: BorderRadius.circular(25),
                             ),
                           ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Please enter your email'
-                                      : null,
                         ),
-
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
 
                         // Password
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Choose a password',
+                            'Your password',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -216,8 +215,16 @@ class _SignInScreenState extends State<SignInScreen> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          style: const TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
-                            hintText: 'Your password',
+                            hintText: 'password',
+                            hintStyle: const TextStyle(
+                              color: AppColors.textLight,
+                              fontSize: 14,
+                            ),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: Image.asset(
@@ -249,11 +256,6 @@ class _SignInScreenState extends State<SignInScreen> {
                               borderRadius: BorderRadius.circular(25),
                             ),
                           ),
-                          validator:
-                              (v) =>
-                                  (v == null || v.length < 6)
-                                      ? 'Password must be at least 6 characters'
-                                      : null,
                         ),
 
                         const SizedBox(height: 32),
@@ -278,11 +280,19 @@ class _SignInScreenState extends State<SignInScreen> {
                                     )
                                     : const Text(
                                       'Continue',
-                                      style: TextStyle(fontSize: 16),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color.fromARGB(
+                                          255,
+                                          255,
+                                          255,
+                                          255,
+                                        ),
+                                      ),
                                     ),
                           ),
                         ),
-
                         const SizedBox(height: 20),
 
                         // Sign Up link
