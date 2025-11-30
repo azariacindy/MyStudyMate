@@ -85,6 +85,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
+                'profile_photo_url' => $user->profile_photo_url ?? null,
             ],
             'token' => Str::random(60)
         ]);
@@ -112,6 +113,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
+                'profile_photo_url' => $user->profile_photo_url ?? null,
             ]
         ]);
     }
@@ -144,5 +146,130 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Successfully logged out.'
         ]);
+    }
+
+    /**
+     * Update user profile (name only)
+     */
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'name' => 'required|string|max:255',
+        ]);
+
+        try {
+            DB::table('users')
+                ->where('id', $request->user_id)
+                ->update([
+                    'name' => $request->name,
+                    'updated_at' => now(),
+                ]);
+
+            $user = DB::table('users')->where('id', $request->user_id)->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully.',
+                'user' => [
+                    'id' => (string) $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'profile_photo_url' => $user->profile_photo_url ?? null,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update profile.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Change password
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        try {
+            $user = DB::table('users')->where('id', $request->user_id)->first();
+
+            // Verify current password
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Current password is incorrect.'
+                ], 401);
+            }
+
+            // Update password
+            DB::table('users')
+                ->where('id', $request->user_id)
+                ->update([
+                    'password' => Hash::make($request->new_password),
+                    'updated_at' => now(),
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password changed successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to change password.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload profile photo
+     */
+    public function uploadProfilePhoto(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB max
+        ]);
+
+        try {
+            $file = $request->file('photo');
+            $fileName = 'profile_' . $request->user_id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Save to public/uploads/profiles
+            $path = $file->move(public_path('uploads/profiles'), $fileName);
+            
+            // Generate URL (adjust based on your server configuration)
+            $url = url('uploads/profiles/' . $fileName);
+
+            // Update database
+            DB::table('users')
+                ->where('id', $request->user_id)
+                ->update([
+                    'profile_photo_url' => $url,
+                    'updated_at' => now(),
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile photo uploaded successfully.',
+                'profile_photo_url' => $url
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload profile photo.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
