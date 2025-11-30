@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../services/schedule_service.dart';
 import '../services/auth_service.dart';
@@ -159,25 +160,53 @@ class _HomeScreenState extends State<HomeScreen> {
           // Profile Row - FIXED
           Row(
             children: [
-              // Avatar with Icon
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(38),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
+              // Avatar with Profile Photo or Icon
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(38),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: FutureBuilder(
+                      future: _authService.getCurrentUser(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data?.profilePhotoUrl != null) {
+                          return CachedNetworkImage(
+                            imageUrl: snapshot.data!.profilePhotoUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Icon(
+                              CupertinoIcons.person,
+                              color: Color(0xFF8B5CF6),
+                              size: 28,
+                            ),
+                            errorWidget: (context, url, error) => const Icon(
+                              CupertinoIcons.person,
+                              color: Color(0xFF8B5CF6),
+                              size: 28,
+                            ),
+                          );
+                        }
+                        return const Icon(
+                          CupertinoIcons.person,
+                          color: Color(0xFF8B5CF6),
+                          size: 28,
+                        );
+                      },
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  CupertinoIcons.person,
-                  color: Color(0xFF8B5CF6),
-                  size: 28,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -219,73 +248,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Logout Button
-              GestureDetector(
-                onTap: () async {
-                  // Show confirmation dialog
-                  final shouldLogout = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Logout'),
-                      content: const Text('Are you sure you want to logout?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
-                          ),
-                          child: const Text('Logout'),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (shouldLogout == true && mounted) {
-                    // Call logout service to clear token and reset user ID
-                    await _authService.signout();
-                    
-                    // Navigate to signin screen and clear all previous routes
-                    if (mounted) {
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        '/signin',
-                        (route) => false,
-                      );
-                    }
-                  }
+              // Profile Button (replaces Logout)
+              IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/profile');
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(38),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.logout,
-                        color: Colors.white,
-                        size: 19,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Logout',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                icon: const Icon(
+                  CupertinoIcons.person_circle,
+                  color: Colors.white,
+                  size: 28,
                 ),
+                tooltip: 'Profile',
               ),
             ],
           ),
