@@ -12,6 +12,7 @@ import 'services/firebase_messaging_service.dart';
 import 'screens/taskManagerFeature/manage_task_screen.dart';
 import 'screens/taskManagerFeature/plan_task_screen.dart';
 import 'screens/scheduleFeature/scheduleScreen.dart';
+import 'screens/profileFeature/profile_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,6 +79,7 @@ class MyApp extends StatelessWidget {
         '/manage_task': (_) => const ManageTaskScreen(),
         '/plan_task': (_) => const PlanTaskScreen(),
         '/schedule': (_) => const ScheduleScreen(),
+        '/profile': (_) => const ProfileScreen(),
       },
     );
   }
