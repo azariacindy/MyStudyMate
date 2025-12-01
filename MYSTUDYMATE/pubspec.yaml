@@ -29,6 +29,7 @@ dependencies:
   firebase_messaging: ^15.1.5
   image_picker: ^1.0.7
   cached_network_image: ^3.3.1
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -46,6 +47,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/sounds/
     - assets/ui_design/
     - assets/ui_design/element_onboarding/
     - assets/ui_design/vector/
