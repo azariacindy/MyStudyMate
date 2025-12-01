@@ -1,49 +1,70 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Http\Controllers\Api;
 
-return new class extends Migration
+use App\Http\Controllers\Controller;
+use App\Contracts\Services\StudyCardServiceInterface;
+use App\Http\Requests\StoreStudyCardRequest;
+use App\Http\Requests\UpdateStudyCardRequest;
+use App\Http\Resources\StudyCardResource;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class StudyCardController extends Controller
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    protected StudyCardServiceInterface $service;
+
+    public function __construct(StudyCardServiceInterface $service)
     {
-        Schema::create('study_cards', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
-            $table->string('title');
-            $table->text('description')->nullable();
-            
-            // Material type: 'text' or 'file'
-            $table->enum('material_type', ['text', 'file'])->default('text');
-            
-            // Material content (for text type or extracted text from file)
-            $table->longText('material_content')->nullable();
-            
-            // Material file URL (for file type)
-            $table->string('material_file_url')->nullable();
-            $table->string('material_file_name')->nullable();
-            $table->string('material_file_type')->nullable(); // pdf, docx, txt
-            $table->integer('material_file_size')->nullable(); // in bytes
-            
-            $table->timestamps();
-            $table->softDeletes();
-            
-            // Indexes
-            $table->index('user_id');
-            $table->index('created_at');
-        });
+        $this->service = $service;
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function index(Request $request): JsonResponse
     {
-        Schema::dropIfExists('study_cards');
+        $perPage = $request->get('per_page', 15);
+        $data = $this->service->getAllUserStudyCards($request->user()->id, $perPage);
+        return response()->json([
+            'success' => true,
+            'data'    => StudyCardResource::collection($data),
+        ]);
     }
-};
+
+    public function store(StoreStudyCardRequest $request): JsonResponse
+    {
+        $studyCard = $this->service->createStudyCard($request->validated(), $request->user()->id);
+        return response()->json([
+            'success' => true,
+            'data'    => new StudyCardResource($studyCard),
+        ], 201);
+    }
+
+    public function show($id): JsonResponse
+    {
+        $studyCard = $this->service->getStudyCardById($id);
+        if (!$studyCard) {
+            return response()->json(['success' => false, 'message' => 'Not found'], 404);
+        }
+        return response()->json([
+            'success' => true,
+            'data'    => new StudyCardResource($studyCard),
+        ]);
+    }
+
+    public function update(UpdateStudyCardRequest $request, $id): JsonResponse
+    {
+        $studyCard = $this->service->updateStudyCard($id, $request->validated(), $request->user()->id);
+        return response()->json([
+            'success' => true,
+            'data'    => new StudyCardResource($studyCard),
+        ]);
+    }
+
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $this->service->deleteStudyCard($id, $request->user()->id);
+        return response()->json([
+            'success' => true,
+            'message' => 'Study card deleted successfully',
+        ]);
+    }
+}

@@ -9,5 +9,7 @@ interface QuizServiceInterface
 {
     public function getQuizById(int $id): ?Quiz;
     public function getQuizzesByStudyCard(int $studyCardId): Collection;
-    public function createQuiz(array $data): Quiz;
+    
+    // Method baru untuk generate quiz dari AI
+    public function generateQuizFromAI(int $studyCardId, array $options = []): Quiz;
 }
