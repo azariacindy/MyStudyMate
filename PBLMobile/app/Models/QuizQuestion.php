@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QuizQuestion extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'quiz_id',
         'question_text',
@@ -19,46 +18,21 @@ class QuizQuestion extends Model
     ];
 
     protected $casts = [
-        'order_number' => 'integer',
         'points' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
-    // Relationships
-    public function quiz()
+    public function quiz(): BelongsTo
     {
         return $this->belongsTo(Quiz::class);
     }
 
-    public function answers()
+    public function answers(): HasMany
     {
-        return $this->hasMany(QuizAnswer::class)->orderBy('order_number');
+        return $this->hasMany(QuizAnswer::class);
     }
 
-    public function correctAnswer()
-    {
-        return $this->hasOne(QuizAnswer::class)->where('is_correct', true);
-    }
-
-    public function userAnswers()
+    public function userAnswers(): HasMany
     {
         return $this->hasMany(UserQuizAnswer::class);
-    }
-
-    // Check question type
-    public function isMultipleChoice()
-    {
-        return $this->question_type === 'multiple_choice';
-    }
-
-    public function isTrueFalse()
-    {
-        return $this->question_type === 'true_false';
-    }
-
-    public function isEssay()
-    {
-        return $this->question_type === 'essay';
     }
 }

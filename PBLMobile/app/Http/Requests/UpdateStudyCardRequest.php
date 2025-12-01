@@ -14,11 +14,19 @@ class UpdateStudyCardRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'             => 'sometimes|required|string|max:255',
-            'description'       => 'nullable|string|max:1000',
-            'material_content'  => 'nullable|string',
-            'material_file'     => 'nullable|file|mimes:pdf,doc,docx,txt,ppt,pptx|max:10240',
-            
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'material_type' => 'sometimes|required|in:text,file',
+            'material_content' => 'required_if:material_type,text|string',
+            'material_file' => 'nullable|file|mimes:pdf|max:10240', // ✅ Hanya PDF
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'material_file.mimes' => 'Only PDF files are supported for quiz generation.',
+            'material_file.max' => 'File size cannot exceed 10MB.',
         ];
     }
 }
