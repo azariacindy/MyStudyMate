@@ -4,20 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudyCard extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
         'title',
-        'notes',
-        'quiz_count',
+        'description',
+        'material_type',
+        'material_content',
+        'material_file_url',
+        'material_file_name',
+        'material_file_type',
+        'material_file_size',
     ];
 
     protected $casts = [
-        'quiz_count' => 'integer',
+        'material_file_size' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     // Relationships
@@ -31,25 +40,30 @@ class StudyCard extends Model
         return $this->hasMany(Quiz::class);
     }
 
-    // Scopes
-    public function scopeForUser($query, $userId)
+    // Accessor: Get file size in human readable format
+    public function getFileSizeFormattedAttribute()
     {
-        return $query->where('user_id', $userId);
+        if (!$this->material_file_size) return null;
+        
+        $bytes = $this->material_file_size;
+        $units = ['B', 'KB', 'MB', 'GB'];
+        
+        for ($i = 0; $bytes > 1024; $i++) {
+            $bytes /= 1024;
+        }
+        
+        return round($bytes, 2) . ' ' . $units[$i];
     }
 
-    public function scopeRecent($query, $limit = 10)
+    // Check if material is file type
+    public function isFileType()
     {
-        return $query->orderBy('created_at', 'desc')->limit($limit);
+        return $this->material_type === 'file';
     }
 
-    // Accessors
-    public function getWordCountAttribute()
+    // Check if material is text type
+    public function isTextType()
     {
-        return str_word_count($this->notes);
-    }
-
-    public function getLatestQuizAttribute()
-    {
-        return $this->quizzes()->latest()->first();
+        return $this->material_type === 'text';
     }
 }

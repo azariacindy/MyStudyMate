@@ -45,6 +45,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
     try {
@@ -70,17 +71,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         // Continue without assignments if fetch fails
       }
       
-      setState(() {
-        _schedules = schedules;
-        _assignments = assignments;
-        
-        // Schedule notifications for upcoming schedules
-        for (var schedule in _schedules) {
-          if (!schedule.isCompleted && schedule.hasReminder) {
-            _notificationService.scheduleReminder(schedule);
+      if (mounted) {
+        setState(() {
+          _schedules = schedules;
+          _assignments = assignments;
+          
+          // Schedule notifications for upcoming schedules
+          for (var schedule in _schedules) {
+            if (!schedule.isCompleted && schedule.hasReminder) {
+              _notificationService.scheduleReminder(schedule);
+            }
           }
-        }
-      });
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -88,7 +91,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -284,16 +289,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                         markerSize: 6,
                                       ),
                                       onDaySelected: (selectedDay, focusedDay) {
-                                        setState(() {
-                                          _selectedDay = selectedDay;
-                                          _focusedDay = focusedDay;
-                                        });
+                                        if (mounted) {
+                                          setState(() {
+                                            _selectedDay = selectedDay;
+                                            _focusedDay = focusedDay;
+                                          });
+                                        }
                                       },
                                       onPageChanged: (focusedDay) {
-                                        setState(() {
-                                          _focusedDay = focusedDay;
-                                        });
-                                        _loadData();
+                                        if (mounted) {
+                                          setState(() {
+                                            _focusedDay = focusedDay;
+                                          });
+                                          _loadData();
+                                        }
                                       },
                                       eventLoader: _getEventsForDay,
                                     ),

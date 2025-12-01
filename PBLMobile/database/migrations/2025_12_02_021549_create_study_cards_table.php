@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('study_cards', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            // ✅ Menggunakan id() auto-increment
+            $table->id();
+            
+            // Foreign key ke users
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             
             $table->string('title');
@@ -21,14 +24,14 @@ return new class extends Migration
             // Material type: 'text' or 'file'
             $table->enum('material_type', ['text', 'file'])->default('text');
             
-            // Material content (for text type or extracted text from file)
+            // Material content
             $table->longText('material_content')->nullable();
             
-            // Material file URL (for file type)
+            // Material file
             $table->string('material_file_url')->nullable();
             $table->string('material_file_name')->nullable();
-            $table->string('material_file_type')->nullable(); // pdf, docx, txt
-            $table->integer('material_file_size')->nullable(); // in bytes
+            $table->string('material_file_type')->nullable();
+            $table->integer('material_file_size')->nullable();
             
             $table->timestamps();
             $table->softDeletes();

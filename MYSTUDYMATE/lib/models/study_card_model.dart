@@ -1,31 +1,25 @@
 class StudyCard {
   final int id;
   final String title;
-  final String notes;
-  final int quizCount;
-  final int wordCount;
+  final String? notes;
+  final String? filePath;
   final DateTime createdAt;
-  final int? latestQuizId;
 
   StudyCard({
     required this.id,
     required this.title,
-    required this.notes,
-    required this.quizCount,
-    required this.wordCount,
+    this.notes,
+    this.filePath,
     required this.createdAt,
-    this.latestQuizId,
   });
 
   factory StudyCard.fromJson(Map<String, dynamic> json) {
     return StudyCard(
-      id: json['id'],
-      title: json['title'],
-      notes: json['notes'],
-      quizCount: json['quiz_count'] ?? 0,
-      wordCount: json['word_count'] ?? 0,
-      createdAt: DateTime.parse(json['created_at']),
-      latestQuizId: json['latest_quiz_id'],
+      id: json['id'] as int,
+      title: json['title'] as String,
+      notes: json['notes'] as String?,
+      filePath: json['file_path'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
 
@@ -34,10 +28,8 @@ class StudyCard {
       'id': id,
       'title': title,
       'notes': notes,
-      'quiz_count': quizCount,
-      'word_count': wordCount,
+      'file_path': filePath,
       'created_at': createdAt.toIso8601String(),
-      'latest_quiz_id': latestQuizId,
     };
   }
 }

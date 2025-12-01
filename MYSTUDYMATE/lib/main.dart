@@ -14,6 +14,7 @@ import 'screens/taskManagerFeature/plan_task_screen.dart';
 import 'screens/scheduleFeature/scheduleScreen.dart';
 import 'screens/profileFeature/profile_screen.dart';
 import 'screens/pomodoroFeature/pomodoro_screen.dart';
+import 'screens/studyCards/study_cards_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget {
         '/schedule': (_) => const ScheduleScreen(),
         '/profile': (_) => const ProfileScreen(),
         '/pomodoro': (_) => const PomodoroScreen(),
+        '/study_cards': (_) => const StudyCardsScreen(),
       },
     );
   }

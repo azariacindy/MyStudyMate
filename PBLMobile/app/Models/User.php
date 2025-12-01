@@ -59,4 +59,20 @@ class User extends Model
     {
         return $this->name;
     }
+
+    // Add these relationships
+    public function studyCards()
+    {
+        return $this->hasMany(StudyCard::class);
+    }
+    public function quizAttempts()
+    {
+        return $this->hasMany(UserQuizAttempt::class);
+    }
+    
+    // Get completed attempts only
+    public function completedAttempts()
+    {
+        return $this->hasMany(UserQuizAttempt::class)->where('status', 'completed');
+    }
 }
