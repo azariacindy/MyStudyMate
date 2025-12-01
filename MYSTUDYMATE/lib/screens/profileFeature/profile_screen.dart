@@ -193,7 +193,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Row(
                         children:
                             week.asMap().entries.map((dayEntry) {
-                              int dayIndex = dayEntry.key;
                               int day = dayEntry.value;
                               bool isCompleted =
                                   weekIndex == 1 && completedDays.contains(day);

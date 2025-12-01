@@ -382,9 +382,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildActionCard(
                 context,
-                CupertinoIcons.book,
-                'Study Cards',
-                '12 Sets',
+                CupertinoIcons.calendar,
+                'Schedule',
+                'View All',
                 const Color(0xFF3B82F6),
                 '/schedule',
               ),
@@ -922,6 +922,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// FAB - Fixed
+  Widget _buildFAB(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withAlpha(77),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/manage_task'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: const Icon(Icons.add, color: Colors.white, size: 26),
       ),
     );
   }

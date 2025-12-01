@@ -1,6 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:my_study_mate/screens/scheduleFeature/scheduleScreen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/signin_screen.dart';
@@ -12,12 +12,11 @@ import 'services/firebase_messaging_service.dart';
 import 'screens/taskManagerFeature/manage_task_screen.dart';
 import 'screens/taskManagerFeature/plan_task_screen.dart';
 import 'screens/scheduleFeature/scheduleScreen.dart';
+import 'screens/studyCards/study_cards_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp();
   
   // Initialize Firebase Messaging
   await FirebaseMessagingService().initialize();
@@ -78,7 +77,8 @@ class MyApp extends StatelessWidget {
         '/manage_task': (_) => const ManageTaskScreen(),
         '/plan_task': (_) => const PlanTaskScreen(),
         '/schedule': (_) => const ScheduleScreen(),
-      },
+        '/study_cards': (_) => const StudyCardsScreen()
+      }
     );
   }
 }

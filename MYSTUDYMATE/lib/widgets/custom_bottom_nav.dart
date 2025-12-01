@@ -87,7 +87,7 @@ class CustomBottomNav extends StatelessWidget {
         break;
       case 2:
         if (currentIndex != 2) {
-          Navigator.pushNamed(context, '/notifications');
+          Navigator.pushNamed(context, '/study_cards');
         }
         break;
       case 3:
