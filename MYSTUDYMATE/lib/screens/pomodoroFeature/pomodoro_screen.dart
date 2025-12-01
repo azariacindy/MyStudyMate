@@ -1,6 +1,8 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../widgets/custom_bottom_nav.dart';
 
 // enum harus di luar class
@@ -28,17 +30,138 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   bool _isCompleted = false;
 
   Timer? _timer;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
+    _initAudioPlayer();
     _resetAll();
+  }
+
+  Future<void> _initAudioPlayer() async {
+    // Set audio player mode ke MEDIA (bukan LOW_LATENCY)
+    // Ini akan pakai media volume system, bukan ringer volume
+    await _audioPlayer.setAudioContext(
+      AudioContext(
+        android: AudioContextAndroid(
+          isSpeakerphoneOn: true,
+          stayAwake: true,
+          contentType: AndroidContentType.music,
+          usageType: AndroidUsageType.media,
+          audioFocus: AndroidAudioFocus.gain,
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  // Method untuk play notification sound - SIMPLIFIED VERSION
+  Future<void> _playNotificationSound() async {
+    try {
+      debugPrint('🔊 Starting to play notification sound...');
+      
+      // Stop any playing sound first
+      await _audioPlayer.stop();
+      
+      // Set audio context untuk ensure pakai media volume dengan max gain
+      await _audioPlayer.setAudioContext(
+        AudioContext(
+          android: AudioContextAndroid(
+            isSpeakerphoneOn: true,
+            stayAwake: true,
+            contentType: AndroidContentType.sonification, // Content type untuk notification/alarm
+            usageType: AndroidUsageType.alarm, // Usage type ALARM akan pakai alarm volume (paling keras!)
+            audioFocus: AndroidAudioFocus.gainTransient, // Temporary focus untuk notification
+          ),
+        ),
+      );
+      
+      // Set volume MAX
+      await _audioPlayer.setVolume(1.0);
+      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
+      
+      // Play sound dari URL online (notification beep)
+      await _audioPlayer.play(UrlSource('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'));
+      
+      debugPrint('✅ Sound played successfully!');
+      
+      // Triple vibration untuk extra notice
+      HapticFeedback.heavyImpact();
+      await Future.delayed(const Duration(milliseconds: 200));
+      HapticFeedback.heavyImpact();
+      await Future.delayed(const Duration(milliseconds: 200));
+      HapticFeedback.heavyImpact();
+      
+    } catch (e) {
+      debugPrint('❌ Error playing sound: $e');
+      // Last resort: Multiple strong vibrations
+      for (int i = 0; i < 5; i++) {
+        HapticFeedback.heavyImpact();
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+  }
+
+  // Method untuk show notification dialog
+  void _showTransitionNotification(String title, String message, Color color) {
+    if (!mounted) return;
+    
+    // Show dialog dengan auto dismiss
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: color,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _currentMode == TimerMode.rest 
+                  ? Icons.coffee_outlined 
+                  : Icons.psychology_outlined,
+              size: 64,
+              color: Colors.white,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Auto close after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    });
   }
 
   void _resetAll() {
@@ -93,10 +216,19 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   }
 
   void _handlePeriodEnd() {
+    // Play sound dan vibrate
+    _playNotificationSound();
+    
     if (_currentMode == TimerMode.focus) {
       // selesai fokus → masuk rest (cycle yang sama)
       if (_currentCycle <= totalCycles) {
         _setRest();
+        // Show notification untuk rest time
+        _showTransitionNotification(
+          '☕ Rest Time!',
+          'Great job! Take a 5-minute break and relax.',
+          const Color(0xFF5B9FED),
+        );
         startTimer(); // auto lanjut rest
       } else {
         _onAllCompleted();
@@ -106,6 +238,12 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
       if (_currentCycle < totalCycles) {
         _currentCycle++;
         _setFocus();
+        // Show notification untuk focus time
+        _showTransitionNotification(
+          '🔥 Focus Time!',
+          'Break is over! Time to focus for 25 minutes.',
+          const Color(0xFFFFA726),
+        );
         startTimer();
       } else {
         _onAllCompleted();
