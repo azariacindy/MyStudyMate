@@ -4,46 +4,48 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\StudyCardRepositoryInterface;
 use App\Models\StudyCard;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class StudyCardRepository implements StudyCardRepositoryInterface
 {
-    protected StudyCard $model;
-
-    public function __construct(StudyCard $model)
-    {
-        $this->model = $model;
-    }
-
-    public function findById(int $id): ?StudyCard
-    {
-        return $this->model->with(['quizzes'])->find($id);
-    }
-
-    public function findByUser(int $userId, int $perPage = 15): LengthAwarePaginator
-    {
-        return $this->model
-            ->where('user_id', $userId)
-            ->with(['quizzes'])
-            ->latest()
-            ->paginate($perPage);
-    }
-
     public function create(array $data): StudyCard
     {
-        return $this->model->create($data);
+        return StudyCard::create($data);
     }
 
     public function update(int $id, array $data): StudyCard
     {
-        $studyCard = $this->model->findOrFail($id);
+        $studyCard = $this->findById($id);
+        
+        if (!$studyCard) {
+            throw new \Exception('Study Card not found', 404);
+        }
+        
         $studyCard->update($data);
+        
         return $studyCard->fresh();
     }
 
     public function delete(int $id): bool
     {
-        $studyCard = $this->model->findOrFail($id);
+        $studyCard = $this->findById($id);
+        
+        if (!$studyCard) {
+            throw new \Exception('Study Card not found', 404);
+        }
+        
         return $studyCard->delete();
+    }
+
+    public function findById(int $id): ?StudyCard
+    {
+        return StudyCard::find($id);
+    }
+
+    public function findByUser(int $userId): Collection
+    {
+        return StudyCard::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 }

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Contracts\Repositories\StudyCardRepositoryInterface;
 use App\Contracts\Services\StudyCardServiceInterface;
 use App\Models\StudyCard;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class StudyCardService implements StudyCardServiceInterface
 {
@@ -16,9 +16,19 @@ class StudyCardService implements StudyCardServiceInterface
         $this->repository = $repository;
     }
 
-    public function getAllUserStudyCards(int $userId, int $perPage = 15): LengthAwarePaginator
+    public function createStudyCard(array $data): StudyCard
     {
-        return $this->repository->findByUser($userId, $perPage);
+        return $this->repository->create($data);
+    }
+
+    public function updateStudyCard(int $id, array $data): StudyCard
+    {
+        return $this->repository->update($id, $data);
+    }
+
+    public function deleteStudyCard(int $id): bool
+    {
+        return $this->repository->delete($id);
     }
 
     public function getStudyCardById(int $id): ?StudyCard
@@ -26,27 +36,8 @@ class StudyCardService implements StudyCardServiceInterface
         return $this->repository->findById($id);
     }
 
-    public function createStudyCard(array $data, int $userId): StudyCard
+    public function getUserStudyCards(int $userId): Collection
     {
-        $data['user_id'] = $userId;
-        return $this->repository->create($data);
-    }
-
-    public function updateStudyCard(int $id, array $data, int $userId): StudyCard
-    {
-        $studyCard = $this->repository->findById($id);
-        if (!$studyCard || $studyCard->user_id !== $userId) {
-            throw new \Exception('Unauthorized', 403);
-        }
-        return $this->repository->update($id, $data);
-    }
-
-    public function deleteStudyCard(int $id, int $userId): bool
-    {
-        $studyCard = $this->repository->findById($id);
-        if (!$studyCard || $studyCard->user_id !== $userId) {
-            throw new \Exception('Unauthorized', 403);
-        }
-        return $this->repository->delete($id);
+        return $this->repository->findByUser($userId);
     }
 }

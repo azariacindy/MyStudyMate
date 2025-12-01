@@ -3,13 +3,17 @@
 namespace App\Contracts\Services;
 
 use App\Models\StudyCard;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 interface StudyCardServiceInterface
 {
-    public function getAllUserStudyCards(int $userId, int $perPage = 15): LengthAwarePaginator;
+    public function createStudyCard(array $data): StudyCard;
+    
+    public function updateStudyCard(int $id, array $data): StudyCard;
+    
+    public function deleteStudyCard(int $id): bool;
+    
     public function getStudyCardById(int $id): ?StudyCard;
-    public function createStudyCard(array $data, int $userId): StudyCard;
-    public function updateStudyCard(int $id, array $data, int $userId): StudyCard;
-    public function deleteStudyCard(int $id, int $userId): bool;
+    
+    public function getUserStudyCards(int $userId): Collection;
 }
