@@ -31,8 +31,9 @@ class AuthService {
       if (response.statusCode == 200) {
         final user = User.fromJson(response.data['user']);
         
-        // Set user ID to DioClient
+        // Set user ID to DioClient and save to storage
         DioClient.setUserId(user.id);
+        await _storage.write(key: 'user_id', value: user.id.toString());
         
         return user;
       }
@@ -83,8 +84,9 @@ class AuthService {
       final user = User.fromJson(data['user']);
       final token = data['token'] as String;
 
-      // Simpan token
+      // Simpan token dan user_id
       await _storage.write(key: _tokenKey, value: token);
+      await _storage.write(key: 'user_id', value: user.id.toString());
 
       // Set interceptor
       _dio.interceptors.clear();
@@ -143,6 +145,7 @@ class AuthService {
     }
 
     await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: 'user_id');
     _dio.interceptors.clear();
     _dio.options.headers.remove('Authorization');
     

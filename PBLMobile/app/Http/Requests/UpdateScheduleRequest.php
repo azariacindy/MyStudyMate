@@ -19,12 +19,10 @@ class UpdateScheduleRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'date' => 'sometimes|required|date',
-            'start_time' => 'sometimes|required|date_format:H:i',
-            'end_time' => 'sometimes|required|date_format:H:i|after:start_time',
             'location' => 'nullable|string|max:255',
             'lecturer' => 'nullable|string|max:255',
             'color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
@@ -32,7 +30,19 @@ class UpdateScheduleRequest extends FormRequest
             'has_reminder' => 'nullable|boolean',
             'reminder_minutes' => 'nullable|integer|min:1|max:1440',
             'is_completed' => 'nullable|boolean',
+            'is_done' => 'nullable|boolean',
         ];
+
+        // For assignment type, time validation is lenient
+        if ($this->type === 'assignment') {
+            $rules['start_time'] = 'nullable|date_format:H:i';
+            $rules['end_time'] = 'nullable|date_format:H:i';
+        } else {
+            $rules['start_time'] = 'sometimes|required|date_format:H:i';
+            $rules['end_time'] = 'sometimes|required|date_format:H:i|after:start_time';
+        }
+
+        return $rules;
     }
 
     /**

@@ -27,7 +27,9 @@ dependencies:
   permission_handler: ^11.3.1
   firebase_core: ^3.8.1
   firebase_messaging: ^15.1.5
-  file_picker: ^8.1.4
+  image_picker: ^1.0.7
+  cached_network_image: ^3.3.1
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -39,15 +41,28 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/sounds/
     - assets/ui_design/
     - assets/ui_design/element_onboarding/
     - assets/ui_design/vector/
     - assets/ui_design/element_splash/LogoApp.png
     - assets/ui_design/element_splash/Union.png
     - assets/ui_design/element_welcome/Arrow.png
+
+# Flutter Launcher Icons Configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
   
+  # Adaptive icon untuk Android (modern style)
+  adaptive_icon_background: "#FFFFFF"  # White background
+  adaptive_icon_foreground: "assets/images/logo.png"
+  adaptive_icon_monochrome: "assets/images/logo.png"

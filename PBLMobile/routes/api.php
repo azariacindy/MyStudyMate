@@ -1,6 +1,6 @@
 <?php
 
-// use App\Http\Controllers\AssignmentController; // Commented - file has double extension .php.php
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StudyCardController;
@@ -31,16 +31,21 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::get('/current-user', [AuthController::class, 'getCurrentUser']);
 Route::post('/save-fcm-token', [AuthController::class, 'saveFCMToken']);
+Route::put('/update-profile', [AuthController::class, 'updateProfile']);
+Route::post('/change-password', [AuthController::class, 'changePassword']);
+Route::post('/upload-profile-photo', [AuthController::class, 'uploadProfilePhoto']);
 
-// 🔒 Assignment routes → COMMENTED OUT - AssignmentController has wrong filename
-// Route::prefix('assignments')->group(function () {
-//     Route::get('/', [AssignmentController::class, 'index']); // GET /api/assignments
-//     Route::post('/', [AssignmentController::class, 'store']);
-//     Route::put('/{id}', [AssignmentController::class, 'update']);
-//     Route::delete('/{id}', [AssignmentController::class, 'destroy']);
-//     Route::patch('/{id}/mark-done', [AssignmentController::class, 'markAsDone']);
-//     Route::get('/weekly-progress', [AssignmentController::class, 'weeklyProgress']);
-// });
+// 🔒 Assignment routes → prefix: /assignments (separate table)
+Route::prefix('assignments')->group(function () {
+    Route::get('/', [AssignmentController::class, 'index']); // GET /api/assignments?search=keyword&status=pending|done
+    Route::post('/', [AssignmentController::class, 'store']); // POST /api/assignments
+    Route::get('/weekly-progress', [AssignmentController::class, 'getWeeklyProgress']); // GET /api/assignments/weekly-progress
+    Route::get('/by-status', [AssignmentController::class, 'getByStatus']); // GET /api/assignments/by-status
+    Route::get('/{id}', [AssignmentController::class, 'show']); // GET /api/assignments/{id}
+    Route::put('/{id}', [AssignmentController::class, 'update']); // PUT /api/assignments/{id}
+    Route::patch('/{id}/mark-done', [AssignmentController::class, 'markAsDone']); // PATCH /api/assignments/{id}/mark-done
+    Route::delete('/{id}', [AssignmentController::class, 'destroy']); // DELETE /api/assignments/{id}
+});
 
 // 🔒 Schedule routes → prefix: /schedules
 Route::prefix('schedules')->group(function () {

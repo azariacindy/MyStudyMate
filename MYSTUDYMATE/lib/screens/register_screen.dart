@@ -115,7 +115,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Row(
                     children: [
                       IconButton(
-                        onPressed: () => Navigator.pushReplacementNamed(context, '/signin'),
+                        onPressed:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/signin',
+                            ),
                         icon: Image.asset(
                           'assets/ui_design/vector/back icon.png',
                           width: 24,
@@ -183,8 +187,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _nameController,
+                          style: const TextStyle(
+                            color:
+                                AppColors
+                                    .textLight, // teks diketik user = abu-abu
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Your full name',
+                            hintStyle: const TextStyle(
+                              color: AppColors.textLight, // placeholder abu-abu
+                              fontSize: 14,
+                            ),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: Image.asset(
@@ -201,12 +215,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               borderRadius: BorderRadius.circular(25),
                             ),
                           ),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty)
-                                  ? 'Full name is required'
-                                  : null,
+                          validator:
+                              (value) =>
+                                  (value == null || value.trim().isEmpty)
+                                      ? 'Full name is required'
+                                      : null,
                         ),
                         const SizedBox(height: 20),
+
                         // Username
                         Align(
                           alignment: Alignment.centerLeft,
@@ -222,8 +238,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _usernameController,
+                          style: const TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Choose a username',
+                            hintStyle: const TextStyle(
+                              color: AppColors.textLight,
+                              fontSize: 14,
+                            ),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: Image.asset(
@@ -251,6 +275,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                         const SizedBox(height: 20),
+
                         // Email
                         Align(
                           alignment: Alignment.centerLeft,
@@ -266,8 +291,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _emailController,
+                          style: const TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'example@email.com',
+                            hintStyle: const TextStyle(
+                              color: AppColors.textLight,
+                              fontSize: 14,
+                            ),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: Image.asset(
@@ -288,13 +321,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return "Email is required";
                             }
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                            if (!RegExp(
+                              r'^[^@]+@[^@]+\.[^@]+',
+                            ).hasMatch(value)) {
                               return "Enter a valid email";
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 20),
+
                         // Password
                         Align(
                           alignment: Alignment.centerLeft,
@@ -311,8 +347,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          style: const TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Create a password',
+                            hintStyle: const TextStyle(
+                              color: AppColors.textLight,
+                              fontSize: 14,
+                            ),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: Image.asset(
@@ -330,9 +374,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 'assets/ui_design/vector/eye icon.png',
                                 width: 20,
                                 height: 20,
-                                color: _obscurePassword
-                                    ? AppColors.textLight
-                                    : AppColors.primary,
+                                color:
+                                    _obscurePassword
+                                        ? AppColors.textLight
+                                        : AppColors.primary,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -344,12 +389,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               borderRadius: BorderRadius.circular(25),
                             ),
                           ),
-                          validator: (value) =>
-                              (value == null || value.length < 6)
-                                  ? 'Password must be at least 6 characters'
-                                  : null,
+                          validator:
+                              (value) =>
+                                  (value == null || value.length < 6)
+                                      ? 'Password must be at least 6 characters'
+                                      : null,
                         ),
                         const SizedBox(height: 20),
+
                         // Confirm Password
                         Align(
                           alignment: Alignment.centerLeft,
@@ -366,8 +413,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
+                          style: const TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Re-enter your password',
+                            hintStyle: const TextStyle(
+                              color: AppColors.textLight,
+                              fontSize: 14,
+                            ),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(14.0),
                               child: Image.asset(
@@ -385,13 +440,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 'assets/ui_design/vector/eye icon.png',
                                 width: 20,
                                 height: 20,
-                                color: _obscureConfirmPassword
-                                    ? AppColors.textLight
-                                    : AppColors.primary,
+                                color:
+                                    _obscureConfirmPassword
+                                        ? AppColors.textLight
+                                        : AppColors.primary,
                               ),
                               onPressed: () {
                                 setState(() {
-                                  _obscureConfirmPassword = !_obscureConfirmPassword;
+                                  _obscureConfirmPassword =
+                                      !_obscureConfirmPassword;
                                 });
                               },
                             ),
@@ -407,6 +464,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                         const SizedBox(height: 32),
+
                         // Submit Button
                         SizedBox(
                           width: double.infinity,
@@ -419,27 +477,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderRadius: BorderRadius.circular(25),
                               ),
                             ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  )
-                                : const Text(
-                                    'Sign Up',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
+                            child:
+                                _isLoading
+                                    ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    )
+                                    : const Text(
+                                      'Sign Up',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color.fromARGB(
+                                          255,
+                                          255,
+                                          255,
+                                          255,
+                                        ),
+                                      ),
+                                    ),
                           ),
                         ),
                         const SizedBox(height: 20),
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text("Already have an account? "),
                             TextButton(
-                              onPressed: () => Navigator.pushReplacementNamed(
-                                context,
-                                '/signin',
-                              ),
+                              onPressed:
+                                  () => Navigator.pushReplacementNamed(
+                                    context,
+                                    '/signin',
+                                  ),
                               child: const Text(
                                 'Sign In',
                                 style: TextStyle(color: AppColors.primary),

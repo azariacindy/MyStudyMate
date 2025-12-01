@@ -18,6 +18,10 @@ class Schedule {
   final bool isCompleted;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  
+  // Assignment-specific fields
+  final bool? isDone;
+  final DateTime? deadline; // For assignment type
 
   Schedule({
     required this.id,
@@ -36,6 +40,8 @@ class Schedule {
     required this.isCompleted,
     this.createdAt,
     this.updatedAt,
+    this.isDone,
+    this.deadline,
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
@@ -56,6 +62,8 @@ class Schedule {
       isCompleted: json['is_completed'] == true || json['is_completed'] == 1,
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+      isDone: json['is_done'] == true || json['is_done'] == 1,
+      deadline: json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
     );
   }
 
@@ -76,7 +84,7 @@ class Schedule {
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final data = {
       'title': title,
       'description': description,
       'date': DateFormat('yyyy-MM-dd').format(date),
@@ -90,6 +98,14 @@ class Schedule {
       'reminder_minutes': reminderMinutes,
       'is_completed': isCompleted,
     };
+    
+    // Add assignment-specific fields
+    if (type == 'assignment') {
+      if (isDone != null) data['is_done'] = isDone;
+      if (deadline != null) data['deadline'] = DateFormat('yyyy-MM-dd HH:mm:ss').format(deadline!);
+    }
+    
+    return data;
   }
 
   // Helper to get formatted time string for display

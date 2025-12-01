@@ -27,6 +27,9 @@ class Schedule extends Model
         'reminder_minutes',
         'is_completed',
         'notification_sent',
+        'is_done',
+        'deadline',
+        'last_notification_type',
     ];
 
     protected $casts = [
@@ -35,6 +38,8 @@ class Schedule extends Model
         'is_completed' => 'boolean',
         'reminder_minutes' => 'integer',
         'notification_sent' => 'boolean',
+        'is_done' => 'boolean',
+        'deadline' => 'datetime',
     ];
 
     protected $appends = ['start_datetime', 'end_datetime', 'reminder_datetime'];
@@ -92,6 +97,26 @@ class Schedule extends Model
     public function scopeIncomplete($query)
     {
         return $query->where('is_completed', false);
+    }
+
+    public function scopeAssignments($query)
+    {
+        return $query->where('type', 'assignment');
+    }
+
+    public function scopePendingAssignments($query)
+    {
+        return $query->where('type', 'assignment')
+                     ->where('is_done', false);
+    }
+
+    public function scopeWeeklyAssignments($query)
+    {
+        $startOfWeek = now()->startOfWeek();
+        $endOfWeek = now()->endOfWeek();
+        
+        return $query->where('type', 'assignment')
+                     ->whereBetween('deadline', [$startOfWeek, $endOfWeek]);
     }
 
     // Methods

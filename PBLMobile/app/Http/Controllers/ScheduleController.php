@@ -9,10 +9,22 @@ use App\Http\Resources\ScheduleResource;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class ScheduleController extends Controller
 {
+    /**
+     * Clear user's schedules cache
+     */
+    private function clearSchedulesCache($userId)
+    {
+        Cache::forget("schedules_all_user_{$userId}");
+        Cache::forget("schedules_upcoming_user_{$userId}");
+        // Clear date range caches (wildcard not supported, so we clear key patterns)
+        Cache::flush(); // Or implement more granular cache tags
+    }
+
     /**
      * Get authenticated user ID with fallback for testing
      */
@@ -45,10 +57,13 @@ class ScheduleController extends Controller
         try {
             $userId = $this->getUserId($request);
             
-            $schedules = Schedule::forUser($userId)
-                ->orderBy('date', 'desc')
-                ->orderBy('start_time', 'asc')
-                ->get();
+            // Cache for 30 seconds
+            $schedules = Cache::remember("schedules_all_user_{$userId}", 30, function () use ($userId) {
+                return Schedule::forUser($userId)
+                    ->orderBy('date', 'desc')
+                    ->orderBy('start_time', 'asc')
+                    ->get();
+            });
 
             return response()->json([
                 'success' => true,
@@ -73,37 +88,57 @@ class ScheduleController extends Controller
         try {
             $userId = $this->getUserId($request);
 
-            // Check for schedule conflicts
-            $hasConflict = Schedule::checkConflict(
-                $userId,
-                $request->date,
-                $request->start_time,
-                $request->end_time
-            );
+            // Check for schedule conflicts (skip for assignment type)
+            if ($request->type !== 'assignment') {
+                $hasConflict = Schedule::checkConflict(
+                    $userId,
+                    $request->date,
+                    $request->start_time,
+                    $request->end_time
+                );
 
-            if ($hasConflict) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Schedule conflict detected. You already have a schedule at this time.',
-                    'has_conflict' => true,
-                ], 422);
+                if ($hasConflict) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Schedule conflict detected. You already have a schedule at this time.',
+                        'has_conflict' => true,
+                    ], 422);
+                }
             }
 
-            // Create schedule
-            $schedule = Schedule::create([
+            // Prepare data
+            $data = [
                 'user_id' => $userId,
                 'title' => $request->title,
                 'description' => $request->description,
                 'date' => $request->date,
-                'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
                 'location' => $request->location,
                 'lecturer' => $request->lecturer,
-                'color' => $request->color,
+                'color' => $request->color ?? '#5B9FED',
                 'type' => $request->type,
                 'has_reminder' => $request->has_reminder ?? true,
                 'reminder_minutes' => $request->reminder_minutes ?? 30,
-            ]);
+            ];
+
+            // Handle time fields based on type
+            if ($request->type === 'assignment') {
+                // For assignment, use default times or provided ones
+                $data['start_time'] = $request->start_time ?? '00:00';
+                $data['end_time'] = $request->end_time ?? '23:59';
+                $data['is_done'] = false;
+                // Set deadline to date + end of day (23:59:59)
+                $data['deadline'] = Carbon::parse($request->date)->endOfDay();
+            } else {
+                // For other types, times are required
+                $data['start_time'] = $request->start_time;
+                $data['end_time'] = $request->end_time;
+            }
+
+            // Create schedule
+            $schedule = Schedule::create($data);
+
+            // Clear cache after creating
+            $this->clearSchedulesCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -152,8 +187,8 @@ class ScheduleController extends Controller
             $userId = $this->getUserId($request);
             $schedule = Schedule::forUser($userId)->findOrFail($id);
 
-            // Check for conflicts (excluding current schedule)
-            if ($request->has('date') || $request->has('start_time') || $request->has('end_time')) {
+            // Check for conflicts (excluding current schedule, skip for assignment)
+            if ($schedule->type !== 'assignment' && ($request->has('date') || $request->has('start_time') || $request->has('end_time'))) {
                 $date = $request->date ?? $schedule->date->format('Y-m-d');
                 $startTime = $request->start_time ?? date('H:i', strtotime($schedule->start_time));
                 $endTime = $request->end_time ?? date('H:i', strtotime($schedule->end_time));
@@ -188,7 +223,15 @@ class ScheduleController extends Controller
                 $data['notification_sent'] = false;
             }
 
+            // Update deadline for assignment if date changed
+            if ($schedule->type === 'assignment' && $request->has('date')) {
+                $data['deadline'] = Carbon::parse($request->date)->endOfDay();
+            }
+
             $schedule->update($data);
+
+            // Clear cache after updating
+            $this->clearSchedulesCache($this->getUserId($request));
 
             return response()->json([
                 'success' => true,
@@ -211,8 +254,12 @@ class ScheduleController extends Controller
     public function destroy(Request $request, $id)
     {
         try {
-            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
+            $userId = $this->getUserId($request);
+            $schedule = Schedule::forUser($userId)->findOrFail($id);
             $schedule->delete();
+
+            // Clear cache after deleting
+            $this->clearSchedulesCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -265,11 +312,17 @@ class ScheduleController extends Controller
                 'end_date' => 'required|date|after_or_equal:start_date',
             ]);
 
-            $schedules = Schedule::forUser($this->getUserId($request))
-                ->betweenDates($request->start_date, $request->end_date)
-                ->orderBy('date')
-                ->orderBy('start_time')
-                ->get();
+            $userId = $this->getUserId($request);
+            $cacheKey = "schedules_range_user_{$userId}_" . md5($request->start_date . $request->end_date);
+            
+            // Cache for 30 seconds
+            $schedules = Cache::remember($cacheKey, 30, function () use ($userId, $request) {
+                return Schedule::forUser($userId)
+                    ->betweenDates($request->start_date, $request->end_date)
+                    ->orderBy('date')
+                    ->orderBy('start_time')
+                    ->get();
+            });
 
             return response()->json([
                 'success' => true,
@@ -293,12 +346,17 @@ class ScheduleController extends Controller
     {
         try {
             $limit = $request->input('limit', 5);
+            $userId = $this->getUserId($request);
+            $cacheKey = "schedules_upcoming_user_{$userId}_limit_{$limit}";
 
-            $schedules = Schedule::forUser($this->getUserId($request))
-                ->upcoming()
-                ->incomplete()
-                ->limit($limit)
-                ->get();
+            // Cache for 30 seconds
+            $schedules = Cache::remember($cacheKey, 30, function () use ($userId, $limit) {
+                return Schedule::forUser($userId)
+                    ->upcoming()
+                    ->incomplete()
+                    ->limit($limit)
+                    ->get();
+            });
 
             return response()->json([
                 'success' => true,
@@ -321,10 +379,14 @@ class ScheduleController extends Controller
     public function toggleComplete(Request $request, $id)
     {
         try {
-            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
+            $userId = $this->getUserId($request);
+            $schedule = Schedule::forUser($userId)->findOrFail($id);
             
             $schedule->is_completed = $request->input('is_completed', !$schedule->is_completed);
             $schedule->save();
+
+            // Clear cache after status change
+            $this->clearSchedulesCache($userId);
 
             return response()->json([
                 'success' => true,
@@ -405,6 +467,181 @@ class ScheduleController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve statistics',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all assignments with optional search.
+     * GET /api/schedules/assignments?search=keyword
+     */
+    public function getAssignments(Request $request)
+    {
+        try {
+            $userId = $this->getUserId($request);
+            $query = Schedule::forUser($userId)->assignments();
+
+            // Search functionality
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'ILIKE', "%{$search}%")
+                      ->orWhere('description', 'ILIKE', "%{$search}%");
+                });
+            }
+
+            // Filter by status
+            if ($request->has('status')) {
+                if ($request->status === 'pending') {
+                    $query->where('is_done', false);
+                } elseif ($request->status === 'done') {
+                    $query->where('is_done', true);
+                }
+            }
+
+            $assignments = $query->orderBy('deadline', 'asc')->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Assignments retrieved successfully',
+                'data' => ScheduleResource::collection($assignments),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve assignments',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mark assignment as done.
+     * PATCH /api/schedules/{id}/mark-done
+     */
+    public function markAsDone(Request $request, $id)
+    {
+        try {
+            $schedule = Schedule::forUser($this->getUserId($request))->findOrFail($id);
+
+            if ($schedule->type !== 'assignment') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This schedule is not an assignment',
+                ], 400);
+            }
+
+            $schedule->is_done = true;
+            $schedule->is_completed = true;
+            $schedule->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Assignment marked as done',
+                'data' => new ScheduleResource($schedule),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark assignment as done',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get weekly assignment progress.
+     * GET /api/schedules/assignments/weekly-progress
+     */
+    public function getWeeklyProgress(Request $request)
+    {
+        try {
+            $userId = $this->getUserId($request);
+            $startOfWeek = Carbon::now()->startOfWeek();
+            $endOfWeek = Carbon::now()->endOfWeek();
+
+            $totalAssignments = Schedule::forUser($userId)
+                ->assignments()
+                ->whereBetween('deadline', [$startOfWeek, $endOfWeek])
+                ->count();
+
+            $completedAssignments = Schedule::forUser($userId)
+                ->assignments()
+                ->whereBetween('deadline', [$startOfWeek, $endOfWeek])
+                ->where('is_done', true)
+                ->count();
+
+            $percentage = $totalAssignments > 0 
+                ? round(($completedAssignments / $totalAssignments) * 100, 2) 
+                : 0;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Weekly progress retrieved successfully',
+                'data' => [
+                    'total' => $totalAssignments,
+                    'completed' => $completedAssignments,
+                    'pending' => $totalAssignments - $completedAssignments,
+                    'percentage' => $percentage,
+                    'week_start' => $startOfWeek->toDateString(),
+                    'week_end' => $endOfWeek->toDateString(),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve weekly progress',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get assignments by deadline status (overdue, due today, upcoming).
+     * GET /api/schedules/assignments/by-status
+     */
+    public function getAssignmentsByStatus(Request $request)
+    {
+        try {
+            $userId = $this->getUserId($request);
+            $now = Carbon::now();
+
+            $overdue = Schedule::forUser($userId)
+                ->assignments()
+                ->where('is_done', false)
+                ->where('deadline', '<', $now)
+                ->orderBy('deadline', 'asc')
+                ->get();
+
+            $dueToday = Schedule::forUser($userId)
+                ->assignments()
+                ->where('is_done', false)
+                ->whereDate('deadline', $now->toDateString())
+                ->orderBy('deadline', 'asc')
+                ->get();
+
+            $upcoming = Schedule::forUser($userId)
+                ->assignments()
+                ->where('is_done', false)
+                ->where('deadline', '>', $now->endOfDay())
+                ->orderBy('deadline', 'asc')
+                ->limit(10)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Assignments retrieved successfully',
+                'data' => [
+                    'overdue' => ScheduleResource::collection($overdue),
+                    'due_today' => ScheduleResource::collection($dueToday),
+                    'upcoming' => ScheduleResource::collection($upcoming),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve assignments',
                 'error' => $e->getMessage(),
             ], 500);
         }

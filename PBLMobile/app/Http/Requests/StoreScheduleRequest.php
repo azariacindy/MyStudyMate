@@ -19,12 +19,10 @@ class StoreScheduleRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'date' => 'required|date', // Remove after_or_equal:today for more flexibility
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'date' => 'required|date',
             'location' => 'nullable|string|max:255',
             'lecturer' => 'nullable|string|max:255',
             'color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
@@ -32,6 +30,18 @@ class StoreScheduleRequest extends FormRequest
             'has_reminder' => 'nullable|boolean',
             'reminder_minutes' => 'nullable|integer|min:1|max:1440',
         ];
+
+        // For assignment type, time fields are optional (will use defaults)
+        if ($this->type === 'assignment') {
+            $rules['start_time'] = 'nullable|date_format:H:i';
+            $rules['end_time'] = 'nullable|date_format:H:i';
+        } else {
+            // For other types, time fields are required
+            $rules['start_time'] = 'required|date_format:H:i';
+            $rules['end_time'] = 'required|date_format:H:i|after:start_time';
+        }
+
+        return $rules;
     }
 
     /**
