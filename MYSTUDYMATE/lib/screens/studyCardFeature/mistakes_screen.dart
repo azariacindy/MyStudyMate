@@ -142,7 +142,7 @@ class MistakesScreen extends StatelessWidget {
                       icon: Icons.assignment,
                       isActive: true,
                       onTap: () {
-                        Navigator.pushNamed(context, '/manage_task');
+                        Navigator.pushNamed(context, '/study_cards');
                       },
                     ),
                     _BottomNavItem(
