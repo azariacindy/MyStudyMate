@@ -249,7 +249,7 @@ class _AddStudyCardScreenState extends State<AddStudyCardScreen> {
                       icon: Icons.assignment,
                       isActive: true,
                       onTap: () {
-                        Navigator.pushNamed(context, '/manage_task');
+                        Navigator.pushNamed(context, '/study_cards');
                       },
                     ),
                     _BottomNavItem(
