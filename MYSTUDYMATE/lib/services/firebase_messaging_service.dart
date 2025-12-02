@@ -19,7 +19,7 @@ class FirebaseMessagingService {
   factory FirebaseMessagingService() => _instance;
   FirebaseMessagingService._internal();
 
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _firebaseMessaging;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   String? _fcmToken;
@@ -27,8 +27,19 @@ class FirebaseMessagingService {
 
   /// Initialize Firebase Messaging
   Future<void> initialize() async {
+    try {
+      // Initialize Firebase first
+      await Firebase.initializeApp();
+      _firebaseMessaging = FirebaseMessaging.instance;
+      
+      print('✅ Firebase initialized successfully');
+    } catch (e) {
+      print('❌ Firebase initialization failed: $e');
+      rethrow; // Let main.dart handle it
+    }
+    
     // Request permission for iOS
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+    NotificationSettings settings = await _firebaseMessaging!.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -57,7 +68,7 @@ class FirebaseMessagingService {
     await _getFCMToken();
 
     // Listen to token refresh
-    _firebaseMessaging.onTokenRefresh.listen((newToken) {
+    _firebaseMessaging?.onTokenRefresh.listen((newToken) {
       _fcmToken = newToken;
       print('[FCM] Token refreshed: $newToken');
       // TODO: Send new token to backend
@@ -113,11 +124,11 @@ class FirebaseMessagingService {
     try {
       if (kIsWeb) {
         // For web, use VAPID key
-        _fcmToken = await _firebaseMessaging.getToken(
+        _fcmToken = await _firebaseMessaging?.getToken(
           vapidKey: 'BIL1XlaE85Dgstxwiw_75NSRwQOtIDwzdNvZrVJahZxNAgfwTt3d5rUKWM__Wy4_tLmyV2t84y-x4K_VTP9r5wg',
         );
       } else {
-        _fcmToken = await _firebaseMessaging.getToken();
+        _fcmToken = await _firebaseMessaging?.getToken();
       }
       
       print('[FCM] Token: $_fcmToken');
@@ -181,19 +192,19 @@ class FirebaseMessagingService {
 
   /// Subscribe to topic
   Future<void> subscribeToTopic(String topic) async {
-    await _firebaseMessaging.subscribeToTopic(topic);
+    await _firebaseMessaging?.subscribeToTopic(topic);
     print('[FCM] Subscribed to topic: $topic');
   }
 
   /// Unsubscribe from topic
   Future<void> unsubscribeFromTopic(String topic) async {
-    await _firebaseMessaging.unsubscribeFromTopic(topic);
+    await _firebaseMessaging?.unsubscribeFromTopic(topic);
     print('[FCM] Unsubscribed from topic: $topic');
   }
 
   /// Delete FCM token
   Future<void> deleteToken() async {
-    await _firebaseMessaging.deleteToken();
+    await _firebaseMessaging?.deleteToken();
     _fcmToken = null;
     print('[FCM] Token deleted');
   }
