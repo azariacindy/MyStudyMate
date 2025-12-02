@@ -18,14 +18,17 @@ import 'screens/pomodoroFeature/pomodoro_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  
-  // Initialize Firebase Messaging
-  await FirebaseMessagingService().initialize();
+  // Initialize Firebase Messaging (optional - skip if not configured)
+  try {
+    await FirebaseMessagingService().initialize();
+  } catch (e) {
+    print('⚠️ Firebase not configured, skipping initialization: $e');
+  }
   
   try {
     await initializeSupabaseIfConfigured();
   } catch (e) {
-    // Supabase optional
+    print('⚠️ Supabase not configured, skipping initialization: $e');
   }
   
   runApp(const MyApp());
