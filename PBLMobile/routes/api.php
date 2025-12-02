@@ -26,14 +26,19 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // routes/api.php TEST
 Route::get('/test', fn() => response()->json(['message' => 'Laravel reachable!']));
 
+// Public routes (no auth required)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
-Route::get('/current-user', [AuthController::class, 'getCurrentUser']);
-Route::post('/save-fcm-token', [AuthController::class, 'saveFCMToken']);
-Route::put('/update-profile', [AuthController::class, 'updateProfile']);
-Route::post('/change-password', [AuthController::class, 'changePassword']);
-Route::post('/upload-profile-photo', [AuthController::class, 'uploadProfilePhoto']);
+
+// Protected routes (require Sanctum auth)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/current-user', [AuthController::class, 'getCurrentUser']);
+    Route::post('/save-fcm-token', [AuthController::class, 'saveFCMToken']);
+    Route::put('/update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::post('/upload-profile-photo', [AuthController::class, 'uploadProfilePhoto']);
+});
 
 // 🔒 Assignment routes → prefix: /assignments (separate table)
 Route::prefix('assignments')->group(function () {
