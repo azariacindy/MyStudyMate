@@ -164,7 +164,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       // Title
                       const Expanded(
                         child: Text(
-                          'My Schedule',
+                          'Daily Board',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
