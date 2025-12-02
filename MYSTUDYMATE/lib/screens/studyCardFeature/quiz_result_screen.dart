@@ -210,7 +210,7 @@ class QuizResultScreen extends StatelessWidget {
                       icon: Icons.assignment,
                       isActive: false,
                       onTap: () {
-                        Navigator.pushNamed(context, '/manage_task');
+                        Navigator.pushNamed(context, '/study_cards');
                       },
                     ),
                     _BottomNavItem(
