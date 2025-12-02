@@ -141,7 +141,7 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                         icon: Icons.assignment,
                         isActive: true,
                         onTap: () {
-                          Navigator.pushNamed(context, '/manage_task');
+                          // Already in study cards screen
                         },
                       ),
                       _BottomNavItem(
