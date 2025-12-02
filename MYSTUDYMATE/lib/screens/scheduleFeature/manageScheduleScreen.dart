@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
 import '../../services/schedule_service.dart';
+import '../../widgets/custom_bottom_nav.dart';
 
 class ManageScheduleScreen extends StatefulWidget {
   final DateTime? selectedDate;
@@ -237,19 +238,53 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF5B9FED),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Add Schedule',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(100),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  // Back button with circle background
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(51),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  // Title
+                  const Expanded(
+                    child: Text(
+                      'Add Daily Board',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  // Spacer untuk balance
+                  const SizedBox(width: 56),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -345,16 +380,23 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF5B9FED) : Colors.white,
+                            gradient: isSelected
+                                ? const LinearGradient(
+                                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            color: isSelected ? null : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF5B9FED) : const Color(0xFFE5E7EB),
+                              color: isSelected ? Colors.transparent : const Color(0xFFE5E7EB),
                               width: 2,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF5B9FED).withOpacity(0.3),
+                                      color: const Color(0xFF8B5CF6).withAlpha(77),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),
@@ -366,7 +408,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                             children: [
                               Icon(
                                 type['icon'] as IconData,
-                                color: isSelected ? Colors.white : const Color(0xFF5B9FED),
+                                color: isSelected ? Colors.white : const Color(0xFF8B5CF6),
                                 size: 28,
                               ),
                               const SizedBox(height: 6),
@@ -408,7 +450,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF5B9FED).withOpacity(0.1),
+                              color: const Color(0xFF5B9FED).withAlpha(26),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.calendar_today, color: Color(0xFF5B9FED), size: 20),
@@ -598,7 +640,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withOpacity(0.3),
+                                    color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withAlpha(77),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -650,7 +692,8 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         style: const TextStyle(fontSize: 13),
                       ),
                       value: _hasReminder,
-                      activeColor: const Color(0xFF5B9FED),
+                      activeThumbColor: const Color(0xFF5B9FED),
+                      activeTrackColor: const Color(0xFF5B9FED).withAlpha(128),
                       onChanged: (value) {
                         setState(() => _hasReminder = value);
                       },
@@ -667,7 +710,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: DropdownButtonFormField<int>(
-                        value: _reminderMinutes,
+                        initialValue: _reminderMinutes,
                         decoration: const InputDecoration(
                           labelText: 'Remind me before',
                           prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF5B9FED)),
@@ -712,11 +755,12 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 100), // Space for bottom nav
             ],
           ),
         ),
       ),
+      bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
     );
   }
 
@@ -731,7 +775,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -746,7 +790,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5B9FED).withOpacity(0.1),
+                  color: const Color(0xFF5B9FED).withAlpha(26),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: const Color(0xFF5B9FED), size: 20),
