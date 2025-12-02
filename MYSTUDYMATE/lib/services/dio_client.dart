@@ -21,26 +21,45 @@ class DioClient {
   static Dio getInstance() {
     if (!_initialized) {
       String cleanBaseUrl = baseUrl.replaceAll(RegExp(r'/$'), '');
-      _dio.options.baseUrl = '$cleanBaseUrl/api/'; // ✅ Bersih, tanpa spasi
+      _dio.options.baseUrl = '$cleanBaseUrl/api/';
+      
+      print('🌐 DioClient Base URL: ${_dio.options.baseUrl}');
 
-      _dio.options.connectTimeout = const Duration(seconds: 10);
-      _dio.options.receiveTimeout = const Duration(seconds: 10);
+      _dio.options.connectTimeout = const Duration(seconds: 30);
+      _dio.options.receiveTimeout = const Duration(seconds: 30);
+      _dio.options.sendTimeout = const Duration(seconds: 30);
       _dio.options.contentType = 'application/json';
       _dio.options.headers['Accept'] = 'application/json';
       _dio.options.headers['X-User-Id'] = _currentUserId.toString();
 
-      // Add error logging only (disable verbose logs for production)
+      // Add detailed logging
       _dio.interceptors.clear();
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: false,
-        responseBody: false,
-        error: true,
-        requestHeader: false,
-        responseHeader: false,
-        request: false,
-      ));
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            print('🔵 REQUEST: ${options.method} ${options.uri}');
+            print('🔵 Headers: ${options.headers}');
+            return handler.next(options);
+          },
+          onResponse: (response, handler) {
+            print('✅ RESPONSE: ${response.statusCode} ${response.requestOptions.uri}');
+            return handler.next(response);
+          },
+          onError: (error, handler) {
+            print('❌ ERROR: ${error.type}');
+            print('❌ Message: ${error.message}');
+            print('❌ URL: ${error.requestOptions.uri}');
+            if (error.response != null) {
+              print('❌ Response Status: ${error.response?.statusCode}');
+              print('❌ Response Data: ${error.response?.data}');
+            }
+            return handler.next(error);
+          },
+        ),
+      );
 
       _initialized = true;
+      print('✅ DioClient initialized');
     }
 
     return _dio;
