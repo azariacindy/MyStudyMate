@@ -79,6 +79,12 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Convert to User model for Sanctum
+        $userModel = \App\Models\User::find($user->id);
+        
+        // Create Sanctum token
+        $token = $userModel->createToken('mobile-app')->plainTextToken;
+
         return response()->json([
             'user' => [
                 'id' => (string) $user->id,
@@ -87,24 +93,22 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'profile_photo_url' => $user->profile_photo_url ?? null,
             ],
-            'token' => Str::random(60)
+            'token' => $token
         ]);
     }
 
     /**
-     * Get current user (testing mode - using X-User-Id header)
+     * Get current user (using Sanctum auth)
      */
     public function getCurrentUser(Request $request)
     {
-        // For testing: get user ID from header
-        $userId = $request->header('X-User-Id', 1);
-        
-        $user = DB::table('users')->where('id', $userId)->first();
+        // Get authenticated user from Sanctum
+        $user = $request->user();
         
         if (!$user) {
             return response()->json([
-                'message' => 'User not found.'
-            ], 404);
+                'message' => 'Unauthorized.'
+            ], 401);
         }
 
         return response()->json([
