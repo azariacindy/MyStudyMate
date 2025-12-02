@@ -19,8 +19,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   // Konfigurasi - Total 1 jam (60 menit)
   // 2 cycles: (25 min focus + 5 min rest) x 2 = 60 min
   static const int totalCycles = 2;
-  static const int focusDuration = 25; // menit
-  static const int restDuration = 5; // menit
+  static const int focusDuration = 1; // menit
+  static const int restDuration = 1; // menit
 
   TimerMode _currentMode = TimerMode.focus;
   int _currentCycle = 1; // mulai dari cycle 1
@@ -755,7 +755,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
                 _handleNavigation(context, '/schedule');
                 break;
               case 2:
-                _handleNavigation(context, '/manage_task');
+                _handleNavigation(context, '/study_cards');
                 break;
               case 3:
                 _handleNavigation(context, '/profile');
