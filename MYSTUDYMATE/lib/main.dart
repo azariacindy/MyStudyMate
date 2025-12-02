@@ -9,8 +9,6 @@ import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'utils/supabase_config.dart';
 import 'services/firebase_messaging_service.dart';
-import 'screens/taskManagerFeature/manage_task_screen.dart';
-import 'screens/taskManagerFeature/plan_task_screen.dart';
 import 'screens/scheduleFeature/scheduleScreen.dart';
 import 'screens/profileFeature/profile_screen.dart';
 import 'screens/pomodoroFeature/pomodoro_screen.dart';
@@ -78,8 +76,6 @@ class MyApp extends StatelessWidget {
         '/signup': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
         '/onboarding': (_) => const OnboardingScreen(),
-        '/manage_task': (_) => const ManageTaskScreen(),
-        '/plan_task': (_) => const PlanTaskScreen(),
         '/schedule': (_) => const ScheduleScreen(),
         '/profile': (_) => const ProfileScreen(),
         '/pomodoro': (_) => const PomodoroScreen(),
