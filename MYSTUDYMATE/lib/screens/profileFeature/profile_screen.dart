@@ -133,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           
           if (index == 0) Navigator.pushReplacementNamed(context, '/home');
           if (index == 1) Navigator.pushReplacementNamed(context, '/schedule');
-          if (index == 2) Navigator.pushReplacementNamed(context, '/manage_task');
+          if (index == 2) Navigator.pushReplacementNamed(context, '/study_cards');
         },
       ),
     );
@@ -153,30 +153,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           bottomRight: Radius.circular(32),
         ),
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(width: 48), // Balance for logout button
-              const Text(
-                'Profile',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              IconButton(
-                onPressed: _handleLogout,
-                icon: const Icon(Icons.logout, color: Colors.white, size: 24),
-                tooltip: 'Logout',
-              ),
-            ],
+      child: const Center(
+        child: Text(
+          'Profile',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
           ),
-        ],
+        ),
       ),
     );
   }
