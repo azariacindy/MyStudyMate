@@ -372,7 +372,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildActionCard(
                 context,
                 CupertinoIcons.calendar,
-                'Schedule',
+                'Daily Board',
                 'View All',
                 const Color(0xFF3B82F6),
                 '/schedule',
@@ -536,7 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Schedule',
+                  'Daily Board',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
