@@ -29,9 +29,9 @@ class QuizResultScreen extends StatelessWidget {
   }
 
   Color _getScoreColor() {
-    if (score >= 80) return Colors.green;
-    if (score >= 60) return Colors.orange;
-    return Colors.red;
+    if (score >= 80) return const Color(0xFF10B981); // Soft green
+    if (score >= 60) return const Color(0xFFF59E0B); // Warm amber
+    return const Color(0xFFEF4444); // Soft red
   }
 
   String _getScoreText() {
@@ -51,22 +51,64 @@ class QuizResultScreen extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FE),
-        appBar: AppBar(
-          title: const Text('Quiz Result'),
-          backgroundColor: const Color(0xFF8B5CF6),
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
-            },
-          ),
-        ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Container(
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header with gradient
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 34, 3, 107),
+                      Color.fromARGB(255, 89, 147, 240),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Close button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () {
+                          Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Title
+                    const Expanded(
+                      child: Text(
+                        'Quiz Result',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+                  child: Column(
+                    children: [
+                      Container(
               width: double.infinity,
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
@@ -179,10 +221,14 @@ class QuizResultScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 

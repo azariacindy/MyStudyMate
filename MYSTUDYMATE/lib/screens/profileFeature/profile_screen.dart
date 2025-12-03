@@ -20,7 +20,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   
   User? _currentUser;
   bool _isLoading = true;
-  int _selectedNavIndex = 3; // Profile tab
   
   // Streak data
   String _currentMonth = 'July 2025';
@@ -125,17 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-      bottomNavigationBar: CustomBottomNav(
-        currentIndex: _selectedNavIndex,
-        onTap: (index) {
-          if (index == _selectedNavIndex) return;
-          setState(() => _selectedNavIndex = index);
-          
-          if (index == 0) Navigator.pushReplacementNamed(context, '/home');
-          if (index == 1) Navigator.pushReplacementNamed(context, '/schedule');
-          if (index == 2) Navigator.pushReplacementNamed(context, '/manage_task');
-        },
-      ),
+      bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
     );
   }
 

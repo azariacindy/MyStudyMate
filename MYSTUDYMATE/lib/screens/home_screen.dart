@@ -128,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (index) {
           setState(() => _selectedNavIndex = index);
           if (index == 1) Navigator.pushNamed(context, '/schedule');
+          if (index == 2) Navigator.pushNamed(context, '/study_cards');
           if (index == 3) Navigator.pushNamed(context, '/profile');
         },
       ),
@@ -409,10 +410,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildActionCard(
                 context,
                 CupertinoIcons.news_solid,
-                'Quiz',
-                '5 Active',
+                'Study Cards',
+                'Learn More',
                 const Color(0xFF10B981),
-                '/quiz',
+                '/study_cards',
               ),
             ),
           ],

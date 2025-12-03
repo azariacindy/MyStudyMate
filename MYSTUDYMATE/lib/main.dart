@@ -79,7 +79,6 @@ class MyApp extends StatelessWidget {
         '/signup': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
         '/onboarding': (_) => const OnboardingScreen(),
-        '/manage_task': (_) => const ManageTaskScreen(),
         '/plan_task': (_) => const PlanTaskScreen(),
         '/schedule': (_) => const ScheduleScreen(),
         '/profile': (_) => const ProfileScreen(),

@@ -64,28 +64,75 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FE),
-        appBar: AppBar(
-          title: const Text('Review Answers'),
-          backgroundColor: const Color(0xFF8B5CF6),
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
-            },
-          ),
-          actions: [
-            IconButton(
-              onPressed: () => _showQuestionNavigator(context),
-              icon: const Icon(Icons.list),
-              tooltip: 'Jump to question',
-            ),
-          ],
-        ),
-      body: Column(
-        children: [
-          // Progress indicator
-          Container(
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header with gradient
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 34, 3, 107),
+                      Color.fromARGB(255, 89, 147, 240),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Close button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () {
+                          Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Title
+                    const Expanded(
+                      child: Text(
+                        'Review Answers',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    // Question navigator button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.list, color: Colors.white),
+                        onPressed: () => _showQuestionNavigator(context),
+                        tooltip: 'Jump to question',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Body content
+              Expanded(
+                child: Column(
+                  children: [
+                    // Progress indicator
+                    Container(
             padding: const EdgeInsets.all(16),
             color: Colors.white,
             child: Column(
@@ -191,13 +238,15 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
               ],
             ),
           ),
-        ],
-      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
-  }
-
-  Widget _buildResultBadge() {
+  }  Widget _buildResultBadge() {
     final question = _questions[_currentQuestionIndex];
     final answers = question['answers'] as List<dynamic>? ?? [];
     final userAnswerIndex = widget.userAnswers[_currentQuestionIndex];

@@ -188,44 +188,113 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FE),
-        appBar: AppBar(
-          title: Text('Quiz - ${widget.studyCard.title}'),
-          backgroundColor: const Color(0xFF8B5CF6),
-          foregroundColor: Colors.white,
-          actions: [
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header with gradient
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 34, 3, 107),
+                      Color.fromARGB(255, 89, 147, 240),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.timer, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTime(_secondsElapsed),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                    // Back button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Exit Quiz?'),
+                              content: const Text('Your progress will be lost if you exit now.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text('Stay'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                  child: const Text('Exit'),
+                                ),
+                              ],
+                            ),
+                          );
+                          
+                          if (confirm == true && context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Title
+                    Expanded(
+                      child: Text(
+                        'Quiz - ${widget.studyCard.title}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Timer
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.timer, size: 16, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatTime(_secondsElapsed),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Progress Bar
-            Container(
+              // Body content
+              Expanded(
+                child: Column(
+                  children: [
+                    // Progress Bar
+                    Container(
               padding: const EdgeInsets.all(16),
               color: Colors.white,
               child: Column(
@@ -264,9 +333,9 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
               ),
             ),
 
-            // Question and Answers
-            Expanded(
-              child: SingleChildScrollView(
+                    // Question and Answers
+                    Expanded(
+                      child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,20 +451,19 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
               ),
             ),
 
-            // Navigation Buttons
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: SafeArea(
+                    // Navigation Buttons
+                    Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
                 child: Row(
                   children: [
                     if (_currentQuestionIndex > 0) ...[
@@ -445,8 +513,11 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                   ],
                 ),
               ),
-            ),
-          ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

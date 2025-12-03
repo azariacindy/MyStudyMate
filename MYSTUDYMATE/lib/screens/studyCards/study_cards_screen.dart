@@ -423,22 +423,6 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      // TODO: View quiz history
-                    },
-                    icon: const Icon(Icons.history, size: 18),
-                    label: const Text('History'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.grey[700],
-                      side: BorderSide(color: Colors.grey[400]!),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ],
