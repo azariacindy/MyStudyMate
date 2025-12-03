@@ -182,86 +182,133 @@ Gamification system to motivate consistent study habits.
 The following is the development of the MyStudyMate application display which has been successfully implemented from design to Flutter:
 ---
 
-### 🟦 Splash Screen
-<img src="MYSTUDYMATE/assets/progress1/splashscreen.jpg" width="300">
+## 🟦 Splash Screen
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/splashscreen.jpg" width="250">
+</p>
 
-### 🟦 Welcome Screen
-<img src="MYSTUDYMATE\assets\progress1\onboarding (1).jpeg" width="300">
+---
+
+## 🟦 Welcome Screen
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/onboarding_1.jpeg" width="250">
+</p>
 
 ---
 
 ## 🧭 Auth Screens
-<img src="MYSTUDYMATE\assets\progress1\signUp.jpeg" width="230">
-<img src="MYSTUDYMATE\assets\progress1\signIn.jpeg" width="230">
-<img src="MYSTUDYMATE\assets\progress1\auth_logout (1).jpeg" width="230">
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/signUp.jpeg" width="220">
+  <img src="MYSTUDYMATE/assets/progress1/signIn.jpeg" width="220">
+  <img src="MYSTUDYMATE/assets/progress1/auth_logout.jpeg" width="220">
+</p>
 
 ---
 
 ## 🧭 Onboarding Screens
-<img src="MYSTUDYMATE/assets/progress1/onboarding1.jpg" width="230">
-<img src="MYSTUDYMATE/assets/progress1/onboarding2.jpg" width="230">
-<img src="MYSTUDYMATE/assets/progress1/onboarding3.jpg" width="230">
-<img src="MYSTUDYMATE/assets/progress1/onboarding4.jpg" width="230">
-<img src="MYSTUDYMATE/assets/progress1/onboarding5.jpg" width="230">
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/onboarding1.jpg" width="200">
+  <img src="MYSTUDYMATE/assets/progress1/onboarding2.jpg" width="200">
+  <img src="MYSTUDYMATE/assets/progress1/onboarding3.jpg" width="200">
+  <img src="MYSTUDYMATE/assets/progress1/onboarding4.jpg" width="200">
+  <img src="MYSTUDYMATE/assets/progress1/onboarding5.jpg" width="200">
+</p>
 
 ---
 
 ## 🏠 Homescreen
-<img src="MYSTUDYMATE\assets\progress1\homescreen.jpeg" width="300">
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/homescreen.jpeg" width="250">
+</p>
 
 ---
 
 ## 📝 Daily Board
-### Assignment List
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_afterAddAssignment.jpeg" width="300">
 
-### Add Assignment
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_assignmentForm.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_calendar.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="300">
+### 📘 Assignment List
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_afterAddAssignment.jpeg" width="250">
+</p>
 
-## 🗓️ Schedule  
-### Schedule List
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_afterAddSchedule.jpeg" width="300">
+### ➕ Add Assignment
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_assignmentForm.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_calendar.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_notificationSelected.jpeg" width="250">
+</p>
 
-### Add Schedule
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_scheduleForm.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_timeForm.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="300">
+---
 
-### Edit Schedule
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_editForm.jpeg" width="300">
+## 🗓️ Schedule
 
-## 🗓️ Event 
-### Event List
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_afterAddSchedule.jpeg" width="300">
+### 📘 Schedule List
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_afterAddSchedule.jpeg" width="250">
+</p>
 
-### Add Event
-<img src="MYSTUDYMATE\assets\progress1\dailyBoard_eventForm.jpeg" width="300">
+### ➕ Add Schedule
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_scheduleForm.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_timeForm.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_notificationSelected.jpeg" width="250">
+</p>
 
-## Notification
-<img src="MYSTUDYMATE\assets\progress1\exampleNotification.jpeg" width="300">
+### ✏️ Edit Schedule
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_editForm.jpeg" width="250">
+</p>
+
+---
+
+## 🗓️ Event
+
+### 📘 Event List
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_afterAddSchedule.jpeg" width="250">
+</p>
+
+### ➕ Add Event
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_eventForm.jpeg" width="250">
+</p>
+
+---
+
+## 🔔 Notification Example
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/exampleNotification.jpeg" width="250">
+</p>
 
 ---
 
 ## 👤 Profile
+
 ### Profile Page
-<img src="MYSTUDYMATE\assets\progress1\profile.jpeg" width="300">
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/profile.jpeg" width="250">
+</p>
 
 ### Edit Profile
-<img src="MYSTUDYMATE/assets/progress1/edit_profile.jpeg" width="300">
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/edit_profile.jpeg" width="250">
+</p>
 
 ### Change Password
-<img src="MYSTUDYMATE/assets/progress1/profilechangepassword.jpeg" width="300">
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/profilechangepassword.jpeg" width="250">
+</p>
 
 ---
 
 ## ⏳ Pomodoro
-<img src="MYSTUDYMATE\assets\progress1\pomodoro_focusTime.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\pomodoro_rest.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\pomodoro_warningAlert (2).jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\pomodoro_warningAlert.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\pomdoro_notificationDoneFocus.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\pomdoro_notificationDoneRest.jpeg" width="300">
-<img src="MYSTUDYMATE\assets\progress1\pomodoro_done.jpeg" width="300">
+<p align="center">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_focusTime.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_rest.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_warningAlert2.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_warningAlert.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_notificationDoneFocus.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_notificationDoneRest.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_done.jpeg" width="250">
+</p>
+
 
