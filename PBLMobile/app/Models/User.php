@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Model
+class User extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
 
     /**
      * Nama tabel yang digunakan.
@@ -58,5 +59,21 @@ class User extends Model
     public function getFullNameAttribute()
     {
         return $this->name;
+    }
+
+    // Add these relationships
+    public function studyCards()
+    {
+        return $this->hasMany(StudyCard::class);
+    }
+    public function quizAttempts()
+    {
+        return $this->hasMany(UserQuizAttempt::class);
+    }
+    
+    // Get completed attempts only
+    public function completedAttempts()
+    {
+        return $this->hasMany(UserQuizAttempt::class)->where('status', 'completed');
     }
 }

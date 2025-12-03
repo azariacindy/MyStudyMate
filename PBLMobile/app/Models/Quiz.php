@@ -2,67 +2,47 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Quiz extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'study_card_id',
-        'user_id',
-        'questions',
+        'title',
+        'description',
         'total_questions',
-        'times_attempted',
-        'best_score',
+        'duration_minutes',
+        'generated_by_ai',
+        'ai_model',
+        'shuffle_questions',
+        'shuffle_answers',
+        'show_correct_answers',
     ];
 
     protected $casts = [
-        'questions' => 'array',
-        'total_questions' => 'integer',
-        'times_attempted' => 'integer',
-        'best_score' => 'float',
+        'shuffle_questions' => 'boolean',
+        'shuffle_answers' => 'boolean',
+        'show_correct_answers' => 'boolean',
+        'generated_by_ai' => 'boolean',
     ];
 
-    // Relationships
-    public function studyCard()
+    public function studyCard(): BelongsTo
     {
         return $this->belongsTo(StudyCard::class);
     }
 
-    public function user()
+    public function questions(): HasMany
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(QuizQuestion::class);
     }
 
-    public function attempts()
+    public function attempts(): HasMany
     {
-        return $this->hasMany(QuizAttempt::class);
-    }
-
-    // Scopes
-    public function scopeForUser($query, $userId)
-    {
-        return $query->where('user_id', $userId);
-    }
-
-    public function scopeForStudyCard($query, $studyCardId)
-    {
-        return $query->where('study_card_id', $studyCardId);
-    }
-
-    // Methods
-    public function updateBestScore($newScore)
-    {
-        if (is_null($this->best_score) || $newScore > $this->best_score) {
-            $this->best_score = $newScore;
-            $this->save();
-        }
-    }
-
-    public function incrementAttempts()
-    {
-        $this->increment('times_attempted');
+        return $this->hasMany(UserQuizAttempt::class);
     }
 }

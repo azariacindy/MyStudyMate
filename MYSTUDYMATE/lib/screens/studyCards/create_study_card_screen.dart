@@ -13,16 +13,20 @@ class CreateStudyCardScreen extends StatefulWidget {
 class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
-  final _notesController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _textContentController = TextEditingController();
   final StudyCardService _service = StudyCardService();
-  bool _isLoading = false;
+
+  String _materialType = 'text'; // 'text' or 'file'
   File? _selectedFile;
   String? _selectedFileName;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _titleController.dispose();
-    _notesController.dispose();
+    _descriptionController.dispose();
+    _textContentController.dispose();
     super.dispose();
   }
 
@@ -30,7 +34,7 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf', 'docx', 'doc', 'txt'],
+        allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'ppt', 'pptx'],
       );
 
       if (result != null) {
@@ -38,26 +42,39 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
           _selectedFile = File(result.files.single.path!);
           _selectedFileName = result.files.single.name;
         });
-
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('File selected: $_selectedFileName'),
-            backgroundColor: Colors.green,
+            content: Text('Error picking file: $e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error picking file: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
   Future<void> _saveStudyCard() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_materialType == 'file' && _selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a file'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_materialType == 'text' && _textContentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter text content'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -66,29 +83,36 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
     try {
       await _service.createStudyCard(
         title: _titleController.text.trim(),
-        notes: _notesController.text.trim(),
-        file: _selectedFile,
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        materialType: _materialType,
+        materialContent:
+            _materialType == 'text' ? _textContentController.text.trim() : null,
+        materialFile: _materialType == 'file' ? _selectedFile : null,
       );
 
       if (mounted) {
-        Navigator.pop(context, true); // Return true to indicate success
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Study card created successfully!'),
             backgroundColor: Colors.green,
           ),
         );
+        Navigator.pop(context, true); // Return true to indicate success
       }
     } catch (e) {
-      setState(() => _isLoading = false);
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create study card: $e'),
+            content: Text('Error creating study card: $e'),
             backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -98,7 +122,7 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
-        title: const Text('New Study Card'),
+        title: const Text('Create Study Card'),
         backgroundColor: const Color(0xFF8B5CF6),
         foregroundColor: Colors.white,
       ),
@@ -107,60 +131,99 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Title Field
+            // Title field
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: 'Title *',
+                hintText: 'Enter study card title',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: const Icon(Icons.title),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter a title';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Description field
+            TextFormField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Description (Optional)',
+                hintText: 'Enter a brief description',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: const Icon(Icons.description),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 24),
+
+            // Material Type selector
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Text(
+                      'Material Type *',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.title,
-                            color: Color(0xFF8B5CF6),
-                            size: 20,
+                        Expanded(
+                          child: RadioListTile<String>(
+                            title: const Text('Text'),
+                            subtitle: const Text('Write content'),
+                            value: 'text',
+                            groupValue: _materialType,
+                            onChanged: (value) {
+                              setState(() {
+                                _materialType = value!;
+                                _selectedFile = null;
+                                _selectedFileName = null;
+                              });
+                            },
+                            activeColor: const Color(0xFF8B5CF6),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'Title',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1F2937),
+                        Expanded(
+                          child: RadioListTile<String>(
+                            title: const Text('File'),
+                            subtitle: const Text('Upload document'),
+                            value: 'file',
+                            groupValue: _materialType,
+                            onChanged: (value) {
+                              setState(() {
+                                _materialType = value!;
+                                _textContentController.clear();
+                              });
+                            },
+                            activeColor: const Color(0xFF8B5CF6),
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _titleController,
-                      decoration: InputDecoration(
-                        hintText: 'e.g., Introduction to Flutter',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter a title';
-                        }
-                        return null;
-                      },
-                      textInputAction: TextInputAction.next,
                     ),
                   ],
                 ),
@@ -168,257 +231,150 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Notes Field
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            // Content area based on material type
+            if (_materialType == 'text') ...[
+              TextFormField(
+                controller: _textContentController,
+                decoration: InputDecoration(
+                  labelText: 'Text Content *',
+                  hintText: 'Enter your study material here...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 10,
+                validator: (value) {
+                  if (_materialType == 'text' &&
+                      (value == null || value.trim().isEmpty)) {
+                    return 'Please enter text content';
+                  }
+                  return null;
+                },
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.notes,
-                                color: Color(0xFF3B82F6),
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const Text(
-                              'Study Material',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F2937),
-                              ),
-                            ),
-                          ],
+            ] else ...[
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      if (_selectedFile == null) ...[
+                        const Icon(
+                          Icons.cloud_upload,
+                          size: 64,
+                          color: Color(0xFF8B5CF6),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No file selected',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Supported formats: PDF, DOC, DOCX, TXT, PPT, PPTX',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ] else ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.orange.withOpacity(0.3),
-                            ),
+                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
                               const Icon(
-                                Icons.text_fields,
-                                size: 14,
-                                color: Colors.orange,
+                                Icons.insert_drive_file,
+                                color: Color(0xFF8B5CF6),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${_notesController.text.split(' ').where((w) => w.isNotEmpty).length} words',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.orange,
-                                  fontWeight: FontWeight.w600,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _selectedFileName ?? 'Unknown file',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedFile = null;
+                                    _selectedFileName = null;
+                                  });
+                                },
                               ),
                             ],
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _notesController,
-                      decoration: InputDecoration(
-                        hintText: 'Enter your study material here...\n\nThe AI will generate quiz questions based on this content.',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        onPressed: _pickFile,
+                        icon: const Icon(Icons.attach_file),
+                        label: Text(
+                          _selectedFile == null ? 'Select File' : 'Change File',
                         ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF8B5CF6),
+                          side: const BorderSide(color: Color(0xFF8B5CF6)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
                       ),
-                      maxLines: 15,
-                      validator: (value) {
-                        // If file is selected, notes are optional
-                        if (_selectedFile != null) {
-                          return null;
-                        }
-                        
-                        // If no file, notes are required
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter study material or upload a file';
-                        }
-                        if (value.trim().length < 50) {
-                          return 'Please enter at least 50 characters';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        setState(() {}); // Update word count
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Minimum 50 characters required',
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 24),
+
+            // Save button
+            ElevatedButton(
+              onPressed: _isLoading ? null : _saveStudyCard,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8B5CF6),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                disabledBackgroundColor: Colors.grey[300],
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text(
+                      'Save Study Card',
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                        fontStyle: FontStyle.italic,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    
-                    // File Upload Button
-                    OutlinedButton.icon(
-                      onPressed: _pickFile,
-                      icon: const Icon(Icons.attach_file),
-                      label: Text(
-                        _selectedFileName ?? 'Upload PDF/DOCX/TXT',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        side: BorderSide(
-                          color: _selectedFile != null 
-                              ? Colors.green 
-                              : Colors.grey[400]!,
-                        ),
-                        foregroundColor: _selectedFile != null 
-                            ? Colors.green 
-                            : Colors.grey[700],
-                      ),
-                    ),
-                    
-                    if (_selectedFile != null) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.check_circle,
-                            color: Colors.green,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'File attached. Text will be extracted automatically.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.green[700],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Info Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF8B5CF6).withOpacity(0.1),
-                    const Color(0xFF3B82F6).withOpacity(0.1),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.3),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.auto_awesome,
-                        color: Color(0xFF8B5CF6),
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'AI will generate 5 challenging questions',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '• Type or paste study material\n• Or upload PDF, DOCX, TXT file\n• AI will create 5 challenging questions that test deep understanding',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Save Button
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveStudyCard,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B5CF6),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Save Study Card',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
             ),
           ],
         ),

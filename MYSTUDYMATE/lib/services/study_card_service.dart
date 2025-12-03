@@ -1,20 +1,15 @@
 import 'package:dio/dio.dart';
 import 'dart:io';
-import '../config/api_constant.dart';
 import '../models/study_card_model.dart';
-import '../models/quiz_model.dart';
+import 'dio_client.dart';
 
 class StudyCardService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 30),
-    receiveTimeout: const Duration(seconds: 30),
-  ));
+  final Dio _dio = DioClient.getInstance();
 
-  /// Get all study cards
+  /// Get all study cards for current user
   Future<List<StudyCard>> getStudyCards() async {
     try {
-      final response = await _dio.get('/api/study-cards');
+      final response = await _dio.get('study-cards');
       
       if (response.data['success'] == true) {
         final List<dynamic> data = response.data['data'];
@@ -30,32 +25,36 @@ class StudyCardService {
   /// Create new study card
   Future<StudyCard> createStudyCard({
     required String title,
-    required String notes,
-    File? file,
+    String? description,
+    required String materialType,
+    String? materialContent,
+    File? materialFile,
   }) async {
     try {
-      FormData formData;
-      
-      if (file != null) {
-        // Create multipart form data for file upload
-        formData = FormData.fromMap({
-          'title': title,
-          'notes': notes,
-          'file': await MultipartFile.fromFile(
-            file.path,
-            filename: file.path.split('/').last,
+      FormData formData = FormData.fromMap({
+        'title': title,
+        'material_type': materialType,
+        if (description != null && description.isNotEmpty) 
+          'description': description,
+        if (materialContent != null && materialContent.isNotEmpty) 
+          'material_content': materialContent,
+      });
+
+      // Add file if provided
+      if (materialFile != null) {
+        formData.files.add(
+          MapEntry(
+            'material_file',
+            await MultipartFile.fromFile(
+              materialFile.path,
+              filename: materialFile.path.split(Platform.pathSeparator).last,
+            ),
           ),
-        });
-      } else {
-        // Regular JSON request
-        formData = FormData.fromMap({
-          'title': title,
-          'notes': notes,
-        });
+        );
       }
 
       final response = await _dio.post(
-        '/api/study-cards',
+        'study-cards',
         data: formData,
       );
 
@@ -72,109 +71,76 @@ class StudyCardService {
     }
   }
 
-  /// Generate quiz from study card using AI
-  Future<Quiz> generateQuiz({
-    required int studyCardId,
-    int questionCount = 5,
+  /// Get study card by ID
+  Future<StudyCard> getStudyCardById(int id) async {
+    try {
+      final response = await _dio.get('study-cards/$id');
+
+      if (response.data['success'] == true) {
+        return StudyCard.fromJson(response.data['data']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to load study card');
+      }
+    } catch (e) {
+      throw Exception('Error loading study card: $e');
+    }
+  }
+
+  /// Update study card
+  Future<StudyCard> updateStudyCard({
+    required int id,
+    required String title,
+    String? description,
+    required String materialType,
+    String? materialContent,
+    File? materialFile,
   }) async {
     try {
+      FormData formData = FormData.fromMap({
+        '_method': 'PUT',
+        'title': title,
+        'material_type': materialType,
+        if (description != null && description.isNotEmpty) 
+          'description': description,
+        if (materialContent != null && materialContent.isNotEmpty) 
+          'material_content': materialContent,
+      });
+
+      // Add file if provided
+      if (materialFile != null) {
+        formData.files.add(
+          MapEntry(
+            'material_file',
+            await MultipartFile.fromFile(
+              materialFile.path,
+              filename: materialFile.path.split(Platform.pathSeparator).last,
+            ),
+          ),
+        );
+      }
+
       final response = await _dio.post(
-        '/api/study-cards/$studyCardId/generate-quiz',
-        data: {'question_count': questionCount},
+        'study-cards/$id',
+        data: formData,
       );
 
       if (response.data['success'] == true) {
-        final data = response.data['data'];
-        // Build Quiz object from response
-        return Quiz(
-          id: data['quiz_id'],
-          studyCardId: studyCardId,
-          studyCardTitle: '', // Will be filled when fetching full quiz
-          questions: (data['questions'] as List)
-              .map((q) => QuizQuestion.fromJson(q))
-              .toList(),
-          totalQuestions: data['total_questions'],
-          timesAttempted: 0,
-          bestScore: null,
-        );
+        return StudyCard.fromJson(response.data['data']);
       } else {
-        throw Exception(response.data['error'] ?? 'Failed to generate quiz');
+        throw Exception(response.data['error'] ?? 'Failed to update study card');
       }
     } catch (e) {
       if (e is DioException && e.response != null) {
-        throw Exception(e.response?.data['error'] ?? 'Failed to generate quiz');
+        throw Exception(e.response?.data['error'] ?? 'Failed to update study card');
       }
-      throw Exception('Error generating quiz: $e');
-    }
-  }
-
-  /// Get quiz details
-  Future<Quiz> getQuiz(int quizId) async {
-    try {
-      final response = await _dio.get('/api/quizzes/$quizId');
-
-      if (response.data['success'] == true) {
-        return Quiz.fromJson(response.data['data']);
-      } else {
-        throw Exception(response.data['error'] ?? 'Failed to load quiz');
-      }
-    } catch (e) {
-      throw Exception('Error loading quiz: $e');
-    }
-  }
-
-  /// Submit quiz answers
-  Future<QuizResult> submitQuiz({
-    required int quizId,
-    required List<int?> answers,
-    int? timeSpent,
-  }) async {
-    try {
-      final response = await _dio.post('/api/quizzes/$quizId/submit', data: {
-        'answers': answers,
-        'time_spent': timeSpent,
-      });
-
-      if (response.data['success'] == true) {
-        return QuizResult.fromJson(response.data['data']);
-      } else {
-        throw Exception(response.data['error'] ?? 'Failed to submit quiz');
-      }
-    } catch (e) {
-      if (e is DioException && e.response != null) {
-        throw Exception(e.response?.data['error'] ?? 'Failed to submit quiz');
-      }
-      throw Exception('Error submitting quiz: $e');
-    }
-  }
-
-  /// Get quiz attempts history
-  Future<Map<String, dynamic>> getQuizAttempts(int quizId) async {
-    try {
-      final response = await _dio.get('/api/quizzes/$quizId/attempts');
-
-      if (response.data['success'] == true) {
-        final data = response.data['data'];
-        return {
-          'quiz_id': data['quiz_id'],
-          'best_score': data['best_score']?.toDouble(),
-          'times_attempted': data['times_attempted'],
-          'attempts': (data['attempts'] as List)
-              .map((a) => QuizAttempt.fromJson(a))
-              .toList(),
-        };
-      } else {
-        throw Exception(response.data['error'] ?? 'Failed to load attempts');
-      }
-    } catch (e) {
-      throw Exception('Error loading quiz attempts: $e');
+      throw Exception('Error updating study card: $e');
     }
   }
 
   /// Delete study card
-  Future<void> deleteStudyCard(int studyCardId) async {
+  Future<void> deleteStudyCard(int id) async {
     try {
-      final response = await _dio.delete('/api/study-cards/$studyCardId');
+      final response = await _dio.delete('study-cards/$id');
 
       if (response.data['success'] != true) {
         throw Exception(response.data['error'] ?? 'Failed to delete study card');
@@ -184,6 +150,34 @@ class StudyCardService {
         throw Exception(e.response?.data['error'] ?? 'Failed to delete study card');
       }
       throw Exception('Error deleting study card: $e');
+    }
+  }
+
+  /// Generate quiz from study card
+  Future<Map<String, dynamic>> generateQuiz(int studyCardId, {int questionCount = 5}) async {
+    try {
+      // Increase timeout for AI generation (can take longer)
+      final response = await _dio.post(
+        'study-cards/$studyCardId/generate-quiz',
+        data: {
+          'question_count': questionCount,
+        },
+        options: Options(
+          receiveTimeout: const Duration(seconds: 90),
+          sendTimeout: const Duration(seconds: 30),
+        ),
+      );
+
+      if (response.data['success'] == true) {
+        return response.data['data'];
+      } else {
+        throw Exception(response.data['error'] ?? 'Failed to generate quiz');
+      }
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        throw Exception(e.response?.data['error'] ?? 'Failed to generate quiz');
+      }
+      throw Exception('Error generating quiz: $e');
     }
   }
 }

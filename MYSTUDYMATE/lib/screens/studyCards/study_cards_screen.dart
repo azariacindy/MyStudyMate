@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../widgets/custom_bottom_nav.dart';
 import '../../models/study_card_model.dart';
 import '../../services/study_card_service.dart';
 import 'create_study_card_screen.dart';
-import 'take_quiz_screen.dart';
+import 'study_card_detail_screen.dart';
 
 class StudyCardsScreen extends StatefulWidget {
   const StudyCardsScreen({super.key});
@@ -13,54 +16,110 @@ class StudyCardsScreen extends StatefulWidget {
 
 class _StudyCardsScreenState extends State<StudyCardsScreen> {
   final StudyCardService _service = StudyCardService();
-  late Future<List<StudyCard>> _studyCardsFuture;
-  bool _isGeneratingQuiz = false;
+  List<StudyCard> _studyCards = [];
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _checkAuthAndLoad();
+  }
+
+  Future<void> _checkAuthAndLoad() async {
+    // Check if user is authenticated
+    final storage = const FlutterSecureStorage();
+    final token = await storage.read(key: 'auth_token');
+    
+    print('DEBUG: Auth token exists: ${token != null}');
+    print('DEBUG: Token: ${token?.substring(0, token.length > 20 ? 20 : token.length)}...');
+    
+    if (token == null || token.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please login first to access study cards'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        // Navigate back or to login
+        Navigator.pushReplacementNamed(context, '/signin');
+      }
+      return;
+    }
+    
     _loadStudyCards();
   }
 
-  void _loadStudyCards() {
-    setState(() {
-      _studyCardsFuture = _service.getStudyCards();
-    });
-  }
+  Future<void> _loadStudyCards() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
 
-  Future<void> _generateQuiz(StudyCard card) async {
-    setState(() => _isGeneratingQuiz = true);
-    
     try {
-      final quiz = await _service.generateQuiz(
-        studyCardId: card.id,
-        questionCount: 5,
-      );
-
+      final cards = await _service.getStudyCards();
       if (mounted) {
-        setState(() => _isGeneratingQuiz = false);
-        
-        // Navigate to quiz screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TakeQuizScreen(
-              quizId: quiz.id,
-              studyCardTitle: card.title,
-            ),
-          ),
-        );
+        setState(() {
+          _studyCards = cards;
+        });
       }
     } catch (e) {
-      setState(() => _isGeneratingQuiz = false);
-      
+      print('DEBUG: Error details: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to generate quiz: $e'),
+            content: Text('Error loading study cards: $e'),
             backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _deleteStudyCard(StudyCard card) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Study Card'),
+        content: Text('Are you sure you want to delete "${card.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _service.deleteStudyCard(card.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Study card deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _loadStudyCards();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting study card: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -68,194 +127,122 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1625),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1625),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.lock_outline),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: FutureBuilder<List<StudyCard>>(
-        future: _studyCardsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text('Error: ${snapshot.error}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadStudyCards,
-                    child: const Text('Retry'),
+      backgroundColor: const Color(0xFFF8F9FE),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // === TOP HEADER SECTION ===
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color.fromARGB(255, 34, 3, 107), Color.fromARGB(255, 89, 147, 240)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
-            );
-          }
-
-          final studyCards = snapshot.data ?? [];
-
-          if (studyCards.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.school_outlined,
-                    size: 80,
-                    color: Colors.grey[700],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No study cards yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[400],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Create your first study card to get started',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async => _loadStudyCards(),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Section with Tabs
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'math exam',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  child: Row(
+                    children: [
+                      // Back button with circle background
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
                             color: Colors.white,
                           ),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                        const SizedBox(height: 16),
-                        // Tabs
-                        Row(
-                          children: [
-                            _buildTab('Material', true),
-                            const SizedBox(width: 12),
-                            _buildTab('Study Plan', false),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  // All topics dropdown
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2D2438),
-                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.refresh, color: Colors.white54, size: 20),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'All topics',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
+                      // Title
+                      const Expanded(
+                        child: Text(
+                          'Study Cards',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
                           ),
-                          const Spacer(),
-                          Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 20),
-                        ],
+                        ),
                       ),
-                    ),
+                      // Spacer untuk balance
+                      const SizedBox(width: 56),
+                    ],
                   ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Section Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Flashcards',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                        Text(
-                          '${studyCards.length}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Horizontal Scrollable Cards
-                  SizedBox(
-                    height: 320,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: studyCards.length,
-                      itemBuilder: (context, index) {
-                        final card = studyCards[index];
-                        return _buildFlashcardStyle(card, index);
-                      },
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 100),
-                ],
+                ),
               ),
             ),
-          );
-        },
+
+            // === MAIN CONTENT AREA ===
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _studyCards.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.school_outlined,
+                                size: 100,
+                                color: Colors.grey[300],
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'No Study Cards Yet',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Create your first study card to get started',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _loadStudyCards,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+                            itemCount: _studyCards.length,
+                            itemBuilder: (context, index) {
+                              final card = _studyCards[index];
+                              return _buildStudyCardItem(card);
+                            },
+                          ),
+                        ),
+            ),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+      bottomNavigationBar: const CustomBottomNav(currentIndex: 2),
+      floatingActionButton: CustomFAB(
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -263,254 +250,184 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
               builder: (context) => const CreateStudyCardScreen(),
             ),
           );
-
           if (result == true) {
             _loadStudyCards();
           }
         },
-        backgroundColor: const Color(0xFF8B5CF6),
-        child: const Icon(Icons.add, size: 28),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  Widget _buildFlashcardStyle(StudyCard card, int index) {
+  Widget _buildStudyCardItem(StudyCard card) {
     return Container(
-      width: 280,
-      margin: EdgeInsets.only(
-        right: 16,
-        left: index == 0 ? 0 : 0,
-      ),
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1,
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF8B5CF6),
-                const Color(0xFF7C3AED),
-              ],
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with icon
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.school,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudyCardDetailScreen(studyCard: card),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const Spacer(),
-                    PopupMenuButton(
-                      icon: const Icon(Icons.more_vert, color: Colors.white),
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          child: const Row(
-                            children: [
-                              Icon(Icons.delete, color: Colors.red, size: 20),
-                              SizedBox(width: 8),
-                              Text('Delete'),
-                            ],
+                    child: Icon(
+                      card.isFileType ? Icons.insert_drive_file : Icons.text_fields,
+                      color: const Color(0xFF8B5CF6),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          card.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
                           ),
-                          onTap: () => Future.delayed(
-                            Duration.zero,
-                            () => _showDeleteConfirmation(card),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat('MMM dd, yyyy').format(card.createdAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                // Title
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        _deleteStudyCard(card);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              if (card.description != null && card.description!.isNotEmpty) ...[
+                const SizedBox(height: 12),
                 Text(
-                  card.title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  card.description!,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[700],
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+              ],
+              if (card.isFileType && card.materialFileName != null) ...[
                 const SizedBox(height: 12),
-                
-                // Stats
-                Row(
-                  children: [
-                    _buildWhiteStatChip(Icons.quiz, '${card.quizCount} quizzes'),
-                    const SizedBox(width: 8),
-                    _buildWhiteStatChip(Icons.text_fields, '${card.wordCount} words'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                // Notes preview
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      card.notes.length > 80
-                          ? '${card.notes.substring(0, 80)}...'
-                          : card.notes,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.white,
-                        height: 1.4,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Generate Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isGeneratingQuiz ? null : () => _generateQuiz(card),
-                    icon: _isGeneratingQuiz
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
-                            ),
-                          )
-                        : const Icon(Icons.auto_awesome, size: 18),
-                    label: Text(_isGeneratingQuiz ? 'Generating...' : 'Learn 5 Questions'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF8B5CF6),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.attachment,
+                        size: 16,
+                        color: Colors.grey,
                       ),
-                      elevation: 0,
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          card.materialFileName!,
+                          style: const TextStyle(fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (card.fileSizeFormatted != null)
+                        Text(
+                          card.fileSizeFormatted!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildWhiteStatChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.white),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildTab(String label, bool isActive) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF2D2438) : Colors.transparent,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: isActive ? Colors.transparent : const Color(0xFF3D3449),
-          width: 1,
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-          color: isActive ? Colors.white : Colors.grey[400],
-        ),
-      ),
-    );
-  }
-
-
-
-  void _showDeleteConfirmation(StudyCard card) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Study Card'),
-        content: Text('Are you sure you want to delete "${card.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              
-              try {
-                await _service.deleteStudyCard(card.id);
-                _loadStudyCards();
-                
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Study card deleted')),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to delete: $e'),
-                      backgroundColor: Colors.red,
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StudyCardDetailScreen(studyCard: card),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.visibility, size: 18),
+                      label: const Text('View Details'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF8B5CF6),
+                        side: const BorderSide(color: Color(0xFF8B5CF6)),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
                     ),
-                  );
-                }
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

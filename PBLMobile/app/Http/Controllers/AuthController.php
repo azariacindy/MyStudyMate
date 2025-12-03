@@ -36,14 +36,18 @@ class AuthController extends Controller
                 'updated_at' => $now,
             ], 'id');
 
+            // Get User model and create Sanctum token
+            $userModel = \App\Models\User::find($id);
+            $token = $userModel->createToken('mobile-app')->plainTextToken;
+
             return response()->json([
                 'user' => [
-                    'id' => (string) $id,      // Pastikan tipe string untuk Flutter
+                    'id' => (string) $id,
                     'name' => $request->name,
                     'username' => $request->username,
                     'email' => $request->email,
                 ],
-                'token' => Str::random(60)
+                'token' => $token
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -79,6 +83,12 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Convert stdClass to User model for Sanctum
+        $userModel = \App\Models\User::find($user->id);
+        
+        // Create Sanctum token
+        $token = $userModel->createToken('mobile-app')->plainTextToken;
+
         return response()->json([
             'user' => [
                 'id' => (string) $user->id,
@@ -87,7 +97,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'profile_photo_url' => $user->profile_photo_url ?? null,
             ],
-            'token' => Str::random(60)
+            'token' => $token
         ]);
     }
 
