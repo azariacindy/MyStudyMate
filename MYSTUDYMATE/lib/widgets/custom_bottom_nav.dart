@@ -32,7 +32,7 @@ class CustomBottomNav extends StatelessWidget {
           _buildNavIcon(context, Icons.home, 0),
           _buildNavIcon(context, Icons.calendar_today, 1),
           const SizedBox(width: 45),
-          _buildNavIcon(context, Icons.notifications, 2),
+          _buildNavIcon(context, Icons.style, 2),
           _buildNavIcon(context, Icons.person, 3),
         ],
       ),
