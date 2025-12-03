@@ -25,8 +25,9 @@ class DioClient {
       String cleanBaseUrl = baseUrl.replaceAll(RegExp(r'/$'), '');
       _dio.options.baseUrl = '$cleanBaseUrl/api/'; // ✅ Bersih, tanpa spasi
 
-      _dio.options.connectTimeout = const Duration(seconds: 10);
-      _dio.options.receiveTimeout = const Duration(seconds: 10);
+      _dio.options.connectTimeout = const Duration(seconds: 30);
+      _dio.options.receiveTimeout = const Duration(seconds: 60);
+      _dio.options.sendTimeout = const Duration(seconds: 30);
       _dio.options.contentType = 'application/json';
       _dio.options.headers['Accept'] = 'application/json';
       _dio.options.headers['X-User-Id'] = _currentUserId.toString();

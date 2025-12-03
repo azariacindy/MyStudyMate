@@ -5,7 +5,7 @@ String get baseUrl {
     return 'http://127.0.0.1:8000';
   } else if (defaultTargetPlatform == TargetPlatform.android) {
  
-    return 'http://192.168.0.105:8000'; // For emulator
+    return 'http://192.168.0.105:8000'; 
   
   } else if (defaultTargetPlatform == TargetPlatform.iOS) {
     return 'http://10.148.16.235:8000';

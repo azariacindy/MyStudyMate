@@ -32,8 +32,18 @@ return [
     ],
 
     'deepseek' => [
-    'api_key' => env('DEEPSEEK_API_KEY'),
-    'endpoint' => env('DEEPSEEK_ENDPOINT'),
-],
+        'api_key' => env('DEEPSEEK_API_KEY'),
+        'endpoint' => env('DEEPSEEK_ENDPOINT', 'https://api.deepseek.com/v1/chat/completions'),
+        'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
+        'max_tokens' => env('DEEPSEEK_MAX_TOKENS', 4000),
+        'temperature' => env('DEEPSEEK_TEMPERATURE', 0.7),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'endpoint' => env('GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models'),
+        'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+        'temperature' => env('GEMINI_TEMPERATURE', 0.7),
+    ],
 
 ];

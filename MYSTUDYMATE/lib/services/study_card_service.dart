@@ -156,11 +156,16 @@ class StudyCardService {
   /// Generate quiz from study card
   Future<Map<String, dynamic>> generateQuiz(int studyCardId, {int questionCount = 5}) async {
     try {
+      // Increase timeout for AI generation (can take longer)
       final response = await _dio.post(
         'study-cards/$studyCardId/generate-quiz',
         data: {
           'question_count': questionCount,
         },
+        options: Options(
+          receiveTimeout: const Duration(seconds: 90),
+          sendTimeout: const Duration(seconds: 30),
+        ),
       );
 
       if (response.data['success'] == true) {

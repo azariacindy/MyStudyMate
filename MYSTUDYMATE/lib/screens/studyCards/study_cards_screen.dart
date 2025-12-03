@@ -5,6 +5,7 @@ import '../../widgets/custom_bottom_nav.dart';
 import '../../models/study_card_model.dart';
 import '../../services/study_card_service.dart';
 import 'create_study_card_screen.dart';
+import 'study_card_detail_screen.dart';
 
 class StudyCardsScreen extends StatefulWidget {
   const StudyCardsScreen({super.key});
@@ -306,6 +307,24 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                     },
                   ),
                 ),
+      floatingActionButton: _studyCards.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateStudyCardScreen(),
+                  ),
+                );
+                if (result == true) {
+                  _loadStudyCards();
+                }
+              },
+              backgroundColor: const Color(0xFF8B5CF6),
+              icon: const Icon(Icons.add),
+              label: const Text('New Card'),
+            )
+          : null,
       bottomNavigationBar: const CustomBottomNav(currentIndex: 2),
     );
   }
@@ -319,7 +338,12 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
       ),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to study card detail
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudyCardDetailScreen(studyCard: card),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -448,6 +472,39 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                   ),
                 ),
               ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _generateQuiz(card),
+                      icon: const Icon(Icons.quiz, size: 18),
+                      label: const Text('Generate Quiz'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF8B5CF6),
+                        side: const BorderSide(color: Color(0xFF8B5CF6)),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: View quiz history
+                    },
+                    icon: const Icon(Icons.history, size: 18),
+                    label: const Text('History'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey[700],
+                      side: BorderSide(color: Colors.grey[400]!),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

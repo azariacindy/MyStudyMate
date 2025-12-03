@@ -231,4 +231,81 @@ class StudyCardController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generate quiz from study card using AI
+     * 
+     * @group Study Cards
+     */
+    public function generateQuiz(Request $request, int $id): JsonResponse
+    {
+        // Increase execution time for AI generation
+        set_time_limit(120); // 2 minutes max
+        
+        try {
+            $studyCard = $this->service->getStudyCardById($id);
+
+            if (!$studyCard) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Study card not found',
+                ], 404);
+            }
+
+            // Check ownership
+            if ($studyCard->user_id !== $request->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access',
+                ], 403);
+            }
+
+            $questionCount = $request->input('question_count', 5);
+
+            // Get QuizService
+            $quizService = app(\App\Contracts\Services\QuizServiceInterface::class);
+            
+            // Generate quiz using AI
+            $quiz = $quizService->generateQuizFromAI($id, [
+                'question_count' => $questionCount,
+            ]);
+
+            // Load questions with answers
+            $quiz->load('questions.answers');
+
+            // Format questions for frontend
+            $questions = $quiz->questions->map(function ($question) {
+                return [
+                    'question_text' => $question->question_text,
+                    'question_type' => $question->question_type,
+                    'points' => $question->points,
+                    'explanation' => $question->explanation,
+                    'answers' => $question->answers->map(function ($answer) {
+                        return [
+                            'answer_text' => $answer->answer_text,
+                            'is_correct' => $answer->is_correct,
+                        ];
+                    })->toArray(),
+                ];
+            })->toArray();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Quiz generated successfully',
+                'data' => [
+                    'id' => $quiz->id,
+                    'title' => $quiz->title,
+                    'total_questions' => $quiz->total_questions,
+                    'study_card_id' => $quiz->study_card_id,
+                    'questions' => $questions,
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate quiz',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
