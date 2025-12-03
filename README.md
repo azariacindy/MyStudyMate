@@ -191,7 +191,7 @@ The following is the development of the MyStudyMate application display which ha
 
 ## 🟦 Welcome Screen
 <p align="center">
-  <img src="MYSTUDYMATE/assets/progress1/onboarding_1.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\welcomescreen.jpg" width="250">
 </p>
 
 ---
@@ -200,7 +200,7 @@ The following is the development of the MyStudyMate application display which ha
 <p align="center">
   <img src="MYSTUDYMATE/assets/progress1/signUp.jpeg" width="220">
   <img src="MYSTUDYMATE/assets/progress1/signIn.jpeg" width="220">
-  <img src="MYSTUDYMATE/assets/progress1/auth_logout.jpeg" width="220">
+  <img src="MYSTUDYMATE/assets/progress1/auth_logout (1).jpeg" width="220">
 </p>
 
 ---
@@ -234,7 +234,7 @@ The following is the development of the MyStudyMate application display which ha
 <p align="center">
   <img src="MYSTUDYMATE/assets/progress1/dailyBoard_assignmentForm.jpeg" width="250">
   <img src="MYSTUDYMATE/assets/progress1/dailyBoard_calendar.jpeg" width="250">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_notificationSelected.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="250">
 </p>
 
 ---
@@ -250,7 +250,7 @@ The following is the development of the MyStudyMate application display which ha
 <p align="center">
   <img src="MYSTUDYMATE/assets/progress1/dailyBoard_scheduleForm.jpeg" width="250">
   <img src="MYSTUDYMATE/assets/progress1/dailyBoard_timeForm.jpeg" width="250">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_notificationSelected.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="250">
 </p>
 
 ### ✏️ Edit Schedule
@@ -295,7 +295,7 @@ The following is the development of the MyStudyMate application display which ha
 
 ### Change Password
 <p align="center">
-  <img src="MYSTUDYMATE/assets/progress1/profilechangepassword.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\profile_changepassword.jpeg" width="250">
 </p>
 
 ---
@@ -304,10 +304,10 @@ The following is the development of the MyStudyMate application display which ha
 <p align="center">
   <img src="MYSTUDYMATE/assets/progress1/pomodoro_focusTime.jpeg" width="250">
   <img src="MYSTUDYMATE/assets/progress1/pomodoro_rest.jpeg" width="250">
-  <img src="MYSTUDYMATE/assets/progress1/pomodoro_warningAlert2.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomodoro_warningAlert (2).jpeg" width="250">
   <img src="MYSTUDYMATE/assets/progress1/pomodoro_warningAlert.jpeg" width="250">
-  <img src="MYSTUDYMATE/assets/progress1/pomodoro_notificationDoneFocus.jpeg" width="250">
-  <img src="MYSTUDYMATE/assets/progress1/pomodoro_notificationDoneRest.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomdoro_notificationDoneFocus.jpeg" width="250">
+  <img src="MYSTUDYMATE/assets/progress1/pomdoro_notificationDoneRest.jpeg" width="250">
   <img src="MYSTUDYMATE/assets/progress1/pomodoro_done.jpeg" width="250">
 </p>
 
