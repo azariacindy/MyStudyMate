@@ -755,7 +755,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 100), // Space for bottom nav
+              const SizedBox(height: 5), // Space for bottom nav
             ],
           ),
         ),
