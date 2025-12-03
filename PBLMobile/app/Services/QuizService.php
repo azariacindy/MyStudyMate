@@ -136,8 +136,12 @@ Material:\n\n" . $materialContent;
                 'explanation'   => $questionData['explanation'] ?? null,
             ]);
 
+            // Acak urutan jawaban agar jawaban benar tidak selalu di posisi A
+            $answers = $questionData['answers'] ?? [];
+            shuffle($answers);
+            
             $answerOrder = 1;
-            foreach ($questionData['answers'] ?? [] as $answerData) {
+            foreach ($answers as $answerData) {
                 $question->answers()->create([
                     'answer_text'  => $answerData['answer_text'],
                     'is_correct'   => $answerData['is_correct'] ?? false,

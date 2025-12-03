@@ -28,8 +28,6 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
   
   dynamic get _currentQuestion => _questions[_currentQuestionIndex];
   
-  bool get _hasAnswer => _userAnswers.containsKey(_currentQuestionIndex);
-  
   bool get _isLastQuestion => _currentQuestionIndex == _questions.length - 1;
 
   @override
@@ -160,8 +158,11 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
 
     final answers = _currentQuestion['answers'] as List<dynamic>;
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        
         final confirm = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -180,7 +181,10 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
             ],
           ),
         );
-        return confirm ?? false;
+        
+        if (confirm == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FE),

@@ -12,11 +12,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        // Create test user
+        \App\Models\User::create([
+            'name' => 'Test User',
+            'username' => 'testuser',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+        ]);
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        $this->command->info('Test user created (email: test@example.com, password: password123)');
+
+        // Run StudyCardSeeder
+        $this->call([
+            StudyCardSeeder::class,
+        ]);
     }
 }

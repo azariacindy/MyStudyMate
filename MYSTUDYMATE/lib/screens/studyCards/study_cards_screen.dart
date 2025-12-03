@@ -79,97 +79,6 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
     }
   }
 
-  Future<void> _generateQuiz(StudyCard card) async {
-    // Show dialog to select number of questions
-    final questionCount = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Generate Quiz'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Generate quiz for "${card.title}"'),
-            const SizedBox(height: 16),
-            const Text('Number of questions:'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [3, 5, 10].map((count) {
-                return ChoiceChip(
-                  label: Text('$count'),
-                  selected: false,
-                  onSelected: (_) => Navigator.pop(context, count),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-
-    if (questionCount == null) return;
-
-    // Show loading dialog
-    if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: Card(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Generating quiz with AI...'),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    try {
-      final quizData = await _service.generateQuiz(card.id, questionCount: questionCount);
-      
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Quiz generated successfully with $questionCount questions!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        
-        // TODO: Navigate to quiz screen with quizData
-        print('Quiz generated: ${quizData['id']}');
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error generating quiz: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _deleteStudyCard(StudyCard card) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -219,122 +128,154 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        title: const Text('Study Cards'),
-        backgroundColor: const Color(0xFF8B5CF6),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CreateStudyCardScreen(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // === TOP HEADER SECTION ===
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color.fromARGB(255, 34, 3, 107), Color.fromARGB(255, 89, 147, 240)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              );
-              if (result == true) {
-                _loadStudyCards();
-              }
-            },
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _studyCards.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.school_outlined,
-                        size: 100,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'No Study Cards Yet',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[600],
+                      // Back button with circle background
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Create your first study card to get started',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CreateStudyCardScreen(),
-                            ),
-                          );
-                          if (result == true) {
-                            _loadStudyCards();
-                          }
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text('Create Study Card'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5CF6),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
+                      // Title
+                      const Expanded(
+                        child: Text(
+                          'Study Cards',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
+                      // Spacer untuk balance
+                      const SizedBox(width: 56),
                     ],
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadStudyCards,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _studyCards.length,
-                    itemBuilder: (context, index) {
-                      final card = _studyCards[index];
-                      return _buildStudyCardItem(card);
-                    },
-                  ),
                 ),
-      floatingActionButton: _studyCards.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CreateStudyCardScreen(),
-                  ),
-                );
-                if (result == true) {
-                  _loadStudyCards();
-                }
-              },
-              backgroundColor: const Color(0xFF8B5CF6),
-              icon: const Icon(Icons.add),
-              label: const Text('New Card'),
-            )
-          : null,
+              ),
+            ),
+
+            // === MAIN CONTENT AREA ===
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _studyCards.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.school_outlined,
+                                size: 100,
+                                color: Colors.grey[300],
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'No Study Cards Yet',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Create your first study card to get started',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _loadStudyCards,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+                            itemCount: _studyCards.length,
+                            itemBuilder: (context, index) {
+                              final card = _studyCards[index];
+                              return _buildStudyCardItem(card);
+                            },
+                          ),
+                        ),
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: const CustomBottomNav(currentIndex: 2),
+      floatingActionButton: CustomFAB(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreateStudyCardScreen(),
+            ),
+          );
+          if (result == true) {
+            _loadStudyCards();
+          }
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _buildStudyCardItem(StudyCard card) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: InkWell(
         onTap: () {
@@ -393,21 +334,9 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                     onSelected: (value) {
                       if (value == 'delete') {
                         _deleteStudyCard(card);
-                      } else if (value == 'generate_quiz') {
-                        _generateQuiz(card);
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'generate_quiz',
-                        child: Row(
-                          children: [
-                            Icon(Icons.quiz, color: Color(0xFF8B5CF6)),
-                            SizedBox(width: 8),
-                            Text('Generate Quiz'),
-                          ],
-                        ),
-                      ),
                       const PopupMenuItem(
                         value: 'delete',
                         child: Row(
@@ -477,9 +406,16 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _generateQuiz(card),
-                      icon: const Icon(Icons.quiz, size: 18),
-                      label: const Text('Generate Quiz'),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StudyCardDetailScreen(studyCard: card),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.visibility, size: 18),
+                      label: const Text('View Details'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF8B5CF6),
                         side: const BorderSide(color: Color(0xFF8B5CF6)),

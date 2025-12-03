@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/study_card_model.dart';
+import 'quiz_review_screen.dart';
 
 class QuizResultScreen extends StatelessWidget {
   final StudyCard studyCard;
@@ -41,14 +42,26 @@ class QuizResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        title: const Text('Quiz Result'),
-        backgroundColor: const Color(0xFF8B5CF6),
-        foregroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-      ),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F9FE),
+        appBar: AppBar(
+          title: const Text('Quiz Result'),
+          backgroundColor: const Color(0xFF8B5CF6),
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
+            },
+          ),
+        ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -123,9 +136,14 @@ class QuizResultScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Review feature coming soon!'),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuizReviewScreen(
+                        studyCard: studyCard,
+                        quizData: quizData,
+                        userAnswers: userAnswers,
+                      ),
                     ),
                   );
                 },
@@ -147,10 +165,10 @@ class QuizResultScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
                 },
-                icon: const Icon(Icons.home),
-                label: const Text('Back to Home'),
+                icon: const Icon(Icons.layers),
+                label: const Text('Back to Study Cards'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B5CF6),
                   foregroundColor: Colors.white,
@@ -164,6 +182,7 @@ class QuizResultScreen extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 
