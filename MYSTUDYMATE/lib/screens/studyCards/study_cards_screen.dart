@@ -157,19 +157,9 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                   child: Row(
                     children: [
-                      // Back button with circle background
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
                       ),
                       // Title
                       const Expanded(
@@ -271,7 +261,7 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withOpacity(0.08),
+            color: const Color(0xFF3B82F6).withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -297,12 +287,12 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       card.isFileType ? Icons.insert_drive_file : Icons.text_fields,
-                      color: const Color(0xFF8B5CF6),
+                      color: const Color(0xFF3B82F6),
                       size: 24,
                     ),
                   ),
@@ -417,8 +407,8 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                       icon: const Icon(Icons.visibility, size: 18),
                       label: const Text('View Details'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF8B5CF6),
-                        side: const BorderSide(color: Color(0xFF8B5CF6)),
+                        foregroundColor: const Color(0xFF3B82F6),
+                        side: const BorderSide(color: Color(0xFF3B82F6)),
                         padding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                     ),
