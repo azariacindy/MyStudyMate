@@ -46,7 +46,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                       height: 60,
                       child: CircularProgressIndicator(
                         strokeWidth: 4,
-                        color: Color(0xFF8B5CF6),
+                        color: Color(0xFF3B82F6),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -156,15 +156,9 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
               child: Row(
                 children: [
                   // Back button
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(width: 16),
                   // Title
@@ -193,7 +187,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -320,14 +314,14 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                          color: const Color(0xFF3B82F6).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           widget.studyCard.isFileType
                               ? Icons.attach_file
                               : Icons.notes,
-                          color: const Color(0xFF8B5CF6),
+                          color: const Color(0xFF3B82F6),
                           size: 20,
                         ),
                       ),
@@ -424,23 +418,34 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
         child: SafeArea(
           child: SizedBox(
             height: 56,
-            child: ElevatedButton.icon(
-              onPressed: _isGenerating ? null : _startQuiz,
-              icon: const Icon(Icons.play_arrow, size: 24),
-              label: const Text(
-                'Mulai Quiz',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
+                borderRadius: BorderRadius.circular(16),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B5CF6),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+              child: ElevatedButton.icon(
+                onPressed: _isGenerating ? null : _startQuiz,
+                icon: const Icon(Icons.play_arrow, size: 24),
+                label: const Text(
+                  'Mulai Quiz',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                elevation: 0,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  shadowColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
               ),
             ),
           ),
