@@ -121,10 +121,23 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        title: const Text('Create Study Card'),
-        backgroundColor: const Color(0xFF8B5CF6),
-        foregroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          child: AppBar(
+            title: const Text('Create Study Card'),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            foregroundColor: Colors.white,
+          ),
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -205,7 +218,7 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
                                 _selectedFileName = null;
                               });
                             },
-                            activeColor: const Color(0xFF8B5CF6),
+                            activeColor: const Color(0xFF3B82F6),
                           ),
                         ),
                         Expanded(
@@ -220,7 +233,7 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
                                 _textContentController.clear();
                               });
                             },
-                            activeColor: const Color(0xFF8B5CF6),
+                            activeColor: const Color(0xFF3B82F6),
                           ),
                         ),
                       ],
@@ -268,7 +281,7 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
                         const Icon(
                           Icons.cloud_upload,
                           size: 64,
-                          color: Color(0xFF8B5CF6),
+                          color: Color(0xFF3B82F6),
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -291,14 +304,14 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                            color: const Color(0xFF3B82F6).withAlpha(26),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
                               const Icon(
                                 Icons.insert_drive_file,
-                                color: Color(0xFF8B5CF6),
+                                color: Color(0xFF3B82F6),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -331,8 +344,8 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
                           _selectedFile == null ? 'Select File' : 'Change File',
                         ),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF8B5CF6),
-                          side: const BorderSide(color: Color(0xFF8B5CF6)),
+                          foregroundColor: const Color(0xFF3B82F6),
+                          side: const BorderSide(color: Color(0xFF3B82F6)),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 24,
                             vertical: 12,
@@ -351,7 +364,7 @@ class _CreateStudyCardScreenState extends State<CreateStudyCardScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _saveStudyCard,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B5CF6),
+                backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
