@@ -57,12 +57,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               clipBehavior: Clip.none,
               alignment: Alignment.bottomCenter,
               children: [
-                // Blue rounded container
+                // Gradient rounded container
                 Container(
                   width: double.infinity,
                   height: screenHeight * 0.45,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF4C84F1),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF3B82F6), // Blue
+                        Color(0xFF8B5CF6), // Purple
+                      ],
+                    ),
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(86),
                       bottomRight: Radius.circular(86),
