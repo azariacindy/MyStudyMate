@@ -20,8 +20,6 @@ class FirebaseMessagingService {
   FirebaseMessagingService._internal();
 
   FirebaseMessaging? _firebaseMessaging;
-  FirebaseMessaging get firebaseMessaging => _firebaseMessaging ?? FirebaseMessaging.instance;
-  
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   String? _fcmToken;
@@ -29,52 +27,57 @@ class FirebaseMessagingService {
 
   /// Initialize Firebase Messaging
   Future<void> initialize() async {
-    // Initialize Firebase Messaging instance
-    _firebaseMessaging = FirebaseMessaging.instance;
-    // Request permission for iOS
-    NotificationSettings settings = await firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+    try {
+      // Initialize Firebase Messaging instance
+      _firebaseMessaging = FirebaseMessaging.instance;
+      
+      // Request permission for iOS
+      NotificationSettings settings = await _firebaseMessaging!.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
 
-    print('[FCM] Permission status: ${settings.authorizationStatus}');
+      print('[FCM] Permission status: ${settings.authorizationStatus}');
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('[FCM] User granted permission');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-      print('[FCM] User granted provisional permission');
-    } else {
-      print('[FCM] User declined or has not accepted permission');
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        print('[FCM] User granted permission');
+      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+        print('[FCM] User granted provisional permission');
+      } else {
+        print('[FCM] User declined or has not accepted permission');
+      }
+
+      // Initialize local notifications for Android
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        await _initializeLocalNotifications();
+      }
+
+      // Get FCM token
+      await _getFCMToken();
+
+      // Listen to token refresh
+      _firebaseMessaging?.onTokenRefresh.listen((newToken) {
+        _fcmToken = newToken;
+        print('[FCM] Token refreshed: $newToken');
+        // TODO: Send new token to backend
+      });
+
+      // Handle foreground messages
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+      // Handle background messages
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+      // Handle notification tap when app is in background
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+    } catch (e) {
+      print('⚠️ Firebase Messaging initialization failed: $e');
     }
-
-    // Initialize local notifications for Android
-    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      await _initializeLocalNotifications();
-    }
-
-    // Get FCM token
-    await _getFCMToken();
-
-    // Listen to token refresh
-    firebaseMessaging.onTokenRefresh.listen((newToken) {
-      _fcmToken = newToken;
-      print('[FCM] Token refreshed: $newToken');
-      // TODO: Send new token to backend
-    });
-
-    // Handle foreground messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // Handle background messages
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-    // Handle notification tap when app is in background
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
   }
 
   /// Initialize local notifications for Android/iOS
@@ -117,11 +120,11 @@ class FirebaseMessagingService {
     try {
       if (kIsWeb) {
         // For web, use VAPID key
-        _fcmToken = await firebaseMessaging.getToken(
+        _fcmToken = await _firebaseMessaging?.getToken(
           vapidKey: 'BIL1XlaE85Dgstxwiw_75NSRwQOtIDwzdNvZrVJahZxNAgfwTt3d5rUKWM__Wy4_tLmyV2t84y-x4K_VTP9r5wg',
         );
       } else {
-        _fcmToken = await firebaseMessaging.getToken();
+        _fcmToken = await _firebaseMessaging?.getToken();
       }
       
       print('[FCM] Token: $_fcmToken');
@@ -185,19 +188,19 @@ class FirebaseMessagingService {
 
   /// Subscribe to topic
   Future<void> subscribeToTopic(String topic) async {
-    await firebaseMessaging.subscribeToTopic(topic);
+    await _firebaseMessaging?.subscribeToTopic(topic);
     print('[FCM] Subscribed to topic: $topic');
   }
 
   /// Unsubscribe from topic
   Future<void> unsubscribeFromTopic(String topic) async {
-    await firebaseMessaging.unsubscribeFromTopic(topic);
+    await _firebaseMessaging?.unsubscribeFromTopic(topic);
     print('[FCM] Unsubscribed from topic: $topic');
   }
 
   /// Delete FCM token
   Future<void> deleteToken() async {
-    await firebaseMessaging.deleteToken();
+    await _firebaseMessaging?.deleteToken();
     _fcmToken = null;
     print('[FCM] Token deleted');
   }
