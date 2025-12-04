@@ -19,8 +19,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   // Konfigurasi - Total 1 jam (60 menit)
   // 2 cycles: (25 min focus + 5 min rest) x 2 = 60 min
   static const int totalCycles = 2;
-  static const int focusDuration = 25; // menit
-  static const int restDuration = 5; // menit
+  static const int focusDuration = 1; // menit
+  static const int restDuration = 1; // menit
 
   TimerMode _currentMode = TimerMode.focus;
   int _currentCycle = 1; // mulai dari cycle 1
@@ -551,24 +551,15 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                   child: Row(
                     children: [
-                      // Back button with circle background
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
-                          onPressed: () async {
-                            final shouldPop = await _onWillPop();
-                            if (shouldPop && context.mounted) {
-                              Navigator.pop(context);
-                            }
-                          },
-                        ),
+                      // Back button
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () async {
+                          final shouldPop = await _onWillPop();
+                          if (shouldPop && context.mounted) {
+                            Navigator.pop(context);
+                          }
+                        },
                       ),
                       // Title
                       const Expanded(
