@@ -36,7 +36,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
   ];
 
   final List<Map<String, dynamic>> _colorOptions = [
-    {'value': '#5B9FED', 'label': 'Blue'},
+    {'value': '#3B82F6', 'label': 'Blue'},
     {'value': '#8B5CF6', 'label': 'Purple'},
     {'value': '#10B981', 'label': 'Green'},
     {'value': '#F59E0B', 'label': 'Orange'},
@@ -59,7 +59,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     _startTime = widget.schedule.startTime;
     _endTime = widget.schedule.endTime;
     _selectedType = widget.schedule.type;
-    _selectedColor = widget.schedule.color ?? '#5B9FED';
+    _selectedColor = widget.schedule.color ?? '#3B82F6';
     _hasReminder = widget.schedule.hasReminder;
     _reminderMinutes = widget.schedule.reminderMinutes;
   }
@@ -212,11 +212,46 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        title: const Text('Edit Schedule'),
-        backgroundColor: const Color(0xFF5B9FED),
-        elevation: 0,
-        foregroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF3B82F6), // Blue
+                Color(0xFF8B5CF6), // Purple
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Edit Daily Board',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 56),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -238,7 +273,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                           decoration: InputDecoration(
                             labelText: 'Title *',
                             hintText: 'e.g., Management Project',
-                            prefixIcon: const Icon(Icons.title, color: Color(0xFF5B9FED)),
+                            prefixIcon: const Icon(Icons.title, color: Color(0xFF3B82F6)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -248,7 +283,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
+                              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                             ),
                             filled: true,
                             fillColor: Colors.white,
@@ -268,7 +303,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                           decoration: InputDecoration(
                             labelText: 'Description',
                             hintText: 'Add notes or details...',
-                            prefixIcon: const Icon(Icons.description, color: Color(0xFF5B9FED)),
+                            prefixIcon: const Icon(Icons.description, color: Color(0xFF3B82F6)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -278,7 +313,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
+                              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                             ),
                             filled: true,
                             fillColor: Colors.white,
@@ -312,16 +347,26 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                               },
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF5B9FED) : Colors.white,
+                                  gradient: isSelected
+                                      ? const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Color(0xFF3B82F6), // Blue
+                                            Color(0xFF8B5CF6), // Purple
+                                          ],
+                                        )
+                                      : null,
+                                  color: isSelected ? null : Colors.white,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: isSelected ? const Color(0xFF5B9FED) : const Color(0xFFE5E7EB),
+                                    color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
                                     width: 2,
                                   ),
                                   boxShadow: isSelected
                                       ? [
                                           BoxShadow(
-                                            color: const Color(0xFF5B9FED).withOpacity(0.3),
+                                            color: const Color(0xFF3B82F6).withAlpha(77),
                                             blurRadius: 8,
                                             offset: const Offset(0, 4),
                                           ),
@@ -333,7 +378,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                                   children: [
                                     Icon(
                                       type['icon'] as IconData,
-                                      color: isSelected ? Colors.white : const Color(0xFF5B9FED),
+                                      color: isSelected ? Colors.white : const Color(0xFF3B82F6),
                                       size: 28,
                                     ),
                                     const SizedBox(height: 6),
@@ -375,10 +420,10 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF5B9FED).withOpacity(0.1),
+                                    color: const Color(0xFF3B82F6).withAlpha(26),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(Icons.calendar_today, color: Color(0xFF5B9FED), size: 20),
+                                  child: const Icon(Icons.calendar_today, color: Color(0xFF3B82F6), size: 20),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -430,7 +475,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 18),
+                                            Icon(Icons.access_time, color: const Color(0xFF3B82F6), size: 18),
                                             const SizedBox(width: 6),
                                             const Text(
                                               'Start',
@@ -472,7 +517,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            Icon(Icons.access_time_filled, color: const Color(0xFF5B9FED), size: 18),
+                                            Icon(Icons.access_time_filled, color: const Color(0xFF3B82F6), size: 18),
                                             const SizedBox(width: 6),
                                             const Text(
                                               'End',
@@ -516,7 +561,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                             decoration: InputDecoration(
                               labelText: 'Lecturer / Instructor',
                               hintText: 'e.g., Dr. John Doe',
-                              prefixIcon: const Icon(Icons.person, color: Color(0xFF5B9FED)),
+                              prefixIcon: const Icon(Icons.person, color: Color(0xFF3B82F6)),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -526,7 +571,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
+                                borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                               ),
                               filled: true,
                               fillColor: Colors.white,
@@ -565,7 +610,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withOpacity(0.3),
+                                          color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withAlpha(77),
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),
@@ -617,7 +662,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                               style: const TextStyle(fontSize: 13),
                             ),
                             value: _hasReminder,
-                            activeColor: const Color(0xFF5B9FED),
+                            activeColor: const Color(0xFF3B82F6),
                             onChanged: (value) {
                               setState(() => _hasReminder = value);
                             },
@@ -637,7 +682,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                               value: _reminderMinutes,
                               decoration: const InputDecoration(
                                 labelText: 'Remind me before',
-                                prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF5B9FED)),
+                                prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF3B82F6)),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.zero,
                               ),
@@ -690,13 +735,13 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                               icon: const Icon(Icons.check_circle_outline),
                               label: const Text('Update Schedule'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF5B9FED),
+                                backgroundColor: const Color(0xFF3B82F6),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                shadowColor: const Color(0xFF5B9FED).withOpacity(0.5),
+                                shadowColor: const Color(0xFF3B82F6).withAlpha(128),
                               ),
                             ),
                           ),
@@ -722,7 +767,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -737,10 +782,10 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5B9FED).withOpacity(0.1),
+                  color: const Color(0xFF3B82F6).withAlpha(26),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: const Color(0xFF5B9FED), size: 20),
+                child: Icon(icon, color: const Color(0xFF3B82F6), size: 20),
               ),
               const SizedBox(width: 12),
               Text(
