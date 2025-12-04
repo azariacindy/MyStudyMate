@@ -46,7 +46,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Review Answers'),
-          backgroundColor: const Color(0xFF8B5CF6),
+          backgroundColor: const Color(0xFF3B82F6),
           foregroundColor: Colors.white,
         ),
         body: const Center(
@@ -88,17 +88,9 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                 child: Row(
                   children: [
                     // Close button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () {
-                          Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
-                        },
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
                     ),
                     const SizedBox(width: 16),
                     // Title
@@ -113,16 +105,10 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                       ),
                     ),
                     // Question navigator button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.list, color: Colors.white),
-                        onPressed: () => _showQuestionNavigator(context),
-                        tooltip: 'Jump to question',
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.list, color: Colors.white),
+                      onPressed: () => _showQuestionNavigator(context),
+                      tooltip: 'Jump to question',
                     ),
                   ],
                 ),
@@ -155,7 +141,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                 LinearProgressIndicator(
                   value: (_currentQuestionIndex + 1) / _questions.length,
                   backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                   minHeight: 6,
                   borderRadius: BorderRadius.circular(3),
                 ),
@@ -206,11 +192,11 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                       ),
                       side: BorderSide(
                         color: _currentQuestionIndex > 0
-                            ? const Color(0xFF8B5CF6)
+                            ? const Color(0xFF3B82F6)
                             : Colors.grey,
                       ),
                       foregroundColor: _currentQuestionIndex > 0
-                          ? const Color(0xFF8B5CF6)
+                          ? const Color(0xFF3B82F6)
                           : Colors.grey,
                     ),
                   ),
@@ -225,7 +211,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                     label: const Text('Next'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _currentQuestionIndex < _questions.length - 1
-                          ? const Color(0xFF8B5CF6)
+                          ? const Color(0xFF3B82F6)
                           : Colors.grey,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -526,14 +512,14 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: _currentQuestionIndex == index
-                            ? const Color(0xFF8B5CF6)
+                            ? const Color(0xFF3B82F6)
                             : isCorrect
                                 ? Colors.green.withOpacity(0.1)
                                 : Colors.red.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _currentQuestionIndex == index
-                              ? const Color(0xFF8B5CF6)
+                              ? const Color(0xFF3B82F6)
                               : isCorrect
                                   ? Colors.green
                                   : Colors.red,
