@@ -373,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildActionCard(
                 context,
                 CupertinoIcons.calendar,
-                'Schedule',
+                'Daily Board',
                 'View All',
                 const Color(0xFF3B82F6),
                 '/schedule',

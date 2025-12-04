@@ -87,7 +87,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: const Color(0xFF5B9FED),
+              primary: const Color(0xFF3B82F6),
               onPrimary: Colors.white,
             ),
           ),
@@ -110,7 +110,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: const Color(0xFF5B9FED),
+              primary: const Color(0xFF3B82F6),
               onPrimary: Colors.white,
             ),
           ),
@@ -237,19 +237,44 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF5B9FED),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Add Schedule',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF3B82F6), // Blue
+                Color(0xFF8B5CF6), // Purple
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Add Daily Board',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 56),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -271,7 +296,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                     decoration: InputDecoration(
                       labelText: 'Title *',
                       hintText: 'e.g., Management Project',
-                      prefixIcon: const Icon(Icons.title, color: Color(0xFF5B9FED)),
+                      prefixIcon: const Icon(Icons.title, color: Color(0xFF3B82F6)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -281,7 +306,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
+                        borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -301,7 +326,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                     decoration: InputDecoration(
                       labelText: 'Description',
                       hintText: 'Add notes or details...',
-                      prefixIcon: const Icon(Icons.description, color: Color(0xFF5B9FED)),
+                      prefixIcon: const Icon(Icons.description, color: Color(0xFF3B82F6)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -311,7 +336,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
+                        borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -345,16 +370,26 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF5B9FED) : Colors.white,
+                            gradient: isSelected
+                                ? const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFF3B82F6), // Blue
+                                      Color(0xFF8B5CF6), // Purple
+                                    ],
+                                  )
+                                : null,
+                            color: isSelected ? null : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF5B9FED) : const Color(0xFFE5E7EB),
+                              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
                               width: 2,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF5B9FED).withOpacity(0.3),
+                                      color: const Color(0xFF3B82F6).withAlpha(77),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),
@@ -366,7 +401,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                             children: [
                               Icon(
                                 type['icon'] as IconData,
-                                color: isSelected ? Colors.white : const Color(0xFF5B9FED),
+                                color: isSelected ? Colors.white : const Color(0xFF3B82F6),
                                 size: 28,
                               ),
                               const SizedBox(height: 6),
@@ -407,11 +442,11 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF5B9FED).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(Icons.calendar_today, color: Color(0xFF5B9FED), size: 20),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3B82F6).withAlpha(26),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.calendar_today, color: Color(0xFF3B82F6), size: 20),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -463,7 +498,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.access_time, color: const Color(0xFF5B9FED), size: 18),
+                                      Icon(Icons.access_time, color: const Color(0xFF3B82F6), size: 18),
                                       const SizedBox(width: 6),
                                       const Text(
                                         'Start',
@@ -505,7 +540,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.access_time_filled, color: const Color(0xFF5B9FED), size: 18),
+                                      Icon(Icons.access_time_filled, color: const Color(0xFF3B82F6), size: 18),
                                       const SizedBox(width: 6),
                                       const Text(
                                         'End',
@@ -549,7 +584,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       decoration: InputDecoration(
                         labelText: 'Lecturer / Instructor',
                         hintText: 'e.g., Dr. John Doe',
-                        prefixIcon: const Icon(Icons.person, color: Color(0xFF5B9FED)),
+                        prefixIcon: const Icon(Icons.person, color: Color(0xFF3B82F6)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -559,7 +594,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
+                          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -598,7 +633,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withOpacity(0.3),
+                                    color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withAlpha(77),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -650,7 +685,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         style: const TextStyle(fontSize: 13),
                       ),
                       value: _hasReminder,
-                      activeColor: const Color(0xFF5B9FED),
+                      activeColor: const Color(0xFF3B82F6),
                       onChanged: (value) {
                         setState(() => _hasReminder = value);
                       },
@@ -670,7 +705,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         value: _reminderMinutes,
                         decoration: const InputDecoration(
                           labelText: 'Remind me before',
-                          prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF5B9FED)),
+                          prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF3B82F6)),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.zero,
                         ),
@@ -697,18 +732,32 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 54,
-                child: ElevatedButton.icon(
-                  onPressed: _saveSchedule,
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Save Schedule'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5B9FED),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF3B82F6), // Blue
+                        Color(0xFF8B5CF6), // Purple
+                      ],
                     ),
-                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: _saveSchedule,
+                    icon: const Icon(Icons.check_circle_outline),
+                    label: const Text('Save Schedule'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ),
               ),
@@ -731,7 +780,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -746,10 +795,10 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5B9FED).withOpacity(0.1),
+                  color: const Color(0xFF3B82F6).withAlpha(26),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: const Color(0xFF5B9FED), size: 20),
+                child: Icon(icon, color: const Color(0xFF3B82F6), size: 20),
               ),
               const SizedBox(width: 12),
               Text(

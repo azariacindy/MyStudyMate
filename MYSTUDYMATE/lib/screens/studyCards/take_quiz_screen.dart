@@ -86,12 +86,14 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
+              style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
               child: const Text('Continue'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B5CF6),
+                backgroundColor: Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
               ),
               child: const Text('Submit'),
             ),
@@ -171,6 +173,7 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
+                style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
                 child: const Text('Stay'),
               ),
               TextButton(
@@ -212,38 +215,33 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                 child: Row(
                   children: [
                     // Back button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Exit Quiz?'),
-                              content: const Text('Your progress will be lost if you exit now.'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: const Text('Stay'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                                  child: const Text('Exit'),
-                                ),
-                              ],
-                            ),
-                          );
-                          
-                          if (confirm == true && context.mounted) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Exit Quiz?'),
+                            content: const Text('Your progress will be lost if you exit now.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
+                                child: const Text('Stay'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                child: const Text('Exit'),
+                              ),
+                            ],
+                          ),
+                        );
+                        
+                        if (confirm == true && context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+                      },
                     ),
                     const SizedBox(width: 16),
                     // Title
@@ -325,7 +323,7 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                     child: LinearProgressIndicator(
                       value: (_currentQuestionIndex + 1) / _questions.length,
                       backgroundColor: Colors.grey[200],
-                      color: const Color(0xFF8B5CF6),
+                      color: const Color(0xFF3B82F6),
                       minHeight: 8,
                     ),
                   ),
@@ -384,11 +382,11 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF8B5CF6).withOpacity(0.1)
+                                    ? const Color(0xFF3B82F6).withOpacity(0.1)
                                     : Colors.white,
                                 border: Border.all(
                                   color: isSelected
-                                      ? const Color(0xFF8B5CF6)
+                                      ? const Color(0xFF3B82F6)
                                       : Colors.grey[300]!,
                                   width: isSelected ? 2 : 1,
                                 ),
@@ -401,7 +399,7 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                                     height: 32,
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? const Color(0xFF8B5CF6)
+                                          ? const Color(0xFF3B82F6)
                                           : Colors.grey[200],
                                       shape: BoxShape.circle,
                                     ),
@@ -425,7 +423,7 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                                       style: TextStyle(
                                         fontSize: 15,
                                         color: isSelected
-                                            ? const Color(0xFF8B5CF6)
+                                            ? const Color(0xFF3B82F6)
                                             : Colors.grey[800],
                                         fontWeight: isSelected
                                             ? FontWeight.w600
@@ -436,7 +434,7 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                                   if (isSelected)
                                     const Icon(
                                       Icons.check_circle,
-                                      color: Color(0xFF8B5CF6),
+                                      color: Color(0xFF3B82F6),
                                       size: 24,
                                     ),
                                 ],
@@ -473,8 +471,8 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                           icon: const Icon(Icons.arrow_back),
                           label: const Text('Previous'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF8B5CF6),
-                            side: const BorderSide(color: Color(0xFF8B5CF6)),
+                            foregroundColor: const Color(0xFF3B82F6),
+                            side: const BorderSide(color: Color(0xFF3B82F6)),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -501,7 +499,7 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5CF6),
+                          backgroundColor: const Color(0xFF3B82F6),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(

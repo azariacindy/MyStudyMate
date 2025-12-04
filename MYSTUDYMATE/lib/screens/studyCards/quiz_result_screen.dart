@@ -29,9 +29,9 @@ class QuizResultScreen extends StatelessWidget {
   }
 
   Color _getScoreColor() {
-    if (score >= 80) return const Color(0xFF10B981); // Soft green
-    if (score >= 60) return const Color(0xFFF59E0B); // Warm amber
-    return const Color(0xFFEF4444); // Soft red
+    if (score >= 80) return const Color(0xFF3B82F6); // Bright blue
+    if (score >= 60) return const Color(0xFF8B5CF6); // Vibrant purple
+    return const Color(0xFFEC4899); // Bright pink
   }
 
   String _getScoreText() {
@@ -75,17 +75,11 @@ class QuizResultScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     // Close button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () {
-                          Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
-                        },
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () {
+                        Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
+                      },
                     ),
                     const SizedBox(width: 16),
                     // Title
@@ -168,7 +162,7 @@ class QuizResultScreen extends StatelessWidget {
                     icon: Icons.quiz,
                     label: 'Questions',
                     value: '$totalQuestions',
-                    color: Colors.purple,
+                    color: const Color(0xFF3B82F6),
                   ),
                 ),
               ],
@@ -176,28 +170,39 @@ class QuizResultScreen extends StatelessWidget {
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QuizReviewScreen(
-                        studyCard: studyCard,
-                        quizData: quizData,
-                        userAnswers: userAnswers,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QuizReviewScreen(
+                          studyCard: studyCard,
+                          quizData: quizData,
+                          userAnswers: userAnswers,
+                        ),
                       ),
+                    );
+                  },
+                  icon: const Icon(Icons.visibility),
+                  label: const Text('Review Answers'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.visibility),
-                label: const Text('Review Answers'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF8B5CF6),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: Color(0xFF8B5CF6)),
                   ),
                 ),
               ),
@@ -205,18 +210,30 @@ class QuizResultScreen extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
-                },
-                icon: const Icon(Icons.layers),
-                label: const Text('Back to Study Cards'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B5CF6),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
+                  },
+                  icon: const Icon(Icons.layers),
+                  label: const Text('Back to Study Cards'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),

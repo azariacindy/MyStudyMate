@@ -152,24 +152,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                   child: Row(
                     children: [
-                      // Back button with circle background
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                        ),
+                      // Back button
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
                       ),
                       // Title
                       const Expanded(
                         child: Text(
-                          'My Schedule',
+                          'Daily Board',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,

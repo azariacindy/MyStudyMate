@@ -34,11 +34,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'title': 'Smart Study Plan',
       'subtitle': 'Buat study plan otomatis dengan soal-soal latihan berdasarkan materi kamu.',
     },
-    {
-      'image': 'assets/ui_design/element_onboarding/onboarding5.png',
-      'title': 'Join Community',
-      'subtitle': 'Belajar bersama komunitas mahasiswa Politeknik Negeri Malang.',
-    },
   ];
 
   @override

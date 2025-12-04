@@ -9,7 +9,6 @@ import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'utils/supabase_config.dart';
 import 'services/firebase_messaging_service.dart';
-import 'screens/taskManagerFeature/manage_task_screen.dart';
 import 'screens/taskManagerFeature/plan_task_screen.dart';
 import 'screens/scheduleFeature/scheduleScreen.dart';
 import 'screens/profileFeature/profile_screen.dart';
@@ -20,11 +19,15 @@ import 'package:firebase_core/firebase_core.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase first
-  await Firebase.initializeApp();
-  
-  // Initialize Firebase Messaging
-  await FirebaseMessagingService().initialize();
+  // Initialize Firebase with error handling
+  try {
+    await Firebase.initializeApp();
+    // Initialize Firebase Messaging only if Firebase initialized successfully
+    await FirebaseMessagingService().initialize();
+  } catch (e) {
+    print('⚠️ Firebase initialization failed: $e');
+    // App can still work without Firebase
+  }
   
   try {
     await initializeSupabaseIfConfigured();
