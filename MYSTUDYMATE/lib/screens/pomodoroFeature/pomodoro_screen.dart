@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../widgets/custom_bottom_nav.dart';
+import '../../services/profile_service.dart';
 
 // enum harus di luar class
 enum TimerMode { focus, rest }
@@ -31,6 +32,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
   Timer? _timer;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
@@ -271,12 +273,137 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
       _seconds = 0;
     });
 
+    // Record streak when user completes 2 Pomodoro cycles
+    _recordStreak();
+
+    // Show completion message
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('🎉 Congrats! You just finished a full 1-hour Pomodoro session. Time to recharge!'),
-        duration: Duration(seconds: 4),
+        content: Text('🎉 Congrats! You just finished a full Pomodoro session!'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Color(0xFF10B981),
       ),
     );
+  }
+
+  Future<void> _recordStreak() async {
+    try {
+      final result = await _profileService.recordStreak();
+      
+      if (result['success'] == true) {
+        final streak = result['streak'] ?? 0;
+        final alreadyRecorded = result['already_recorded'] ?? false;
+        final isConsecutive = result['is_consecutive'] ?? false;
+        
+        if (!mounted) return;
+        
+        // Show streak dialog
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        if (!mounted) return;
+        
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF6B6B), Color(0xFFFFE66D)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.local_fire_department,
+                    size: 48,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  alreadyRecorded
+                      ? 'Streak Maintained!'
+                      : (isConsecutive ? 'Streak +1!' : 'New Streak!'),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.local_fire_department,
+                      color: Color(0xFFFF6B6B),
+                      size: 32,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$streak',
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      streak == 1 ? 'day' : 'days',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  alreadyRecorded
+                      ? 'Keep up the great work!'
+                      : (isConsecutive
+                          ? 'You\'re on fire! Keep the momentum going!'
+                          : 'Great start! Complete tomorrow to continue!'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'Awesome!',
+                  style: TextStyle(
+                    color: Color(0xFF3B82F6),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error recording streak: $e');
+      // Don't show error to user, streak recording is optional
+    }
   }
 
   String _formatTime(int minutes, int seconds) {
@@ -324,114 +451,58 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   }
 
   Future<bool> _onWillPop() async {
-    // Jika timer tidak berjalan atau sudah selesai, langsung keluar
-    if (!_isRunning && !_isCompleted) {
+    // Jika sudah selesai, langsung keluar tanpa warning
+    if (_isCompleted) {
       return true;
     }
 
-    // Jika timer sedang berjalan atau ada progress, tampilkan warning
-    if (_isRunning || (_currentCycle > 1 || _minutes < focusDuration)) {
-      final shouldPop = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false, // User harus pilih salah satu opsi
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.orange.shade700,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Exit Pomodoro?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            _isRunning
-                ? 'Your timer is still running. Are you sure you want to exit? Your progress will be lost.'
-                : 'You have made progress in this session. Exit anyway?',
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey.shade700,
-              height: 1.4,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Stay',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _timer?.cancel();
-                Navigator.of(context).pop(true);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange.shade700,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-              ),
-              child: const Text(
-                'Exit',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-      return shouldPop ?? false;
+    // Jika timer tidak berjalan dan belum ada progress, langsung keluar
+    if (!_isRunning && _currentCycle == 1 && _minutes == focusDuration) {
+      return true;
     }
 
-    return true;
+    // Tampilkan warning yang sama dengan navigation
+    final shouldPop = await _showNavigationWarning();
+    if (shouldPop) {
+      _timer?.cancel();
+    }
+    return shouldPop;
   }
 
   Future<void> _handleNavigation(BuildContext context, String routeName) async {
-    // Cek apakah ada progress yang perlu disimpan
-    if (_isRunning || (_currentCycle > 1 || _minutes < focusDuration)) {
-      final shouldLeave = await _showNavigationWarning();
-      
-      if (shouldLeave && context.mounted) {
-        _timer?.cancel();
-        Navigator.pushReplacementNamed(context, routeName);
-      }
-    } else {
-      // Langsung navigasi jika tidak ada progress
+    // Jika sudah selesai, langsung navigasi tanpa warning
+    if (_isCompleted) {
       if (context.mounted) {
         Navigator.pushReplacementNamed(context, routeName);
       }
+      return;
+    }
+
+    // Jika timer tidak berjalan dan belum ada progress, langsung navigasi
+    if (!_isRunning && _currentCycle == 1 && _minutes == focusDuration) {
+      if (context.mounted) {
+        Navigator.pushReplacementNamed(context, routeName);
+      }
+      return;
+    }
+
+    // Tampilkan warning jika ada progress
+    final shouldLeave = await _showNavigationWarning();
+    
+    if (shouldLeave && context.mounted) {
+      _timer?.cancel();
+      Navigator.pushReplacementNamed(context, routeName);
     }
   }
 
   Future<bool> _showNavigationWarning() async {
+    if (!mounted) return false;
+    
     final shouldLeave = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      useRootNavigator: false, // Penting untuk nested navigator
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -479,7 +550,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
               'Stay & Continue',
               style: TextStyle(
@@ -490,7 +561,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade700,
               foregroundColor: Colors.white,
