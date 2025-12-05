@@ -30,9 +30,6 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
     final storage = const FlutterSecureStorage();
     final token = await storage.read(key: 'auth_token');
     
-    print('DEBUG: Auth token exists: ${token != null}');
-    print('DEBUG: Token: ${token?.substring(0, token.length > 20 ? 20 : token.length)}...');
-    
     if (token == null || token.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -61,9 +58,8 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
         setState(() {
           _studyCards = cards;
         });
-      }
+      };
     } catch (e) {
-      print('DEBUG: Error details: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

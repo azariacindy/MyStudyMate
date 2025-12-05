@@ -8,6 +8,7 @@ import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'utils/supabase_config.dart';
+import 'utils/app_theme.dart';
 import 'services/firebase_messaging_service.dart';
 import 'screens/taskManagerFeature/plan_task_screen.dart';
 import 'screens/scheduleFeature/scheduleScreen.dart';
@@ -46,34 +47,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MyStudyMate',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4C84F1)),
-        useMaterial3: true,
-        
-        // ✅ SET FONT DI TEXT THEME, BUKAN DI ROOT
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(fontFamily: 'Inter'),
-          displayMedium: TextStyle(fontFamily: 'Inter'),
-          displaySmall: TextStyle(fontFamily: 'Inter'),
-          headlineLarge: TextStyle(fontFamily: 'Poppins'),
-          headlineMedium: TextStyle(fontFamily: 'Poppins'),
-          headlineSmall: TextStyle(fontFamily: 'Poppins'),
-          titleLarge: TextStyle(fontFamily: 'Poppins'),
-          titleMedium: TextStyle(fontFamily: 'Poppins'),
-          titleSmall: TextStyle(fontFamily: 'Poppins'),
-          bodyLarge: TextStyle(fontFamily: 'Inter'),
-          bodyMedium: TextStyle(fontFamily: 'Inter'),
-          bodySmall: TextStyle(fontFamily: 'Inter'),
-          labelLarge: TextStyle(fontFamily: 'Inter'),
-          labelMedium: TextStyle(fontFamily: 'Inter'),
-          labelSmall: TextStyle(fontFamily: 'Inter'),
-        ),
-        
-        // ✅ ICON THEME TETAP MENGGUNAKAN MATERIAL ICONS
-        iconTheme: const IconThemeData(
-          color: Color(0xFF2B2D42),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       home: const SplashScreen(),
       routes: {
         '/splash': (_) => const SplashScreen(),

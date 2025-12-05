@@ -88,10 +88,6 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
         questionCount: questionCount,
       );
 
-      // Debug: Print quiz data structure
-      print('DEBUG: Quiz Data: $quizData');
-      print('DEBUG: Questions count: ${quizData['questions']?.length ?? 0}');
-
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
         setState(() => _isGenerating = false);
