@@ -16,7 +16,7 @@ class FCMService
     {
         $this->projectId = 'mystudymate-acfbe';
         $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
-        $this->serviceAccountPath = storage_path('app/mystudymate-acfbe-firebase-adminsdk-fbsvc-435c4c6bb6.json');
+        $this->serviceAccountPath = storage_path('app/mystudymate-acfbe-firebase-adminsdk-fbsvc-2c2e8800a0.json');
     }
 
     /**
