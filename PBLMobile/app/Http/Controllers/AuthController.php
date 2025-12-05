@@ -282,4 +282,122 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Record streak when user completes Pomodoro cycles
+     */
+    public function recordStreak(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
+
+        try {
+            $user = DB::table('users')->where('id', $request->user_id)->first();
+            
+            $today = now()->toDateString();
+            $lastStreakDate = $user->last_streak_date;
+            
+            // Check if streak was already recorded today
+            if ($lastStreakDate === $today) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Streak already recorded for today.',
+                    'streak' => $user->streak ?? 0,
+                    'already_recorded' => true
+                ]);
+            }
+            
+            // Check if this is consecutive day (yesterday was last recorded)
+            $yesterday = now()->subDay()->toDateString();
+            $isConsecutive = ($lastStreakDate === $yesterday);
+            
+            // If not consecutive and not first time, reset streak
+            $newStreak = 1;
+            if ($isConsecutive) {
+                $newStreak = ($user->streak ?? 0) + 1;
+            } elseif ($lastStreakDate !== null) {
+                // Streak was broken, reset to 1
+                $newStreak = 1;
+            }
+            
+            // Update streak
+            DB::table('users')
+                ->where('id', $request->user_id)
+                ->update([
+                    'streak' => $newStreak,
+                    'last_streak_date' => $today,
+                    'updated_at' => now(),
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Streak recorded successfully!',
+                'streak' => $newStreak,
+                'is_consecutive' => $isConsecutive,
+                'already_recorded' => false
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record streak.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get user's current streak
+     */
+    public function getStreak(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
+
+        try {
+            $user = DB::table('users')->where('id', $request->user_id)->first();
+            
+            $today = now()->toDateString();
+            $yesterday = now()->subDay()->toDateString();
+            $lastStreakDate = $user->last_streak_date;
+            
+            // Check if streak is still active (recorded today or yesterday)
+            $isActive = ($lastStreakDate === $today || $lastStreakDate === $yesterday);
+            $currentStreak = $isActive ? ($user->streak ?? 0) : 0;
+
+            // Get current month name and year
+            $currentMonth = now()->format('F Y');
+            
+            // Calculate completed days for calendar view
+            $completedDays = [];
+            if ($lastStreakDate && $currentStreak > 0) {
+                $streakDate = \Carbon\Carbon::parse($lastStreakDate);
+                
+                // Add days for current streak (going backwards from last_streak_date)
+                for ($i = 0; $i < $currentStreak; $i++) {
+                    $date = $streakDate->copy()->subDays($i);
+                    // Only include days from current month
+                    if ($date->format('Y-m') === now()->format('Y-m')) {
+                        $completedDays[] = (int) $date->format('d');
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'streak' => $currentStreak,
+                'last_streak_date' => $lastStreakDate,
+                'is_active' => $isActive,
+                'current_month' => $currentMonth,
+                'completed_days' => array_unique($completedDays)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get streak.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
