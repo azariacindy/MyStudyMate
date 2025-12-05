@@ -54,14 +54,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadStreakData() async {
     try {
       final streakData = await _profileService.getStreakData();
+      debugPrint('🔍 Streak Data from API: $streakData');
+      
       if (streakData['success'] == true && mounted) {
+        final completedDays = List<int>.from(streakData['completed_days'] ?? []);
+        debugPrint('📅 Completed Days: $completedDays');
+        
         setState(() {
-          _currentMonth = streakData['current_month'] ?? 'July 2025';
-          _completedDays = List<int>.from(streakData['completed_days'] ?? []);
+          _currentMonth = streakData['current_month'] ?? 'December 2025';
+          _completedDays = completedDays;
         });
       }
     } catch (e) {
-      debugPrint('Error loading streak data: $e');
+      debugPrint('❌ Error loading streak data: $e');
     }
   }
 
@@ -105,14 +110,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFFF8F9FE),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              bottom: false,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 100),
-                child: Column(
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 24),
+          : RefreshIndicator(
+              onRefresh: () async {
+                await _loadUserData();
+                await _loadStreakData();
+              },
+              child: SafeArea(
+                bottom: false,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 100),
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 24),
                     _buildAvatar(),
                     const SizedBox(height: 12),
                     _buildUserName(),
@@ -126,6 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
+          ),
       bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
     );
   }
@@ -265,13 +276,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildStreakCalendar() {
-    // Generate calendar data for current month (simplified 4-week view)
-    final List<List<int>> weekData = [
-      [1, 2, 3, 4, 5, 6, 7],
-      [1, 2, 3, 4, 5, 6, 7],
-      [1, 2, 3, 4, 5, 6, 7],
-      [1, 2, 3, 4, 5, 6, 7],
-    ];
+    // Get current date info
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+    final daysInMonth = lastDayOfMonth.day;
+    final firstWeekday = firstDayOfMonth.weekday; // 1 = Monday, 7 = Sunday
+    
+    // Generate calendar grid (6 weeks max to fit any month)
+    final List<List<int?>> weekData = [];
+    int day = 1;
+    
+    for (int week = 0; week < 6; week++) {
+      List<int?> weekDays = [];
+      for (int weekday = 1; weekday <= 7; weekday++) {
+        if (week == 0 && weekday < firstWeekday) {
+          weekDays.add(null); // Empty cell before month starts
+        } else if (day <= daysInMonth) {
+          weekDays.add(day);
+          day++;
+        } else {
+          weekDays.add(null); // Empty cell after month ends
+        }
+      }
+      weekData.add(weekDays);
+      if (day > daysInMonth) break; // Stop if month is complete
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -335,20 +365,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 8),
           // Calendar grid
-          ...weekData.asMap().entries.map((entry) {
-            int weekIndex = entry.key;
-            List<int> week = entry.value;
-            
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 3),
-              child: Row(
-                children: week.asMap().entries.map((dayEntry) {
-                  int day = dayEntry.value;
-                  bool isCompleted = weekIndex == 1 && _completedDays.contains(day);
-                  bool hasFlame = weekIndex == 1 && day == _completedDays.last;
-                  
-                  return Expanded(
-                    child: Padding(
+          Builder(
+            builder: (context) {
+              debugPrint('🔥 Calendar rendering - Completed days: $_completedDays');
+              if (_completedDays.isNotEmpty) {
+                debugPrint('🔥 Last completed day (flame position): ${_completedDays.last}');
+              }
+              
+              return Column(
+                children: weekData.map((week) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      children: week.map((day) {
+                        if (day == null) {
+                          return const Expanded(child: SizedBox()); // Empty cell
+                        }
+                        
+                        bool isCompleted = _completedDays.contains(day);
+                        bool hasFlame = _completedDays.isNotEmpty && day == _completedDays.last;
+                        
+                        if (hasFlame) {
+                          debugPrint('🔥 Flame should be on day: $day');
+                        }
+                        
+                        return Expanded(
+                          child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2),
                       child: AspectRatio(
                         aspectRatio: 1,
@@ -387,6 +429,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             );
           }).toList(),
+              );
+            },
+          ),
         ],
       ),
     );
