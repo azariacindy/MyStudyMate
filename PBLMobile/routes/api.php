@@ -34,6 +34,8 @@ Route::post('/save-fcm-token', [AuthController::class, 'saveFCMToken']);
 Route::put('/update-profile', [AuthController::class, 'updateProfile']);
 Route::post('/change-password', [AuthController::class, 'changePassword']);
 Route::post('/upload-profile-photo', [AuthController::class, 'uploadProfilePhoto']);
+Route::post('/record-streak', [AuthController::class, 'recordStreak']);
+Route::get('/get-streak', [AuthController::class, 'getStreak']);
 
 // 🔒 Assignment routes → prefix: /assignments (separate table)
 Route::prefix('assignments')->group(function () {
