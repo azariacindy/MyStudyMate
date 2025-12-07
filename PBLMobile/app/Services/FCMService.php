@@ -14,9 +14,14 @@ class FCMService
 
     public function __construct()
     {
-        $this->projectId = 'mystudymate-acfbe';
+        $this->projectId = env('FIREBASE_PROJECT_ID', 'mystudymate-acfbe');
         $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
-        $this->serviceAccountPath = storage_path('app/mystudymate-acfbe-firebase-adminsdk-fbsvc-2c2e8800a0.json');
+        
+        // Support both production and local paths
+        $this->serviceAccountPath = env(
+            'FIREBASE_CREDENTIALS_PATH',
+            storage_path('app/mystudymate-acfbe-firebase-adminsdk-fbsvc-2c2e8800a0.json')
+        );
     }
 
     /**

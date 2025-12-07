@@ -1,6 +1,5 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'package:my_study_mate/screens/scheduleFeature/scheduleScreen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/signin_screen.dart';
@@ -26,7 +25,7 @@ Future<void> main() async {
     // Initialize Firebase Messaging only if Firebase initialized successfully
     await FirebaseMessagingService().initialize();
   } catch (e) {
-    print('⚠️ Firebase initialization failed: $e');
+    debugPrint('⚠️ Firebase initialization failed: $e');
     // App can still work without Firebase
   }
   
@@ -49,18 +48,34 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
-      routes: {
-        '/splash': (_) => const SplashScreen(),
-        '/welcome': (_) => const WelcomeScreen(),
-        '/signin': (_) => const SignInScreen(),
-        '/signup': (_) => const RegisterScreen(),
-        '/home': (_) => const HomeScreen(),
-        '/onboarding': (_) => const OnboardingScreen(),
-        '/plan_task': (_) => const PlanTaskScreen(),
-        '/schedule': (_) => const ScheduleScreen(),
-        '/profile': (_) => const ProfileScreen(),
-        '/pomodoro': (_) => const PomodoroScreen(),
-        '/study_cards': (_) => const StudyCardsScreen(),
+      // Lazy loading routes untuk mengurangi initial bundle size
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/splash':
+            return MaterialPageRoute(builder: (_) => const SplashScreen());
+          case '/welcome':
+            return MaterialPageRoute(builder: (_) => const WelcomeScreen());
+          case '/signin':
+            return MaterialPageRoute(builder: (_) => const SignInScreen());
+          case '/signup':
+            return MaterialPageRoute(builder: (_) => const RegisterScreen());
+          case '/home':
+            return MaterialPageRoute(builder: (_) => const HomeScreen());
+          case '/onboarding':
+            return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+          case '/plan_task':
+            return MaterialPageRoute(builder: (_) => const PlanTaskScreen());
+          case '/schedule':
+            return MaterialPageRoute(builder: (_) => const ScheduleScreen());
+          case '/profile':
+            return MaterialPageRoute(builder: (_) => const ProfileScreen());
+          case '/pomodoro':
+            return MaterialPageRoute(builder: (_) => const PomodoroScreen());
+          case '/study_cards':
+            return MaterialPageRoute(builder: (_) => const StudyCardsScreen());
+          default:
+            return null;
+        }
       },
     );
   }

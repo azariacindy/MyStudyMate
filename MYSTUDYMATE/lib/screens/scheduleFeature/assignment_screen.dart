@@ -194,14 +194,14 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -219,7 +219,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                 CircularProgressIndicator(
                   value: percentage / 100,
                   strokeWidth: 8,
-                  backgroundColor: Colors.white.withOpacity(0.3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
                 Text(
@@ -252,7 +252,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                   '$completed of $total completed',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
                 if (_weeklyProgress!['pending'] > 0)
@@ -260,7 +260,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                     '${_weeklyProgress!['pending']} pending',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
               ],

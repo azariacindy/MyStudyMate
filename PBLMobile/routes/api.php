@@ -27,29 +27,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/test', fn() => response()->json(['message' => 'Laravel reachable!']));
 
 // Diagnostic endpoint for Laravel Cloud
-Route::get('/debug', function() {
-    try {
-        $dbConnected = \DB::connection()->getPdo() ? true : false;
-        $userCount = \DB::table('users')->count();
-        
-        return response()->json([
-            'status' => 'ok',
-            'app_env' => config('app.env'),
-            'app_key_set' => !empty(config('app.key')),
-            'db_connection' => $dbConnected,
-            'db_driver' => config('database.default'),
-            'users_count' => $userCount,
-            'sanctum_configured' => class_exists(\Laravel\Sanctum\Sanctum::class),
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-        ], 500);
-    }
-});
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

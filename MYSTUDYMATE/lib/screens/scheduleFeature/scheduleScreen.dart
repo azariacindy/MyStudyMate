@@ -18,7 +18,7 @@ class ScheduleScreen extends StatefulWidget {
   State<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
-class _ScheduleScreenState extends State<ScheduleScreen> {
+class _ScheduleScreenState extends State<ScheduleScreen> with AutomaticKeepAliveClientMixin {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   final CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -29,6 +29,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   List<Schedule> _schedules = [];
   List<Assignment> _assignments = [];
   bool _isLoading = false;
+  
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -46,6 +49,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   Future<void> _loadData() async {
     if (!mounted) return;
+    if (_isLoading) return; // Prevent multiple concurrent loads
     setState(() => _isLoading = true);
     
     try {
@@ -118,6 +122,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final selectedEvents = _getEventsForDay(_selectedDay);
     final isToday = _isSameDay(_selectedDay, DateTime.now());
 
@@ -666,10 +671,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: assignment.priorityColor.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
+                          color: assignment.priorityColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: assignment.priorityColor.withOpacity(0.3),
+                            color: assignment.priorityColor.withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),

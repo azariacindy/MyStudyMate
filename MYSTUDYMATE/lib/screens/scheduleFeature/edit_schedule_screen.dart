@@ -662,7 +662,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                               style: const TextStyle(fontSize: 13),
                             ),
                             value: _hasReminder,
-                            activeColor: const Color(0xFF3B82F6),
+                            activeThumbColor: const Color(0xFF3B82F6),
                             onChanged: (value) {
                               setState(() => _hasReminder = value);
                             },
@@ -679,7 +679,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             child: DropdownButtonFormField<int>(
-                              value: _reminderMinutes,
+                              initialValue: _reminderMinutes,
                               decoration: const InputDecoration(
                                 labelText: 'Remind me before',
                                 prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF3B82F6)),

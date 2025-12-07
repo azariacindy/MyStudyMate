@@ -200,7 +200,7 @@ class _ManageTaskScreenState extends State<ManageTaskScreen> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.blue.withOpacity(0.15),
+                                  color: Colors.blue.withValues(alpha: 0.15),
                                   spreadRadius: 0,
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
@@ -226,7 +226,7 @@ class _ManageTaskScreenState extends State<ManageTaskScreen> {
                                       Text(
                                         task['category'] as String,
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white.withValues(alpha: 0.8),
                                           fontSize: 13,
                                         ),
                                       ),
@@ -234,7 +234,7 @@ class _ManageTaskScreenState extends State<ManageTaskScreen> {
                                       Text(
                                         task['deadline'] as String,
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white.withValues(alpha: 0.8),
                                           fontSize: 12,
                                         ),
                                       ),
@@ -320,7 +320,7 @@ class _ManageTaskScreenState extends State<ManageTaskScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               spreadRadius: 0,
               blurRadius: 10,
               offset: const Offset(0, -2),

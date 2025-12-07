@@ -79,7 +79,7 @@ class AppTheme {
   
   static List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.05),
+      color: Colors.black.withValues(alpha: 0.05),
       blurRadius: 6,
       offset: const Offset(0, 2),
     ),
@@ -87,7 +87,7 @@ class AppTheme {
   
   static List<BoxShadow> shadowMd = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.08),
+      color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 10,
       offset: const Offset(0, 4),
     ),
@@ -95,7 +95,7 @@ class AppTheme {
   
   static List<BoxShadow> shadowLg = [
     BoxShadow(
-      color: const Color(0xFF8B5CF6).withOpacity(0.3),
+      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
       blurRadius: 20,
       offset: const Offset(0, 10),
     ),
@@ -103,7 +103,7 @@ class AppTheme {
   
   static List<BoxShadow> shadowPurple = [
     BoxShadow(
-      color: const Color(0xFF8B5CF6).withOpacity(0.08),
+      color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
       blurRadius: 10,
       offset: const Offset(0, 2),
     ),
