@@ -63,7 +63,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         if (assignmentsResult['success'] == true && assignmentsResult['data'] != null) {
           assignments = (assignmentsResult['data'] as List)
               .map((json) => Assignment.fromJson(json))
-              .where((assignment) => !assignment.isDone) // Filter completed assignments
+              // DO NOT filter - show all assignments including completed ones
               .toList();
         }
       } catch (e) {
