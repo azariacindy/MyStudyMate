@@ -26,6 +26,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // routes/api.php TEST
 Route::get('/test', fn() => response()->json(['message' => 'Laravel reachable!']));
 
+// Diagnostic endpoint for Laravel Cloud
+
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
@@ -34,6 +37,8 @@ Route::post('/save-fcm-token', [AuthController::class, 'saveFCMToken']);
 Route::put('/update-profile', [AuthController::class, 'updateProfile']);
 Route::post('/change-password', [AuthController::class, 'changePassword']);
 Route::post('/upload-profile-photo', [AuthController::class, 'uploadProfilePhoto']);
+Route::post('/record-streak', [AuthController::class, 'recordStreak']);
+Route::get('/get-streak', [AuthController::class, 'getStreak']);
 
 // 🔒 Assignment routes → prefix: /assignments (separate table)
 Route::prefix('assignments')->group(function () {

@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// TODO: Fill these with your Supabase project values from https://supabase.com/dashboard
 // Project Settings > API > Project URL & anon/public key
 const String kSupabaseUrl = ''; // Example: 'https://xxxxx.supabase.co'
 const String kSupabaseAnonKey = ''; // Example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'

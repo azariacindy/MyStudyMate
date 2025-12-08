@@ -79,9 +79,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final result = await _profileService.uploadProfilePhoto(_selectedImage!);
       
-      if (result['success'] == true && mounted) {
+      if (result['success'] == true) {
         // Reload user data from server to get updated profile_photo_url
         final updatedUser = await _authService.getCurrentUser();
+        
+        if (!mounted) return;
         
         setState(() {
           _currentUser = updatedUser;
@@ -121,9 +123,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         name: _nameController.text.trim(),
       );
 
-      if (result['success'] == true && mounted) {
+      if (result['success'] == true) {
         // Reload user data to get latest changes
         final updatedUser = await _authService.getCurrentUser();
+        
+        if (!mounted) return;
         
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

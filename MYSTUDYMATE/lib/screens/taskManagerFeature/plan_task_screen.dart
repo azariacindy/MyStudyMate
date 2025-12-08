@@ -114,7 +114,7 @@ class _PlanTaskScreenState extends State<PlanTaskScreen> {
                             shape: BoxShape.circle,
                           ),
                           todayDecoration: BoxDecoration(
-                            color: const Color(0xFF5B9FED).withOpacity(0.3),
+                            color: const Color(0xFF5B9FED).withValues(alpha: 0.3),
                             shape: BoxShape.circle,
                           ),
                           selectedTextStyle: const TextStyle(
@@ -355,7 +355,7 @@ class _PlanTaskScreenState extends State<PlanTaskScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               spreadRadius: 0,
               blurRadius: 10,
               offset: const Offset(0, -2),
@@ -406,10 +406,10 @@ class _PlanTaskScreenState extends State<PlanTaskScreen> {
     }
 
     // Here you would typically save to database
-    print('Task Title: ${_titleController.text}');
-    print('Subject: ${_subjectController.text}');
-    print('Description: ${_descriptionController.text}');
-    print('Selected Date: $_selectedDay');
+    debugPrint('Task Title: ${_titleController.text}');
+    debugPrint('Subject: ${_subjectController.text}');
+    debugPrint('Description: ${_descriptionController.text}');
+    debugPrint('Selected Date: $_selectedDay');
 
     // Show success message and navigate back
     ScaffoldMessenger.of(

@@ -57,7 +57,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           Navigator.of(context).pushNamedAndRemoveUntil('/study_cards', (route) => false);
         }
@@ -170,7 +170,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -245,7 +245,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isCorrect ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+        color: isCorrect ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isCorrect ? Colors.green : Colors.red,
@@ -295,7 +295,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -398,13 +398,13 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
     if (isCorrect) {
       // Correct answer - always show in green
       borderColor = Colors.green;
-      backgroundColor = Colors.green.withOpacity(0.1);
+      backgroundColor = Colors.green.withValues(alpha: 0.1);
       icon = Icons.check_circle;
       iconColor = Colors.green;
     } else if (isUserAnswer) {
       // User selected wrong answer - show in red
       borderColor = Colors.red;
-      backgroundColor = Colors.red.withOpacity(0.1);
+      backgroundColor = Colors.red.withValues(alpha: 0.1);
       icon = Icons.cancel;
       iconColor = Colors.red;
     } else {
@@ -430,7 +430,7 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
           height: 40,
           decoration: BoxDecoration(
             color: isCorrect || isUserAnswer
-                ? borderColor.withOpacity(0.2)
+                ? borderColor.withValues(alpha: 0.2)
                 : Colors.grey[100],
             shape: BoxShape.circle,
             border: Border.all(color: borderColor, width: 2),
@@ -514,8 +514,8 @@ class _QuizReviewScreenState extends State<QuizReviewScreen> {
                         color: _currentQuestionIndex == index
                             ? const Color(0xFF3B82F6)
                             : isCorrect
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _currentQuestionIndex == index

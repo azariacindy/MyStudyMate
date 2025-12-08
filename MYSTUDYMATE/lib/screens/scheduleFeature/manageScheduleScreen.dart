@@ -20,7 +20,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
   String _selectedType = 'lecture';
-  String _selectedColor = '#5B9FED';
+  String _selectedColor = '#F59E0B';
   bool _hasReminder = true;
   int _reminderMinutes = 30;
   final ScheduleService _scheduleService = ScheduleService();
@@ -32,12 +32,9 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   ];
 
   final List<Map<String, dynamic>> _colorOptions = [
-    {'value': '#5B9FED', 'label': 'Blue'},
-    {'value': '#8B5CF6', 'label': 'Purple'},
-    {'value': '#10B981', 'label': 'Green'},
-    {'value': '#F59E0B', 'label': 'Orange'},
-    {'value': '#EF4444', 'label': 'Red'},
-    {'value': '#EC4899', 'label': 'Pink'},
+    {'value': '#10B981', 'label': 'Low', 'description': 'Can be done later'},
+    {'value': '#F59E0B', 'label': 'Medium', 'description': 'Should be done soon'},
+    {'value': '#EF4444', 'label': 'High', 'description': 'Must be done now!'},
   ];
 
   @override
@@ -607,52 +604,80 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
 
               // Color Selection Card
               _buildSectionCard(
-                title: 'Color Theme',
+                title: 'Priority Level',
                 icon: Icons.palette_outlined,
                 children: [
+                  const Text(
+                    'Select priority level for this task',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
+                    spacing: 12,
+                    runSpacing: 12,
                     children: _colorOptions.map((colorOption) {
                       final isSelected = _selectedColor == colorOption['value'];
                       return GestureDetector(
                         onTap: () {
                           setState(() => _selectedColor = colorOption['value']);
                         },
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected ? const Color(0xFF1F2937) : Colors.transparent,
-                                  width: 3,
+                        child: Container(
+                          width: (MediaQuery.of(context).size.width - 76) / 2,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected 
+                                ? Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withAlpha(26)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected 
+                                  ? Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000)
+                                  : const Color(0xFFE5E7EB),
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000),
+                                  shape: BoxShape.circle,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withAlpha(77),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                                child: isSelected
+                                    ? const Icon(Icons.check, color: Colors.white, size: 18)
+                                    : null,
                               ),
-                              child: isSelected
-                                  ? const Icon(Icons.check, color: Colors.white, size: 28)
-                                  : null,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              colorOption['label'],
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isSelected ? const Color(0xFF1F2937) : const Color(0xFF6B7280),
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      colorOption['label'],
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                        color: const Color(0xFF1F2937),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      colorOption['description'],
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF9CA3AF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     }).toList(),
@@ -813,6 +838,86 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
           ),
           const SizedBox(height: 16),
           ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReminderSection(String title, List<String> items) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.notifications_active,
+                      size: 14,
+                      color: Color(0xFF3B82F6),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReminderItem(String label, String time) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF1F2937),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Text(
+            time,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );

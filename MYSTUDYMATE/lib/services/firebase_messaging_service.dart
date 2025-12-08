@@ -2,16 +2,19 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:firebase_core/firebase_core.dart';
+
 
 /// Background message handler (must be top-level function)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  print('[FCM] Background message received');
-  print('[FCM] Title: ${message.notification?.title}');
-  print('[FCM] Body: ${message.notification?.body}');
-  print('[FCM] Data: ${message.data}');
+  // Don't re-initialize Firebase, it's already initialized in main.dart
+  // This prevents duplicate isolate warning
+  // await Firebase.initializeApp();
+  
+  // Reduced logging for performance
+  if (kIsWeb || Platform.isAndroid) {
+    print('[FCM] Background: ${message.notification?.title ?? "Data message"}');
+  }
 }
 
 class FirebaseMessagingService {
@@ -42,14 +45,9 @@ class FirebaseMessagingService {
         sound: true,
       );
 
-      print('[FCM] Permission status: ${settings.authorizationStatus}');
-
-      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        print('[FCM] User granted permission');
-      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-        print('[FCM] User granted provisional permission');
-      } else {
-        print('[FCM] User declined or has not accepted permission');
+      // Only log permission status in debug mode
+      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+        print('[FCM] Permission: ${settings.authorizationStatus}');
       }
 
       // Initialize local notifications for Android
@@ -63,7 +61,7 @@ class FirebaseMessagingService {
       // Listen to token refresh
       _firebaseMessaging?.onTokenRefresh.listen((newToken) {
         _fcmToken = newToken;
-        print('[FCM] Token refreshed: $newToken');
+        print('[FCM] Token refreshed');
         // TODO: Send new token to backend
       });
 
@@ -127,7 +125,8 @@ class FirebaseMessagingService {
         _fcmToken = await _firebaseMessaging?.getToken();
       }
       
-      print('[FCM] Token: $_fcmToken');
+      // Don't print full token (security + performance)
+      print('[FCM] Token obtained: ${_fcmToken?.substring(0, 20)}...');
       // TODO: Send token to backend
     } catch (e) {
       print('[FCM] Error getting token: $e');
@@ -136,10 +135,8 @@ class FirebaseMessagingService {
 
   /// Handle foreground messages
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    print('[FCM] Foreground message received');
-    print('[FCM] Title: ${message.notification?.title}');
-    print('[FCM] Body: ${message.notification?.body}');
-    print('[FCM] Data: ${message.data}');
+    // Reduced logging for performance
+    print('[FCM] Foreground: ${message.notification?.title ?? "Data message"}');
 
     // Show notification when app is in foreground
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
@@ -174,15 +171,15 @@ class FirebaseMessagingService {
 
   /// Handle notification tap
   void _onNotificationTap(NotificationResponse response) {
-    print('[FCM] Notification tapped');
-    print('[FCM] Payload: ${response.payload}');
+    if (response.payload != null) {
+      print('[FCM] Notification tapped: ${response.payload}');
+    }
     // TODO: Navigate to schedule detail
   }
 
   /// Handle message opened app (from background)
   void _handleMessageOpenedApp(RemoteMessage message) {
-    print('[FCM] Message opened app');
-    print('[FCM] Data: ${message.data}');
+    print('[FCM] App opened from notification');
     // TODO: Navigate to schedule detail
   }
 

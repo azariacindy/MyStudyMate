@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import '../../models/assignment_model.dart';
+import 'dart:async';
 import '../../services/schedule_service.dart';
+import '../../models/assignment_model.dart';
 import '../../utils/app_colors.dart';
+import 'package:intl/intl.dart';
 
 class AssignmentScreen extends StatefulWidget {
   const AssignmentScreen({super.key});
@@ -14,6 +15,7 @@ class AssignmentScreen extends StatefulWidget {
 class _AssignmentScreenState extends State<AssignmentScreen> {
   final ScheduleService _scheduleService = ScheduleService();
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
   
   List<Assignment> _assignments = [];
   Map<String, dynamic>? _weeklyProgress;
@@ -30,6 +32,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -72,6 +75,72 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
   }
 
   Future<void> _markAsDone(int scheduleId, bool isDone) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.check_circle_outline,
+                  color: Color(0xFF10B981),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Mark as Done?',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Are you sure you have completed this assignment? This will update your progress.',
+            style: TextStyle(fontSize: 14, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF6B7280),
+              ),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: const Text('Yes, Complete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
     try {
       final result = await _scheduleService.markAsDone(scheduleId.toString());
       if (result['success']) {
@@ -79,22 +148,41 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
         await _loadWeeklyProgress();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Assignment marked as done!')),
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('Assignment completed!'),
+                ],
+              ),
+              backgroundColor: Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
   }
 
   void _onSearchChanged() {
-    setState(() => _searchQuery = _searchController.text);
-    _loadAssignments();
+    // Cancel previous timer
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    
+    // Start new timer - wait 500ms after user stops typing
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      setState(() => _searchQuery = _searchController.text);
+      _loadAssignments();
+    });
   }
 
   @override
@@ -194,14 +282,14 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -219,7 +307,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                 CircularProgressIndicator(
                   value: percentage / 100,
                   strokeWidth: 8,
-                  backgroundColor: Colors.white.withOpacity(0.3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
                 Text(
@@ -252,7 +340,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                   '$completed of $total completed',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
                 if (_weeklyProgress!['pending'] > 0)
@@ -260,7 +348,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                     '${_weeklyProgress!['pending']} pending',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
               ],
@@ -293,23 +381,26 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     final isOverdue = assignment.isOverdue;
     final isDueToday = assignment.isDueToday;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // TODO: Navigate to edit assignment screen
-          // For now, show a dialog or create EditAssignmentScreen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Edit assignment feature coming soon')),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return Opacity(
+      opacity: assignment.isDone ? 0.6 : 1.0,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: assignment.isDone ? 1 : 2,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: assignment.isDone ? null : () {
+            // TODO: Navigate to edit assignment screen
+            // For now, show a dialog or create EditAssignmentScreen
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Edit assignment feature coming soon')),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 children: [
                   // Checkbox
@@ -409,6 +500,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

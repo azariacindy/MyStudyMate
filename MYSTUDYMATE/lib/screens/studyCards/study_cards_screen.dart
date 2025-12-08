@@ -14,10 +14,13 @@ class StudyCardsScreen extends StatefulWidget {
   State<StudyCardsScreen> createState() => _StudyCardsScreenState();
 }
 
-class _StudyCardsScreenState extends State<StudyCardsScreen> {
+class _StudyCardsScreenState extends State<StudyCardsScreen> with AutomaticKeepAliveClientMixin {
   final StudyCardService _service = StudyCardService();
   List<StudyCard> _studyCards = [];
   bool _isLoading = false;
+  
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -29,9 +32,6 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
     // Check if user is authenticated
     final storage = const FlutterSecureStorage();
     final token = await storage.read(key: 'auth_token');
-    
-    print('DEBUG: Auth token exists: ${token != null}');
-    print('DEBUG: Token: ${token?.substring(0, token.length > 20 ? 20 : token.length)}...');
     
     if (token == null || token.isEmpty) {
       if (mounted) {
@@ -53,6 +53,7 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
 
   Future<void> _loadStudyCards() async {
     if (!mounted) return;
+    if (_isLoading) return; // Prevent multiple concurrent loads
     setState(() => _isLoading = true);
 
     try {
@@ -63,7 +64,6 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
         });
       }
     } catch (e) {
-      print('DEBUG: Error details: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -126,6 +126,7 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       body: SafeArea(
@@ -145,7 +146,7 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -261,7 +262,7 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.08),
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -287,7 +288,7 @@ class _StudyCardsScreenState extends State<StudyCardsScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(

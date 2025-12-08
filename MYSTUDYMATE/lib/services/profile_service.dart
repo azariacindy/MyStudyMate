@@ -151,15 +151,108 @@ class ProfileService {
   /// Get streak data (mock for now - can be implemented with real data later)
   Future<Map<String, dynamic>> getStreakData() async {
     try {
-      // This would normally fetch from API
-      // For now, return mock data
-      await Future.delayed(const Duration(milliseconds: 500));
-      
+      final userId = await _userId;
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      final response = await _dio.get(
+        '/get-streak',
+        queryParameters: {'user_id': userId},
+      );
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'streak': response.data['streak'] ?? 0,
+          'last_streak_date': response.data['last_streak_date'],
+          'streak_days': response.data['streak'] ?? 0,
+          'current_month': response.data['current_month'] ?? 'December 2025',
+          'completed_days': response.data['completed_days'] ?? [],
+        };
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to get streak data');
+      }
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to get streak data';
       return {
-        'success': true,
-        'streak_days': 4,
-        'current_month': 'July 2025',
-        'completed_days': [3, 4, 5, 6], // Day numbers in current month
+        'success': false,
+        'message': message,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  /// Record streak when user completes Pomodoro cycles
+  Future<Map<String, dynamic>> recordStreak() async {
+    try {
+      final userId = await _userId;
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      final response = await _dio.post(
+        '/record-streak',
+        data: {'user_id': userId},
+      );
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'message': response.data['message'],
+          'streak': response.data['streak'],
+          'is_consecutive': response.data['is_consecutive'] ?? false,
+          'already_recorded': response.data['already_recorded'] ?? false,
+        };
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to record streak');
+      }
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to record streak';
+      return {
+        'success': false,
+        'message': message,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  /// Get current streak
+  Future<Map<String, dynamic>> getCurrentStreak() async {
+    try {
+      final userId = await _userId;
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      final response = await _dio.get(
+        '/get-streak',
+        queryParameters: {'user_id': userId},
+      );
+
+      if (response.data['success'] == true) {
+        return {
+          'success': true,
+          'streak': response.data['streak'] ?? 0,
+          'last_streak_date': response.data['last_streak_date'],
+          'is_active': response.data['is_active'] ?? false,
+        };
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to get streak');
+      }
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Failed to get streak';
+      return {
+        'success': false,
+        'message': message,
       };
     } catch (e) {
       return {
