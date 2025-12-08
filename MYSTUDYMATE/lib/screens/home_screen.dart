@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Calculate today's progress (completed vs total tasks)
+  /// Calculate today's progress (completed vs total assignments only)
   Future<Map<String, dynamic>> _getTodayProgress() async {
     try {
       final today = DateTime.now();
@@ -168,25 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
       int totalTasks = 0;
       int completedTasks = 0;
 
-      // Count today's schedules (lecture/event)
-      final schedules = await _scheduleService.getSchedulesByDateRange(
-        todayDate,
-        todayDate,
-      );
-      final todaySchedules =
-          schedules
-              .where(
-                (s) =>
-                    s.date.year == todayDate.year &&
-                    s.date.month == todayDate.month &&
-                    s.date.day == todayDate.day,
-              )
-              .toList();
-
-      totalTasks += todaySchedules.length;
-      completedTasks += todaySchedules.where((s) => s.isCompleted).length;
-
-      // Count today's assignments (deadline today)
+      // Count today's assignments (deadline today) - ONLY assignments, no schedules
       final assignmentResult = await _scheduleService.getAssignments(
         status: 'pending',
       );
