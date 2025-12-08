@@ -36,31 +36,52 @@ class CheckAssignmentReminders extends Command
      */
     public function handle()
     {
-        $this->info('Checking assignment reminders...');
+        $this->info('🔍 Checking assignment reminders...');
         
         $now = Carbon::now('Asia/Jakarta');
         $today = $now->copy()->startOfDay();
         
-        // H-3 (3 days before deadline) - send at 08:00
-        if ($now->hour >= 8) {
-            $threeDaysBefore = $today->copy()->addDays(3);
-            $this->sendReminders($threeDaysBefore, 'h_minus_3', '⏰ Assignment Due in 3 Days!', 
-                'Don\'t forget: "{title}" is due in 3 days. Start working on it!');
+        // Only run at 07:00 AM (between 07:00 and 07:59)
+        if ($now->hour != 7) {
+            $this->info('⏰ Reminders only sent at 07:00 AM. Current time: ' . $now->format('H:i'));
+            return;
         }
         
-        // D-day (deadline today) - send at 08:00
-        if ($now->hour >= 8) {
-            $this->sendReminders($today, 'd_day', '🔥 Assignment Due Today!', 
-                'Urgent: "{title}" is due today! Complete it before the deadline.');
-        }
+        // H-3 (3 days before deadline)
+        $threeDaysBefore = $today->copy()->addDays(3);
+        $this->sendReminders($threeDaysBefore, 'h_minus_3', '📅 Assignment Due in 3 Days', 
+            'Reminder: "{title}" is due in 3 days. Start working on it!');
         
-        // H+3 (3 days after deadline, if not done) - send at 09:00
-        if ($now->hour >= 9) {
-            $threeDaysAfter = $today->copy()->subDays(3);
-            $this->sendOverdueReminders($threeDaysAfter);
-        }
+        // H-2 (2 days before deadline)
+        $twoDaysBefore = $today->copy()->addDays(2);
+        $this->sendReminders($twoDaysBefore, 'h_minus_2', '📅 Assignment Due in 2 Days', 
+            'Reminder: "{title}" is due in 2 days. Make sure you\'re on track!');
         
-        $this->info('Assignment reminders checked successfully!');
+        // H-1 (1 day before deadline - tomorrow)
+        $oneDayBefore = $today->copy()->addDays(1);
+        $this->sendReminders($oneDayBefore, 'h_minus_1', '⏰ Assignment Due Tomorrow', 
+            'Important: "{title}" is due tomorrow! Finish it today if you can.');
+        
+        // D-day (deadline today)
+        $this->sendReminders($today, 'd_day', '🔥 Assignment Due TODAY!', 
+            'Urgent: "{title}" is due TODAY! Complete it before the deadline.');
+        
+        // H+1 (1 day overdue, if not done)
+        $oneDayAfter = $today->copy()->subDays(1);
+        $this->sendOverdueReminders($oneDayAfter, 'h_plus_1', '⚠️ Assignment 1 Day Overdue', 
+            'Warning: "{title}" is 1 day overdue. Please complete it ASAP!');
+        
+        // H+2 (2 days overdue, if not done)
+        $twoDaysAfter = $today->copy()->subDays(2);
+        $this->sendOverdueReminders($twoDaysAfter, 'h_plus_2', '⚠️ Assignment 2 Days Overdue', 
+            'Warning: "{title}" is 2 days overdue. Please submit it soon!');
+        
+        // H+3 (3 days overdue, if not done)
+        $threeDaysAfter = $today->copy()->subDays(3);
+        $this->sendOverdueReminders($threeDaysAfter, 'h_plus_3', '❗ Assignment 3 Days Overdue', 
+            'Final reminder: "{title}" is 3 days overdue. Action required!');
+        
+        $this->info('✅ Assignment reminders checked successfully!');
     }
 
     /**
@@ -106,19 +127,19 @@ class CheckAssignmentReminders extends Command
             }
         }
 
-        $this->info("Sent {$sent} {$notificationType} reminders");
+        $this->info("📤 Sent {$sent} {$notificationType} reminders");
     }
 
     /**
      * Send overdue reminders
      */
-    private function sendOverdueReminders($targetDate)
+    private function sendOverdueReminders($targetDate, $notificationType, $title, $bodyTemplate)
     {
         $assignments = Assignment::where('is_done', false)
             ->whereDate('deadline', $targetDate->toDateString())
-            ->where(function($query) {
+            ->where(function($query) use ($notificationType) {
                 $query->whereNull('last_notification_type')
-                      ->orWhere('last_notification_type', '!=', 'h_plus_3');
+                      ->orWhere('last_notification_type', '!=', $notificationType);
             })
             ->with('user')
             ->get();
@@ -126,30 +147,32 @@ class CheckAssignmentReminders extends Command
         $sent = 0;
         foreach ($assignments as $assignment) {
             if ($assignment->user && $assignment->user->fcm_token) {
+                $body = str_replace('{title}', $assignment->title, $bodyTemplate);
+                
                 try {
                     $this->fcmService->sendNotification(
                         $assignment->user->fcm_token,
-                        '❗ Assignment Overdue!',
-                        "Assignment \"{$assignment->title}\" is 3 days overdue. Please complete it as soon as possible!",
+                        $title,
+                        $body,
                         [
                             'type' => 'assignment_reminder',
                             'assignment_id' => (string) $assignment->id,
-                            'notification_type' => 'h_plus_3',
+                            'notification_type' => $notificationType,
                             'deadline' => $assignment->deadline->toIso8601String(),
                         ]
                     );
                     
                     // Update last notification type
-                    $assignment->last_notification_type = 'h_plus_3';
+                    $assignment->last_notification_type = $notificationType;
                     $assignment->save();
                     
                     $sent++;
                 } catch (\Exception $e) {
-                    $this->error("Failed to send overdue notification for assignment {$assignment->id}: " . $e->getMessage());
+                    $this->error("Failed to send notification for assignment {$assignment->id}: " . $e->getMessage());
                 }
             }
         }
 
-        $this->info("Sent {$sent} overdue (H+3) reminders");
+        $this->info("📤 Sent {$sent} {$notificationType} reminders");
     }
 }
