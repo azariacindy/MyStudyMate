@@ -254,21 +254,25 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _selectedNavIndex,
         onTap: (index) async {
           if (!mounted) return;
+          final nav = Navigator.of(context);
           setState(() => _selectedNavIndex = index);
           if (index == 1) {
-            final nav = Navigator.of(context);
             final result = await nav.pushNamed('/schedule');
-            if (mounted && result == true) _refreshData();
+            if (mounted && result == true) {
+              _refreshData();
+            }
           }
           if (index == 2) {
-            final nav = Navigator.of(context);
             final result = await nav.pushNamed('/study_cards');
-            if (mounted && result == true) _refreshData();
+            if (mounted && result == true) {
+              _refreshData();
+            }
           }
           if (index == 3) {
-            final nav = Navigator.of(context);
             final result = await nav.pushNamed('/profile');
-            if (mounted && result == true) _refreshData();
+            if (mounted && result == true) {
+              _refreshData();
+            }
           }
         },
       ),
