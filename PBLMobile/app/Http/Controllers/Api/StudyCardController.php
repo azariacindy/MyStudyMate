@@ -9,6 +9,7 @@ use App\Http\Resources\StudyCardResource;
 use App\Contracts\Services\StudyCardServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class StudyCardController extends Controller
@@ -349,7 +350,7 @@ class StudyCardController extends Controller
                 ],
             ], 201);
         } catch (\Exception $e) {
-            \Log::error('Generate Quiz Error', [
+            Log::error('Generate Quiz Error', [
                 'study_card_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
