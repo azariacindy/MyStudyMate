@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
+  final AuthService _authService = AuthService();
+
   // Controllers untuk multiple phases
   late AnimationController _throwController;
   late AnimationController _slideController;
@@ -132,15 +135,19 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  void _navigateToNext() {
-    // Option 1: Ke Onboarding
-    Navigator.pushReplacementNamed(context, '/onboarding');
+  void _navigateToNext() async {
+    // Verify token and setup authentication
+    final isAuthenticated = await _authService.verifyAndSetupAuth();
 
-    // Option 2: Ke Welcome
-    // Navigator.pushReplacementNamed(context, '/welcome');
+    if (!mounted) return;
 
-    // Option 3: Ke Home (jika user sudah login)
-    // Navigator.pushReplacementNamed(context, '/home');
+    if (isAuthenticated) {
+      // Token valid, user sudah login, langsung ke Home
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // Token invalid atau tidak ada, ke Onboarding
+      Navigator.pushReplacementNamed(context, '/onboarding');
+    }
   }
 
   @override

@@ -363,7 +363,17 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       final isSelected = _selectedType == type['value'];
                       return GestureDetector(
                         onTap: () {
-                          setState(() => _selectedType = type['value']);
+                          setState(() {
+                            _selectedType = type['value'];
+                            // Set default color based on type
+                            if (_selectedType == 'lecture') {
+                              _selectedColor = '#3B82F6'; // Blue for lecture
+                            } else if (_selectedType == 'event') {
+                              _selectedColor = '#8B5CF6'; // Purple for event
+                            } else {
+                              _selectedColor = '#F59E0B'; // Orange (medium priority) for assignment
+                            }
+                          });
                         },
                         child: Container(
                           decoration: BoxDecoration(
@@ -602,23 +612,24 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                 const SizedBox(height: 20),
               ],
 
-              // Color Selection Card
-              _buildSectionCard(
-                title: 'Priority Level',
-                icon: Icons.palette_outlined,
-                children: [
-                  const Text(
-                    'Select priority level for this task',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B7280),
+              // Priority Level Card (Only for Assignment)
+              if (_selectedType == 'assignment') ...[
+                _buildSectionCard(
+                  title: 'Priority Level',
+                  icon: Icons.palette_outlined,
+                  children: [
+                    const Text(
+                      'Select priority level for this task',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6B7280),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: _colorOptions.map((colorOption) {
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: _colorOptions.map((colorOption) {
                       final isSelected = _selectedColor == colorOption['value'];
                       return GestureDetector(
                         onTap: () {
@@ -681,10 +692,11 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         ),
                       );
                     }).toList(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
 
               // Reminder Card
               _buildSectionCard(
@@ -706,7 +718,11 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                         ),
                       ),
                       subtitle: Text(
-                        _hasReminder ? 'You will be notified before the schedule' : 'No reminder will be sent',
+                        _hasReminder 
+                            ? (_selectedType == 'assignment' 
+                                ? 'You will receive daily reminders at 07:00 AM' 
+                                : 'You will be notified before the schedule')
+                            : 'No reminder will be sent',
                         style: const TextStyle(fontSize: 13),
                       ),
                       value: _hasReminder,
@@ -717,7 +733,60 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     ),
                   ),
-                  if (_hasReminder) ...[
+                  
+                  // Assignment: Fixed reminder schedule info
+                  if (_hasReminder && _selectedType == 'assignment') ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFBBF24)),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.info_outline, color: Color(0xFFD97706), size: 18),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Automatic Reminder Schedule',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF92400E),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'You will receive reminders at 07:00 AM on:',
+                            style: TextStyle(fontSize: 12, color: Color(0xFF92400E)),
+                          ),
+                          const SizedBox(height: 6),
+                          _buildReminderScheduleItem('📅 3 days before deadline'),
+                          _buildReminderScheduleItem('📅 2 days before deadline'),
+                          _buildReminderScheduleItem('⏰ 1 day before deadline'),
+                          _buildReminderScheduleItem('🔥 On the deadline day'),
+                          const SizedBox(height: 6),
+                          const Text(
+                            '⚠️ If not completed, overdue reminders will continue for 3 days.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF92400E),
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  
+                  // Lecture/Event: Custom reminder time selector
+                  if (_hasReminder && _selectedType != 'assignment') ...[
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
@@ -838,6 +907,29 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
           ),
           const SizedBox(height: 16),
           ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReminderScheduleItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.notifications_active,
+            size: 14,
+            color: Color(0xFFD97706),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF92400E),
+            ),
+          ),
         ],
       ),
     );

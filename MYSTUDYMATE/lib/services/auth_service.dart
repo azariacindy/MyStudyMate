@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
 import 'dio_client.dart';
@@ -18,6 +19,58 @@ class AuthService {
     return await _storage.read(key: _tokenKey);
   }
 
+  /// Verify if stored token is still valid and setup auth
+  Future<bool> verifyAndSetupAuth() async {
+    try {
+      final token = await currentToken;
+      if (token == null || token.isEmpty) return false;
+
+      // Set token in headers
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+
+      // Setup interceptor for future requests
+      _dio.interceptors.clear();
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            options.headers['Authorization'] = 'Bearer $token';
+            return handler.next(options);
+          },
+        ),
+      );
+
+      // Verify token dengan call ke backend
+      final response = await _dio.get('/current-user');
+
+      if (response.statusCode == 200) {
+        final user = User.fromJson(response.data['user']);
+
+        // Set user ID to DioClient and save to storage
+        DioClient.setUserId(user.id);
+        await _storage.write(key: 'user_id', value: user.id.toString());
+
+        return true;
+      }
+
+      // Token invalid, hapus
+      await _clearAuth();
+      return false;
+    } catch (e) {
+      // Token invalid atau network error, hapus token
+      await _clearAuth();
+      return false;
+    }
+  }
+
+  /// Clear authentication data
+  Future<void> _clearAuth() async {
+    await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: 'user_id');
+    _dio.interceptors.clear();
+    _dio.options.headers.remove('Authorization');
+    DioClient.setUserId(0);
+  }
+
   /// Get current authenticated user from backend
   Future<User?> getCurrentUser() async {
     try {
@@ -30,11 +83,11 @@ class AuthService {
       final response = await _dio.get('/current-user');
       if (response.statusCode == 200) {
         final user = User.fromJson(response.data['user']);
-        
+
         // Set user ID to DioClient and save to storage
         DioClient.setUserId(user.id);
         await _storage.write(key: 'user_id', value: user.id.toString());
-        
+
         return user;
       }
       return null;
@@ -51,12 +104,15 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final response = await _dio.post('/register', data: {
-        'name': name,
-        'username': username,
-        'email': email,
-        'password': password,
-      });
+      final response = await _dio.post(
+        '/register',
+        data: {
+          'name': name,
+          'username': username,
+          'email': email,
+          'password': password,
+        },
+      );
 
       final userData = response.data['user'] as Map<String, dynamic>;
       return User.fromJson(userData);
@@ -74,10 +130,7 @@ class AuthService {
     try {
       final response = await _dio.post(
         '/login',
-        data: {
-          'login_identifier': loginIdentifier,
-          'password': password,
-        },
+        data: {'login_identifier': loginIdentifier, 'password': password},
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -123,16 +176,16 @@ class AuthService {
         fcmToken = FirebaseMessagingService().fcmToken;
         retries++;
       }
-      
+
       if (fcmToken != null) {
-        await _dio.post('/save-fcm-token', data: {
-          'user_id': user.id,
-          'fcm_token': fcmToken,
-        });
-        print('[Auth] FCM token saved for user ${user.id}');
+        await _dio.post(
+          '/save-fcm-token',
+          data: {'user_id': user.id, 'fcm_token': fcmToken},
+        );
+        debugPrint('[Auth] FCM token saved for user ${user.id}');
       }
     } catch (e) {
-      print('[Auth] Error saving FCM token: $e');
+      debugPrint('[Auth] Error saving FCM token: $e');
     }
   }
 
@@ -148,7 +201,7 @@ class AuthService {
     await _storage.delete(key: 'user_id');
     _dio.interceptors.clear();
     _dio.options.headers.remove('Authorization');
-    
+
     // Reset DioClient user ID to 0 (no user)
     DioClient.setUserId(0);
   }

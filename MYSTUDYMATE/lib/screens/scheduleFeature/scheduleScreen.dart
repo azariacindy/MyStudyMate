@@ -29,6 +29,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> with AutomaticKeepAlive
   List<Schedule> _schedules = [];
   List<Assignment> _assignments = [];
   bool _isLoading = false;
+  bool _hasDataChanged = false; // Track if data changed
   
   @override
   bool get wantKeepAlive => true;
@@ -160,7 +161,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> with AutomaticKeepAlive
                       // Back button
                       IconButton(
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(context, _hasDataChanged),
                       ),
                       // Title
                       const Expanded(
@@ -379,6 +380,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> with AutomaticKeepAlive
           );
           
           if (result != null) {
+            _hasDataChanged = true;
             _loadData();
           }
         },
@@ -402,6 +404,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> with AutomaticKeepAlive
         
         // Refresh data if schedule was updated or deleted
         if (result == true) {
+          _hasDataChanged = true;
           _loadData();
         }
       },
@@ -556,6 +559,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> with AutomaticKeepAlive
                   onChanged: (value) async {
                     try {
                       await _scheduleService.toggleScheduleCompletion(schedule.id, value ?? false);
+                      _hasDataChanged = true;
                       _loadData();
                     } catch (e) {
                       if (mounted) {
@@ -592,6 +596,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> with AutomaticKeepAlive
           ),
         );
         if (result == true) {
+          _hasDataChanged = true;
           _loadData(); // Reload if edited/deleted
         }
       },

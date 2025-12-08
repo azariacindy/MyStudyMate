@@ -23,15 +23,73 @@ class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   late Future<List<Schedule>> _schedulesFuture;
   late Future<List<Assignment>> _assignmentsFuture;
+  late Future<Map<String, dynamic>> _todayProgressFuture;
   String _userName = 'User';
   String? _cachedProfilePhotoUrl;
 
   @override
   void initState() {
     super.initState();
+    // Initialize futures without setState
     _schedulesFuture = _loadSchedules();
     _assignmentsFuture = _loadAssignments();
+    _todayProgressFuture = _getTodayProgress();
     _loadUserName();
+  }
+
+  /// Refresh all data
+  void _refreshData() {
+    if (!mounted) return;
+    setState(() {
+      _schedulesFuture = _loadSchedules();
+      _assignmentsFuture = _loadAssignments();
+      _todayProgressFuture = _getTodayProgress();
+    });
+  }
+
+  /// Get greeting based on current time
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+
+    if (hour >= 5 && hour < 12) {
+      return 'Good Morning';
+    } else if (hour >= 12 && hour < 17) {
+      return 'Good Afternoon';
+    } else if (hour >= 17 && hour < 21) {
+      return 'Good Evening';
+    } else {
+      return 'Good Night';
+    }
+  }
+
+  /// Get icon based on current time
+  IconData _getGreetingIcon() {
+    final hour = DateTime.now().hour;
+
+    if (hour >= 5 && hour < 12) {
+      return CupertinoIcons.sun_max; // Morning
+    } else if (hour >= 12 && hour < 17) {
+      return CupertinoIcons.sun_max_fill; // Afternoon
+    } else if (hour >= 17 && hour < 21) {
+      return CupertinoIcons.sun_min; // Evening
+    } else {
+      return CupertinoIcons.moon_stars; // Night
+    }
+  }
+
+  /// Get icon color based on current time
+  Color _getGreetingIconColor() {
+    final hour = DateTime.now().hour;
+
+    if (hour >= 5 && hour < 12) {
+      return const Color(0xFFFFA726); // Orange - Morning
+    } else if (hour >= 12 && hour < 17) {
+      return const Color(0xFFFF9800); // Darker Orange - Afternoon
+    } else if (hour >= 17 && hour < 21) {
+      return const Color(0xFFFF6F00); // Deep Orange - Evening
+    } else {
+      return const Color(0xFF9575CD); // Purple - Night
+    }
   }
 
   Future<void> _loadUserName() async {
@@ -53,14 +111,17 @@ class _HomeScreenState extends State<HomeScreen> {
       // Load schedules for the next 7 days
       final today = DateTime.now();
       final endDate = today.add(const Duration(days: 7));
-      final schedules = await _scheduleService.getSchedulesByDateRange(today, endDate);
-      
+      final schedules = await _scheduleService.getSchedulesByDateRange(
+        today,
+        endDate,
+      );
+
       return schedules;
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading schedules: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading schedules: $e')));
       }
       return [];
     }
@@ -70,23 +131,88 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final result = await _scheduleService.getAssignments(status: 'pending');
       if (result['success'] == true && result['data'] != null) {
-        final assignments = (result['data'] as List)
-            .map((json) => Assignment.fromJson(json))
-            .where((a) => !a.isDone) // Filter out marked/done assignments
-            .toList();
-        
+        final assignments =
+            (result['data'] as List)
+                .map((json) => Assignment.fromJson(json))
+                .where((a) => !a.isDone) // Filter out marked/done assignments
+                .toList();
+
         // Sort by priority: critical > high > medium > low
         assignments.sort((a, b) {
-          const priorityOrder = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3};
-          return (priorityOrder[a.priority] ?? 99).compareTo(priorityOrder[b.priority] ?? 99);
+          const priorityOrder = {
+            'critical': 0,
+            'high': 1,
+            'medium': 2,
+            'low': 3,
+          };
+          return (priorityOrder[a.priority] ?? 99).compareTo(
+            priorityOrder[b.priority] ?? 99,
+          );
         });
-        
+
         return assignments;
       }
       return [];
     } catch (e) {
       debugPrint('Error loading assignments: $e');
       return [];
+    }
+  }
+
+  /// Calculate today's progress (completed vs total tasks)
+  Future<Map<String, dynamic>> _getTodayProgress() async {
+    try {
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+
+      int totalTasks = 0;
+      int completedTasks = 0;
+
+      // Count today's schedules (lecture/event)
+      final schedules = await _scheduleService.getSchedulesByDateRange(
+        todayDate,
+        todayDate,
+      );
+      final todaySchedules =
+          schedules
+              .where(
+                (s) =>
+                    s.date.year == todayDate.year &&
+                    s.date.month == todayDate.month &&
+                    s.date.day == todayDate.day,
+              )
+              .toList();
+
+      totalTasks += todaySchedules.length;
+      completedTasks += todaySchedules.where((s) => s.isCompleted).length;
+
+      // Count today's assignments (deadline today)
+      final assignmentResult = await _scheduleService.getAssignments(
+        status: 'pending',
+      );
+      if (assignmentResult['success'] == true &&
+          assignmentResult['data'] != null) {
+        final todayAssignments =
+            (assignmentResult['data'] as List)
+                .map((json) => Assignment.fromJson(json))
+                .where((a) {
+                  final deadlineDate = DateTime(
+                    a.deadline.year,
+                    a.deadline.month,
+                    a.deadline.day,
+                  );
+                  return deadlineDate.isAtSameMomentAs(todayDate);
+                })
+                .toList();
+
+        totalTasks += todayAssignments.length;
+        completedTasks += todayAssignments.where((a) => a.isDone).length;
+      }
+
+      return {'total': totalTasks, 'completed': completedTasks};
+    } catch (e) {
+      debugPrint('Error calculating today progress: $e');
+      return {'total': 0, 'completed': 0};
     }
   }
 
@@ -126,11 +252,24 @@ class _HomeScreenState extends State<HomeScreen> {
       // === BOTTOM NAVIGATION ===
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _selectedNavIndex,
-        onTap: (index) {
+        onTap: (index) async {
+          if (!mounted) return;
           setState(() => _selectedNavIndex = index);
-          if (index == 1) Navigator.pushNamed(context, '/schedule');
-          if (index == 2) Navigator.pushNamed(context, '/study_cards');
-          if (index == 3) Navigator.pushNamed(context, '/profile');
+          if (index == 1) {
+            final nav = Navigator.of(context);
+            final result = await nav.pushNamed('/schedule');
+            if (mounted && result == true) _refreshData();
+          }
+          if (index == 2) {
+            final nav = Navigator.of(context);
+            final result = await nav.pushNamed('/study_cards');
+            if (mounted && result == true) _refreshData();
+          }
+          if (index == 3) {
+            final nav = Navigator.of(context);
+            final result = await nav.pushNamed('/profile');
+            if (mounted && result == true) _refreshData();
+          }
         },
       ),
       // No FAB on home screen
@@ -143,7 +282,10 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color.fromARGB(255, 34, 3, 107), Color.fromARGB(255, 89, 147, 240)],
+          colors: [
+            Color.fromARGB(255, 34, 3, 107),
+            Color.fromARGB(255, 89, 147, 240),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -182,36 +324,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   child: ClipOval(
-                    child: _cachedProfilePhotoUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: _cachedProfilePhotoUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Icon(
+                    child:
+                        _cachedProfilePhotoUrl != null
+                            ? CachedNetworkImage(
+                              imageUrl: _cachedProfilePhotoUrl!,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) => const Icon(
+                                    CupertinoIcons.person,
+                                    color: Color(0xFF8B5CF6),
+                                    size: 28,
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => const Icon(
+                                    CupertinoIcons.person,
+                                    color: Color(0xFF8B5CF6),
+                                    size: 28,
+                                  ),
+                              memCacheWidth: 96, // Optimize memory
+                              memCacheHeight: 96,
+                              maxWidthDiskCache: 96,
+                              maxHeightDiskCache: 96,
+                            )
+                            : const Icon(
                               CupertinoIcons.person,
                               color: Color(0xFF8B5CF6),
                               size: 28,
                             ),
-                            errorWidget: (context, url, error) => const Icon(
-                              CupertinoIcons.person,
-                              color: Color(0xFF8B5CF6),
-                              size: 28,
-                            ),
-                            memCacheWidth: 96, // Optimize memory
-                            memCacheHeight: 96,
-                            maxWidthDiskCache: 96,
-                            maxHeightDiskCache: 96,
-                          )
-                        : const Icon(
-                            CupertinoIcons.person,
-                            color: Color(0xFF8B5CF6),
-                            size: 28,
-                          ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
 
-              // Greeting - FIXED Overflow
+              // Greeting - Dynamic based on time
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         Text(
-                          'Good Morning',
+                          _getGreeting(),
                           style: TextStyle(
                             color: Colors.white.withAlpha(204),
                             fontSize: 12,
@@ -227,9 +372,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(
-                          CupertinoIcons.sun_max,
-                          color: Color(0xFFFFA726),
+                        Icon(
+                          _getGreetingIcon(),
+                          color: _getGreetingIconColor(),
                           size: 14,
                         ),
                       ],
@@ -251,101 +396,129 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 18),
 
-          // Progress - FIXED
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Circular Progress
-              SizedBox(
-                width: 65,
-                height: 65,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 65,
-                      height: 65,
-                      child: CircularProgressIndicator(
-                        value: 0.6,
-                        strokeWidth: 5,
-                        backgroundColor: Colors.white.withAlpha(51),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF10B981),
-                        ),
-                      ),
-                    ),
-                    const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+          // Progress - Dynamic based on today's schedules and assignments
+          FutureBuilder<Map<String, dynamic>>(
+            future: _todayProgressFuture,
+            builder: (context, snapshot) {
+              final data = snapshot.data ?? {'completed': 0, 'total': 0};
+              final completed = data['completed'] as int;
+              final total = data['total'] as int;
+              final percentage = total > 0 ? completed / total : 0.0;
+              final percentText = (percentage * 100).toInt();
+
+              String motivationText = 'Start your day!';
+              if (total == 0) {
+                motivationText = 'No tasks today!';
+              } else if (percentage == 1.0) {
+                motivationText = 'All done! 🎉';
+              } else if (percentage >= 0.7) {
+                motivationText = 'Almost there!';
+              } else if (percentage >= 0.4) {
+                motivationText = 'Keep going!';
+              } else if (percentage > 0) {
+                motivationText = 'Good start!';
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Circular Progress
+                  SizedBox(
+                    width: 65,
+                    height: 65,
+                    child: Stack(
+                      alignment: Alignment.center,
                       children: [
-                        Text(
-                          '60%',
+                        SizedBox(
+                          width: 65,
+                          height: 65,
+                          child: CircularProgressIndicator(
+                            value: percentage,
+                            strokeWidth: 5,
+                            backgroundColor: Colors.white.withAlpha(51),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFF10B981),
+                            ),
+                          ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$percentText%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Text(
+                              'Done',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 9,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+
+                  // Progress Text - Dynamic
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Today Progress',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          'Done',
+                          total > 0
+                              ? '$completed of $total Tasks'
+                              : 'No tasks scheduled',
                           style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 9,
+                            color: Colors.white.withAlpha(179),
+                            fontSize: 12,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 14),
-
-              // Progress Text - FIXED Overflow
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Today Progress',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '3 of 5 Tasks',
-                      style: TextStyle(
-                        color: Colors.white.withAlpha(179),
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          CupertinoIcons.graph_circle,
-                          color: Color(0xFF10B981),
-                          size: 19,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            'Keep going!',
-                            style: TextStyle(
-                              color: Colors.white.withAlpha(204),
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              percentage == 1.0
+                                  ? CupertinoIcons.checkmark_seal_fill
+                                  : CupertinoIcons.graph_circle,
+                              color: const Color(0xFF10B981),
+                              size: 19,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                motivationText,
+                                style: TextStyle(
+                                  color: Colors.white.withAlpha(204),
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -418,9 +591,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 10),
             // Empty space to match Daily Board / Pomodoro layout
-            const Expanded(
-              child: SizedBox(),
-            ),
+            const Expanded(child: SizedBox()),
           ],
         ),
       ],
@@ -436,7 +607,10 @@ class _HomeScreenState extends State<HomeScreen> {
     String route,
   ) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, route),
+      onTap: () async {
+        final result = await Navigator.pushNamed(context, route);
+        if (result == true && mounted) _refreshData();
+      },
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -474,10 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 2),
             Text(
               subtitle,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey.withAlpha(179),
-              ),
+              style: TextStyle(fontSize: 10, color: Colors.grey.withAlpha(179)),
               overflow: TextOverflow.ellipsis,
             ),
           ],
@@ -492,185 +663,218 @@ class _HomeScreenState extends State<HomeScreen> {
       child: FutureBuilder<List<Schedule>>(
         future: _schedulesFuture,
         builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(40.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-
-        final schedules = snapshot.data ?? [];
-        
-        // Group schedules by date for the next 7 days
-        final today = DateTime.now();
-        final Map<String, List<Schedule>> groupedSchedules = {};
-        
-        for (int i = 0; i < 7; i++) {
-          final date = today.add(Duration(days: i));
-          final daySchedules = schedules.where((s) => _isSameDay(s.date, date)).toList();
-          
-          String label;
-          if (i == 0) {
-            label = 'Today';
-          } else if (i == 1) {
-            label = 'Tomorrow';
-          } else {
-            // Format: "Wed, Nov 20"
-            final weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.weekday % 7];
-            final month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1];
-            label = '$weekday, $month ${date.day}';
-          }
-          
-          groupedSchedules[label] = daySchedules;
-        }
-
-        final scheduleColors = [
-          [const Color(0xFF3B82F6), const Color(0xFF06B6D4)],
-          [const Color(0xFF8B5CF6), const Color(0xFFEC4899)],
-          [const Color(0xFF10B981), const Color(0xFF3B82F6)],
-          [const Color(0xFFEF4444), const Color(0xFFF59E0B)],
-          [const Color(0xFF06B6D4), const Color(0xFF8B5CF6)],
-          [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
-          [const Color(0xFF8B5CF6), const Color(0xFF3B82F6)],
-        ];
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Schedule',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/schedule'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withAlpha(26),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        color: Color(0xFF3B82F6),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 210,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: groupedSchedules.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final dateKey = groupedSchedules.keys.elementAt(index);
-                  final daySchedules = groupedSchedules[dateKey]!;
-                  
-                  return Container(
-                    width: screenWidth * 0.65,
-                    margin: EdgeInsets.only(right: index < 6 ? 10 : 0),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: scheduleColors[index % scheduleColors.length],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: scheduleColors[index % scheduleColors.length][0].withAlpha(51),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                dateKey,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(38),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '${daySchedules.length} ${daySchedules.length == 1 ? 'Class' : 'Classes'}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        if (daySchedules.isEmpty)
-                          Expanded(
-                            child: Center(
-                              child: Text(
-                                'No schedules',
-                                style: TextStyle(
-                                  color: Colors.white.withAlpha(179),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          )
-                        else
-                          ...daySchedules.take(3).map((schedule) => Padding(
-                            padding: const EdgeInsets.only(bottom: 5),
-                            child: _buildScheduleItem(
-                              _getIconForScheduleType(schedule.type),
-                              schedule.title,
-                              '${schedule.getFormattedStartTime()} - ${schedule.getFormattedEndTime()}',
-                              schedule,
-                            ),
-                          )),
-                      ],
-                    ),
-                  );
-                },
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40.0),
+                child: CircularProgressIndicator(),
               ),
-            ),
-          ],
-        );
-      },
+            );
+          }
+
+          final schedules = snapshot.data ?? [];
+
+          // Group schedules by date for the next 7 days
+          final today = DateTime.now();
+          final Map<String, List<Schedule>> groupedSchedules = {};
+
+          for (int i = 0; i < 7; i++) {
+            final date = today.add(Duration(days: i));
+            final daySchedules =
+                schedules.where((s) => _isSameDay(s.date, date)).toList();
+
+            String label;
+            if (i == 0) {
+              label = 'Today';
+            } else if (i == 1) {
+              label = 'Tomorrow';
+            } else {
+              // Format: "Wed, Nov 20"
+              final weekday =
+                  [
+                    'Sun',
+                    'Mon',
+                    'Tue',
+                    'Wed',
+                    'Thu',
+                    'Fri',
+                    'Sat',
+                  ][date.weekday % 7];
+              final month =
+                  [
+                    'Jan',
+                    'Feb',
+                    'Mar',
+                    'Apr',
+                    'May',
+                    'Jun',
+                    'Jul',
+                    'Aug',
+                    'Sep',
+                    'Oct',
+                    'Nov',
+                    'Dec',
+                  ][date.month - 1];
+              label = '$weekday, $month ${date.day}';
+            }
+
+            groupedSchedules[label] = daySchedules;
+          }
+
+          final scheduleColors = [
+            [const Color(0xFF3B82F6), const Color(0xFF06B6D4)],
+            [const Color(0xFF8B5CF6), const Color(0xFFEC4899)],
+            [const Color(0xFF10B981), const Color(0xFF3B82F6)],
+            [const Color(0xFFEF4444), const Color(0xFFF59E0B)],
+            [const Color(0xFF06B6D4), const Color(0xFF8B5CF6)],
+            [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
+            [const Color(0xFF8B5CF6), const Color(0xFF3B82F6)],
+          ];
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Schedule',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/schedule'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withAlpha(26),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'View All',
+                        style: TextStyle(
+                          color: Color(0xFF3B82F6),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 210,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: groupedSchedules.length,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final dateKey = groupedSchedules.keys.elementAt(index);
+                    final daySchedules = groupedSchedules[dateKey]!;
+
+                    return Container(
+                      width: screenWidth * 0.65,
+                      margin: EdgeInsets.only(right: index < 6 ? 10 : 0),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: scheduleColors[index % scheduleColors.length],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: scheduleColors[index %
+                                    scheduleColors.length][0]
+                                .withAlpha(51),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  dateKey,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withAlpha(38),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${daySchedules.length} ${daySchedules.length == 1 ? 'Class' : 'Classes'}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          if (daySchedules.isEmpty)
+                            Expanded(
+                              child: Center(
+                                child: Text(
+                                  'No schedules',
+                                  style: TextStyle(
+                                    color: Colors.white.withAlpha(179),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            ...daySchedules
+                                .take(3)
+                                .map(
+                                  (schedule) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 5),
+                                    child: _buildScheduleItem(
+                                      _getIconForScheduleType(schedule.type),
+                                      schedule.title,
+                                      '${schedule.getFormattedStartTime()} - ${schedule.getFormattedEndTime()}',
+                                      schedule,
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -696,68 +900,69 @@ class _HomeScreenState extends State<HomeScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  Widget _buildScheduleItem(IconData icon, String title, String time, Schedule schedule) {
-  return GestureDetector(
-    onTap: () async {
-      // Navigate to edit schedule
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EditScheduleScreen(schedule: schedule),
+  Widget _buildScheduleItem(
+    IconData icon,
+    String title,
+    String time,
+    Schedule schedule,
+  ) {
+    return GestureDetector(
+      onTap: () async {
+        // Navigate to edit schedule
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditScheduleScreen(schedule: schedule),
+          ),
+        );
+
+        // Refresh data if schedule was updated or deleted
+        if (result == true && mounted) {
+          setState(() {
+            _schedulesFuture = _loadSchedules();
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(26),
+          borderRadius: BorderRadius.circular(8),
         ),
-      );
-      
-      // Refresh data if schedule was updated or deleted
-      if (result == true && mounted) {
-        setState(() {
-          _schedulesFuture = _loadSchedules();
-        });
-      }
-    },
-    child: Container(
-      padding: const EdgeInsets.all(7),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(26),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white, size: 15),
-          const SizedBox(width: 7),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 15),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  time,
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(179),
-                    fontSize: 10,
+                  const SizedBox(height: 1),
+                  Text(
+                    time,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(179),
+                      fontSize: 10,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Icon(
-            Icons.edit,
-            color: Colors.white.withAlpha(204),
-            size: 14,
-          ),
-        ],
+            Icon(Icons.edit, color: Colors.white.withAlpha(204), size: 14),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   /// Assignments Section with Priority
   Widget _buildAssignmentsSection() {
@@ -765,121 +970,134 @@ class _HomeScreenState extends State<HomeScreen> {
       child: FutureBuilder<List<Assignment>>(
         future: _assignmentsFuture,
         builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
 
-        final assignments = snapshot.data ?? [];
-        final displayAssignments = assignments.take(5).toList();
+          final assignments = snapshot.data ?? [];
+          final displayAssignments = assignments.take(5).toList();
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Assignments',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (assignments.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Assignments',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
                         ),
-                        child: Text(
-                          '${assignments.length}',
-                          style: const TextStyle(
-                            color: Color(0xFFEF4444),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                      ),
+                      const SizedBox(width: 8),
+                      if (assignments.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFFEF4444,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${assignments.length}',
+                            style: const TextStyle(
+                              color: Color(0xFFEF4444),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      final result = await Navigator.pushNamed(
+                        context,
+                        '/schedule',
+                      );
+                      if (result == true && mounted) {
+                        setState(() {
+                          _assignmentsFuture = _loadAssignments();
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    final result = await Navigator.pushNamed(context, '/schedule');
-                    if (result == true && mounted) {
-                      setState(() {
-                        _assignmentsFuture = _loadAssignments();
-                      });
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        color: Color(0xFF3B82F6),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'View All',
+                        style: TextStyle(
+                          color: Color(0xFF3B82F6),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (displayAssignments.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.assignment_turned_in_outlined,
-                        size: 48,
-                        color: Colors.grey.withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No pending assignments',
-                        style: TextStyle(
-                          color: Colors.grey.withValues(alpha: 0.7),
-                          fontSize: 14,
-                        ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (displayAssignments.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.assignment_turned_in_outlined,
+                          size: 48,
+                          color: Colors.grey.withValues(alpha: 0.3),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No pending assignments',
+                          style: TextStyle(
+                            color: Colors.grey.withValues(alpha: 0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ...displayAssignments.map(
+                  (assignment) => _buildAssignmentCard(assignment),
                 ),
-              )
-            else
-              ...displayAssignments.map((assignment) => _buildAssignmentCard(assignment)),
-          ],
-        );
-      },
-    ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -970,10 +1188,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: assignment.priorityColor.withValues(alpha: 0.15),
+                          color: assignment.priorityColor.withValues(
+                            alpha: 0.15,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: assignment.priorityColor.withValues(alpha: 0.3),
+                            color: assignment.priorityColor.withValues(
+                              alpha: 0.3,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -984,10 +1206,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               assignment.priority == 'critical'
                                   ? Icons.priority_high
                                   : assignment.priority == 'high'
-                                      ? Icons.alarm
-                                      : assignment.priority == 'medium'
-                                          ? Icons.schedule
-                                          : Icons.check_circle_outline,
+                                  ? Icons.alarm
+                                  : assignment.priority == 'medium'
+                                  ? Icons.schedule
+                                  : Icons.check_circle_outline,
                               size: 10,
                               color: assignment.priorityColor,
                             ),
@@ -1034,12 +1256,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             : '${-assignment.daysUntilDeadline}d overdue',
                         style: TextStyle(
                           fontSize: 11,
-                          color: assignment.daysUntilDeadline >= 0
-                              ? Colors.grey.withValues(alpha: 0.7)
-                              : const Color(0xFFEF4444),
-                          fontWeight: assignment.daysUntilDeadline < 0
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                          color:
+                              assignment.daysUntilDeadline >= 0
+                                  ? Colors.grey.withValues(alpha: 0.7)
+                                  : const Color(0xFFEF4444),
+                          fontWeight:
+                              assignment.daysUntilDeadline < 0
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -1052,5 +1276,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 }

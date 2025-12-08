@@ -20,9 +20,10 @@ class Quiz {
   factory Quiz.fromJson(Map<String, dynamic> json) {
     List<QuizQuestion> questionsList = [];
     if (json['questions'] != null) {
-      questionsList = (json['questions'] as List)
-          .map((q) => QuizQuestion.fromJson(q))
-          .toList();
+      questionsList =
+          (json['questions'] as List)
+              .map((q) => QuizQuestion.fromJson(q))
+              .toList();
     }
 
     return Quiz(
@@ -38,33 +39,71 @@ class Quiz {
 }
 
 class QuizQuestion {
+  final int? id;
   final String question;
   final List<String> options;
   final int correctAnswer;
   final String? explanation;
+  final String? questionType;
+  final int? points;
 
   QuizQuestion({
+    this.id,
     required this.question,
     required this.options,
     required this.correctAnswer,
     this.explanation,
+    this.questionType,
+    this.points,
   });
 
   factory QuizQuestion.fromJson(Map<String, dynamic> json) {
+    // Handle new backend format
+    if (json.containsKey('question_text') && json.containsKey('answers')) {
+      // New format from backend
+      List<dynamic> answers = json['answers'] ?? [];
+      List<String> options = [];
+      int correctIndex = 0;
+
+      for (int i = 0; i < answers.length; i++) {
+        options.add(answers[i]['answer_text'] ?? '');
+        if (answers[i]['is_correct'] == true) {
+          correctIndex = i;
+        }
+      }
+
+      return QuizQuestion(
+        id: json['id'],
+        question: json['question_text'],
+        options: options,
+        correctAnswer: correctIndex,
+        explanation: json['explanation'],
+        questionType: json['question_type'],
+        points: json['points'],
+      );
+    }
+
+    // Old format (fallback)
     return QuizQuestion(
+      id: json['id'],
       question: json['question'],
-      options: List<String>.from(json['options']),
-      correctAnswer: json['correct_answer'],
+      options: List<String>.from(json['options'] ?? []),
+      correctAnswer: json['correct_answer'] ?? 0,
       explanation: json['explanation'],
+      questionType: json['question_type'],
+      points: json['points'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'question': question,
       'options': options,
       'correct_answer': correctAnswer,
       'explanation': explanation,
+      'question_type': questionType,
+      'points': points,
     };
   }
 }
@@ -91,9 +130,10 @@ class QuizResult {
   factory QuizResult.fromJson(Map<String, dynamic> json) {
     List<QuestionResult> resultsList = [];
     if (json['results'] != null) {
-      resultsList = (json['results'] as List)
-          .map((r) => QuestionResult.fromJson(r))
-          .toList();
+      resultsList =
+          (json['results'] as List)
+              .map((r) => QuestionResult.fromJson(r))
+              .toList();
     }
 
     return QuizResult(

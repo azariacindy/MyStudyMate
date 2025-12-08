@@ -1,6 +1,6 @@
 String get baseUrl {
   // Production URL (Laravel Cloud)
-  return 'https://laravelmystudymate-production-dbkfrd.laravel.cloud';
+  return 'https://hostinglaravelcloud-production-slswfh.laravel.cloud';
   
   // Local development (comment out when testing production)
   // if (kIsWeb) {
