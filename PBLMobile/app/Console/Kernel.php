@@ -15,8 +15,8 @@ class Kernel extends ConsoleKernel
         // Check for schedule reminders every minute
         $schedule->command('schedule:check-reminders')->everyMinute();
         
-        // Check for assignment reminders (H-3, D-day, H+3) every hour
-        $schedule->command('assignments:check-reminders')->hourly();
+        // Check for assignment reminders (3 days before, on deadline, 3 days after) at 07:00 AM daily
+        $schedule->command('assignments:check-reminders')->dailyAt('07:00');
     }
 
     /**
