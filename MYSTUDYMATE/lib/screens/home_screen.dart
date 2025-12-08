@@ -395,17 +395,18 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(
-              child: _buildActionCard(
-                context,
-                CupertinoIcons.create,
-                'Notes',
-                '8 Notes',
-                const Color(0xFF8B5CF6),
-                '/notes',
-              ),
-            ),
-            const SizedBox(width: 10),
+            // Notes feature temporarily disabled for demo
+            // Expanded(
+            //   child: _buildActionCard(
+            //     context,
+            //     CupertinoIcons.create,
+            //     'Notes',
+            //     '8 Notes',
+            //     const Color(0xFF8B5CF6),
+            //     '/notes',
+            //   ),
+            // ),
+            // const SizedBox(width: 10),
             Expanded(
               child: _buildActionCard(
                 context,
@@ -415,6 +416,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Color(0xFF10B981),
                 '/study_cards',
               ),
+            ),
+            const SizedBox(width: 10),
+            // Empty space to match Daily Board / Pomodoro layout
+            const Expanded(
+              child: SizedBox(),
             ),
           ],
         ),
