@@ -20,7 +20,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
   String _selectedType = 'lecture';
-  String _selectedColor = '#5B9FED';
+  String _selectedColor = '#F59E0B';
   bool _hasReminder = true;
   int _reminderMinutes = 30;
   final ScheduleService _scheduleService = ScheduleService();
@@ -32,12 +32,9 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   ];
 
   final List<Map<String, dynamic>> _colorOptions = [
-    {'value': '#5B9FED', 'label': 'Blue'},
-    {'value': '#8B5CF6', 'label': 'Purple'},
-    {'value': '#10B981', 'label': 'Green'},
-    {'value': '#F59E0B', 'label': 'Orange'},
-    {'value': '#EF4444', 'label': 'Red'},
-    {'value': '#EC4899', 'label': 'Pink'},
+    {'value': '#10B981', 'label': 'Low', 'description': 'Can be done later'},
+    {'value': '#F59E0B', 'label': 'Medium', 'description': 'Should be done soon'},
+    {'value': '#EF4444', 'label': 'High', 'description': 'Must be done now!'},
   ];
 
   @override
@@ -607,52 +604,80 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
 
               // Color Selection Card
               _buildSectionCard(
-                title: 'Color Theme',
+                title: 'Priority Level',
                 icon: Icons.palette_outlined,
                 children: [
+                  const Text(
+                    'Select priority level for this task',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
+                    spacing: 12,
+                    runSpacing: 12,
                     children: _colorOptions.map((colorOption) {
                       final isSelected = _selectedColor == colorOption['value'];
                       return GestureDetector(
                         onTap: () {
                           setState(() => _selectedColor = colorOption['value']);
                         },
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected ? const Color(0xFF1F2937) : Colors.transparent,
-                                  width: 3,
+                        child: Container(
+                          width: (MediaQuery.of(context).size.width - 76) / 2,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected 
+                                ? Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withAlpha(26)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected 
+                                  ? Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000)
+                                  : const Color(0xFFE5E7EB),
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000),
+                                  shape: BoxShape.circle,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withAlpha(77),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                                child: isSelected
+                                    ? const Icon(Icons.check, color: Colors.white, size: 18)
+                                    : null,
                               ),
-                              child: isSelected
-                                  ? const Icon(Icons.check, color: Colors.white, size: 28)
-                                  : null,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              colorOption['label'],
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isSelected ? const Color(0xFF1F2937) : const Color(0xFF6B7280),
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      colorOption['label'],
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                        color: const Color(0xFF1F2937),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      colorOption['description'],
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF9CA3AF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     }).toList(),
@@ -666,63 +691,138 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                 title: 'Reminder Settings',
                 icon: Icons.notifications_outlined,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                    ),
-                    child: SwitchListTile(
-                      title: const Text(
-                        'Enable Reminder',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  // For Assignment: Show auto-reminder info (3 days before & after deadline)
+                  if (_selectedType == 'assignment') ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF3B82F6), width: 1),
                       ),
-                      subtitle: Text(
-                        _hasReminder ? 'You will be notified before the schedule' : 'No reminder will be sent',
-                        style: const TextStyle(fontSize: 13),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF3B82F6),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.alarm, color: Colors.white, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Auto Reminder Enabled',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1F2937),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'You will receive notifications at 07:00 AM for:',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF6B7280),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildReminderSection(
+                            '📅 Before Deadline',
+                            [
+                              '3 days before',
+                              '2 days before',
+                              '1 day before',
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          _buildReminderSection(
+                            '🔔 On Deadline Day',
+                            [
+                              'Deadline today!',
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          _buildReminderSection(
+                            '⚠️ After Deadline (if not completed)',
+                            [
+                              '1 day overdue',
+                              '2 days overdue',
+                              '3 days overdue',
+                            ],
+                          ),
+                        ],
                       ),
-                      value: _hasReminder,
-                      activeColor: const Color(0xFF3B82F6),
-                      onChanged: (value) {
-                        setState(() => _hasReminder = value);
-                      },
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     ),
-                  ),
-                  if (_hasReminder) ...[
-                    const SizedBox(height: 12),
+                  ] else ...[
+                    // For Lecture/Event: Show toggle and dropdown
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: DropdownButtonFormField<int>(
-                        value: _reminderMinutes,
-                        decoration: const InputDecoration(
-                          labelText: 'Remind me before',
-                          prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF3B82F6)),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
+                      child: SwitchListTile(
+                        title: const Text(
+                          'Enable Reminder',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        items: const [
-                          DropdownMenuItem(value: 5, child: Text('5 minutes before')),
-                          DropdownMenuItem(value: 10, child: Text('10 minutes before')),
-                          DropdownMenuItem(value: 15, child: Text('15 minutes before')),
-                          DropdownMenuItem(value: 30, child: Text('30 minutes before')),
-                          DropdownMenuItem(value: 60, child: Text('1 hour before')),
-                        ],
+                        subtitle: Text(
+                          _hasReminder ? 'You will be notified before the schedule' : 'No reminder will be sent',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        value: _hasReminder,
+                        activeColor: const Color(0xFF3B82F6),
                         onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _reminderMinutes = value);
-                          }
+                          setState(() => _hasReminder = value);
                         },
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       ),
                     ),
+                    if (_hasReminder) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: DropdownButtonFormField<int>(
+                          value: _reminderMinutes,
+                          decoration: const InputDecoration(
+                            labelText: 'Remind me before',
+                            prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF3B82F6)),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 5, child: Text('5 minutes before')),
+                            DropdownMenuItem(value: 10, child: Text('10 minutes before')),
+                            DropdownMenuItem(value: 15, child: Text('15 minutes before')),
+                            DropdownMenuItem(value: 30, child: Text('30 minutes before')),
+                            DropdownMenuItem(value: 60, child: Text('1 hour before')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _reminderMinutes = value);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ],
               ),
@@ -813,6 +913,86 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
           ),
           const SizedBox(height: 16),
           ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReminderSection(String title, List<String> items) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.notifications_active,
+                      size: 14,
+                      color: Color(0xFF3B82F6),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReminderItem(String label, String time) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF1F2937),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Text(
+            time,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
