@@ -86,7 +86,14 @@ Route::middleware('auth:sanctum')->prefix('study-cards')->group(function () {
     Route::post('/', [StudyCardController::class, 'store']); // POST /api/study-cards
     Route::get('/{id}', [StudyCardController::class, 'show']); // GET /api/study-cards/{id}
     Route::put('/{id}', [StudyCardController::class, 'update']); // PUT /api/study-cards/{id}
-    Route::post('/{id}/generate-quiz', [StudyCardController::class, 'generateQuiz']); // POST /api/study-cards/{id}/generate-quiz
+    
+    // ✅ Generate/Get Quiz (smart: return existing quiz or generate new)
+    // POST /api/study-cards/{id}/generate-quiz?question_count=10&force_regenerate=false
+    Route::post('/{id}/generate-quiz', [StudyCardController::class, 'generateQuiz']);
+    
+    // ✅ Get existing quizzes for this study card
+    Route::get('/{id}/quizzes', [StudyCardController::class, 'getQuizzes']);
+    
     Route::delete('/{id}', [StudyCardController::class, 'destroy']); // DELETE /api/study-cards/{id}
 });
 

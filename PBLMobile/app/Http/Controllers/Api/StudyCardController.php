@@ -234,6 +234,7 @@ class StudyCardController extends Controller
 
     /**
      * Generate quiz from study card using AI
+     * Jika quiz sudah ada, langsung return quiz tersebut kecuali force_regenerate=true
      * 
      * @group Study Cards
      */
@@ -260,14 +261,57 @@ class StudyCardController extends Controller
                 ], 403);
             }
 
-            $questionCount = $request->input('question_count', 5);
-
             // Get QuizService
             $quizService = app(\App\Contracts\Services\QuizServiceInterface::class);
             
-            // Generate quiz using AI
+            // ✅ Cek apakah quiz sudah ada untuk study card ini
+            $existingQuiz = $quizService->getQuizzesByStudyCard($id)->first();
+            $forceRegenerate = $request->boolean('force_regenerate', false);
+            
+            // Jika quiz sudah ada dan tidak force regenerate, return quiz yang sudah ada
+            if ($existingQuiz && !$forceRegenerate) {
+                // Load questions with answers
+                $existingQuiz->load('questions.answers');
+
+                // Format questions for frontend
+                $questions = $existingQuiz->questions->map(function ($question) {
+                    return [
+                        'id' => $question->id,
+                        'question_text' => $question->question_text,
+                        'question_type' => $question->question_type,
+                        'points' => $question->points,
+                        'explanation' => $question->explanation,
+                        'answers' => $question->answers->map(function ($answer) {
+                            return [
+                                'id' => $answer->id,
+                                'answer_text' => $answer->answer_text,
+                                'is_correct' => $answer->is_correct,
+                            ];
+                        })->toArray(),
+                    ];
+                })->toArray();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Quiz already exists. Use force_regenerate=true to generate new quiz.',
+                    'from_cache' => true,
+                    'data' => [
+                        'id' => $existingQuiz->id,
+                        'title' => $existingQuiz->title,
+                        'total_questions' => $existingQuiz->total_questions,
+                        'study_card_id' => $existingQuiz->study_card_id,
+                        'created_at' => $existingQuiz->created_at->toISOString(),
+                        'questions' => $questions,
+                    ],
+                ]);
+            }
+
+            // Generate quiz baru menggunakan AI
+            $questionCount = $request->input('question_count', 10); // Default 10 soal
+            
             $quiz = $quizService->generateQuizFromAI($id, [
-                'question_count' => $questionCount,
+                'num_questions' => $questionCount,
+                'duration_minutes' => $request->input('duration_minutes', 30),
             ]);
 
             // Load questions with answers
@@ -276,12 +320,14 @@ class StudyCardController extends Controller
             // Format questions for frontend
             $questions = $quiz->questions->map(function ($question) {
                 return [
+                    'id' => $question->id,
                     'question_text' => $question->question_text,
                     'question_type' => $question->question_type,
                     'points' => $question->points,
                     'explanation' => $question->explanation,
                     'answers' => $question->answers->map(function ($answer) {
                         return [
+                            'id' => $answer->id,
                             'answer_text' => $answer->answer_text,
                             'is_correct' => $answer->is_correct,
                         ];
@@ -292,18 +338,167 @@ class StudyCardController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Quiz generated successfully',
+                'from_cache' => false,
                 'data' => [
                     'id' => $quiz->id,
                     'title' => $quiz->title,
                     'total_questions' => $quiz->total_questions,
                     'study_card_id' => $quiz->study_card_id,
+                    'created_at' => $quiz->created_at->toISOString(),
                     'questions' => $questions,
                 ],
             ], 201);
         } catch (\Exception $e) {
+            \Log::error('Generate Quiz Error', [
+                'study_card_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to generate quiz',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all existing quizzes for a study card
+     * 
+     * @group Study Cards
+     */
+    public function getQuizzes(Request $request, int $id): JsonResponse
+    {
+        try {
+            $studyCard = $this->service->getStudyCardById($id);
+
+            if (!$studyCard) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Study card not found',
+                ], 404);
+            }
+
+            // Check ownership
+            if ($studyCard->user_id !== $request->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access',
+                ], 403);
+            }
+
+            // Get QuizService
+            $quizService = app(\App\Contracts\Services\QuizServiceInterface::class);
+            
+            // Get all quizzes for this study card
+            $quizzes = $quizService->getQuizzesByStudyCard($id);
+
+            // Format quizzes
+            $formattedQuizzes = $quizzes->map(function ($quiz) {
+                return [
+                    'id' => $quiz->id,
+                    'title' => $quiz->title,
+                    'description' => $quiz->description,
+                    'total_questions' => $quiz->total_questions,
+                    'duration_minutes' => $quiz->duration_minutes,
+                    'generated_by_ai' => $quiz->generated_by_ai,
+                    'ai_model' => $quiz->ai_model,
+                    'created_at' => $quiz->created_at->toISOString(),
+                    'updated_at' => $quiz->updated_at->toISOString(),
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Quizzes retrieved successfully',
+                'data' => $formattedQuizzes,
+                'count' => $quizzes->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve quizzes',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get specific quiz with questions and answers
+     * 
+     * @group Quizzes
+     */
+    public function getQuiz(Request $request, int $id): JsonResponse
+    {
+        try {
+            // Get QuizService
+            $quizService = app(\App\Contracts\Services\QuizServiceInterface::class);
+            
+            $quiz = $quizService->getQuizById($id);
+
+            if (!$quiz) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Quiz not found',
+                ], 404);
+            }
+
+            // Check ownership through study card
+            $studyCard = $this->service->getStudyCardById($quiz->study_card_id);
+            if ($studyCard->user_id !== $request->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access',
+                ], 403);
+            }
+
+            // Load questions with answers
+            $quiz->load('questions.answers');
+
+            // Format questions for frontend
+            $questions = $quiz->questions->map(function ($question) {
+                return [
+                    'id' => $question->id,
+                    'question_text' => $question->question_text,
+                    'question_type' => $question->question_type,
+                    'order_number' => $question->order_number,
+                    'points' => $question->points,
+                    'explanation' => $question->explanation,
+                    'answers' => $question->answers->map(function ($answer) {
+                        return [
+                            'id' => $answer->id,
+                            'answer_text' => $answer->answer_text,
+                            'is_correct' => $answer->is_correct,
+                            'order_number' => $answer->order_number,
+                        ];
+                    })->toArray(),
+                ];
+            })->toArray();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Quiz retrieved successfully',
+                'data' => [
+                    'id' => $quiz->id,
+                    'title' => $quiz->title,
+                    'description' => $quiz->description,
+                    'total_questions' => $quiz->total_questions,
+                    'duration_minutes' => $quiz->duration_minutes,
+                    'study_card_id' => $quiz->study_card_id,
+                    'shuffle_questions' => $quiz->shuffle_questions,
+                    'shuffle_answers' => $quiz->shuffle_answers,
+                    'show_correct_answers' => $quiz->show_correct_answers,
+                    'generated_by_ai' => $quiz->generated_by_ai,
+                    'ai_model' => $quiz->ai_model,
+                    'created_at' => $quiz->created_at->toISOString(),
+                    'questions' => $questions,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve quiz',
                 'error' => $e->getMessage(),
             ], 500);
         }
