@@ -14,7 +14,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveClientMixin {
   final AuthService _authService = AuthService();
   final ProfileService _profileService = ProfileService();
   
@@ -24,6 +24,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Streak data
   String _currentMonth = 'July 2025';
   List<int> _completedDays = [3, 4, 5, 6];
+  
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
+    if (_isLoading && _currentUser != null) return; // Prevent duplicate loads
     try {
       final user = await _authService.getCurrentUser();
       if (mounted) {
@@ -106,6 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       body: _isLoading

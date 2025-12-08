@@ -57,8 +57,8 @@ class ScheduleController extends Controller
         try {
             $userId = $this->getUserId($request);
             
-            // Cache for 30 seconds
-            $schedules = Cache::remember("schedules_all_user_{$userId}", 30, function () use ($userId) {
+            // Cache for 5 minutes
+            $schedules = Cache::remember("schedules_all_user_{$userId}", 300, function () use ($userId) {
                 return Schedule::forUser($userId)
                     ->orderBy('date', 'desc')
                     ->orderBy('start_time', 'asc')
@@ -316,7 +316,7 @@ class ScheduleController extends Controller
             $cacheKey = "schedules_range_user_{$userId}_" . md5($request->start_date . $request->end_date);
             
             // Cache for 30 seconds
-            $schedules = Cache::remember($cacheKey, 30, function () use ($userId, $request) {
+            $schedules = Cache::remember($cacheKey, 300, function () use ($userId, $request) {
                 return Schedule::forUser($userId)
                     ->betweenDates($request->start_date, $request->end_date)
                     ->orderBy('date')
@@ -350,7 +350,7 @@ class ScheduleController extends Controller
             $cacheKey = "schedules_upcoming_user_{$userId}_limit_{$limit}";
 
             // Cache for 30 seconds
-            $schedules = Cache::remember($cacheKey, 30, function () use ($userId, $limit) {
+            $schedules = Cache::remember($cacheKey, 300, function () use ($userId, $limit) {
                 return Schedule::forUser($userId)
                     ->upcoming()
                     ->incomplete()
@@ -382,7 +382,24 @@ class ScheduleController extends Controller
             $userId = $this->getUserId($request);
             $schedule = Schedule::forUser($userId)->findOrFail($id);
             
-            $schedule->is_completed = $request->input('is_completed', !$schedule->is_completed);
+            $isCompleted = $request->input('is_completed', !$schedule->is_completed);
+            
+            // If marking as completed, delete the schedule instead
+            if ($isCompleted) {
+                $schedule->delete();
+                
+                // Clear cache after deletion
+                $this->clearSchedulesCache($userId);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Schedule completed and removed',
+                    'data' => null,
+                ], 200);
+            }
+            
+            // If unchecking (shouldn't happen in UI, but handle it)
+            $schedule->is_completed = false;
             $schedule->save();
 
             // Clear cache after status change

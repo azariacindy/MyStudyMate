@@ -62,43 +62,61 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
-            'login_identifier' => 'required|string',
-            'password' => 'required|string',
-        ]);
+        try {
+            $request->validate([
+                'login_identifier' => 'required|string',
+                'password' => 'required|string',
+            ]);
 
-        // Deteksi apakah input berupa email
-        $isEmail = filter_var($request->login_identifier, FILTER_VALIDATE_EMAIL);
-        $field = $isEmail ? 'email' : 'username';
+            // Deteksi apakah input berupa email
+            $isEmail = filter_var($request->login_identifier, FILTER_VALIDATE_EMAIL);
+            $field = $isEmail ? 'email' : 'username';
 
-        // Cari user di Supabase
-        $user = DB::table('users')
-            ->where($field, $request->login_identifier)
-            ->first();
+            // Cari user di Supabase - select only needed columns
+            $user = DB::table('users')
+                ->select('id', 'name', 'username', 'email', 'password', 'profile_photo_url')
+                ->where($field, $request->login_identifier)
+                ->first();
 
-        // Validasi keberadaan user dan kecocokan password
-        if (!$user || !Hash::check($request->password, $user->password)) {
+            // Validasi keberadaan user dan kecocokan password
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'message' => 'Invalid credentials.'
+                ], 401);
+            }
+
+            // Convert stdClass to User model for Sanctum
+            $userModel = \App\Models\User::find($user->id);
+            
+            // Create Sanctum token
+            $token = $userModel->createToken('mobile-app')->plainTextToken;
+
             return response()->json([
-                'message' => 'Invalid credentials.'
-            ], 401);
+                'user' => [
+                    'id' => (string) $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'profile_photo_url' => $user->profile_photo_url ?? null,
+                ],
+                'token' => $token
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            // Log error
+            
+            return response()->json([
+                'message' => 'Login failed',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null
+            ], 500);
         }
-
-        // Convert stdClass to User model for Sanctum
-        $userModel = \App\Models\User::find($user->id);
-        
-        // Create Sanctum token
-        $token = $userModel->createToken('mobile-app')->plainTextToken;
-
-        return response()->json([
-            'user' => [
-                'id' => (string) $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'profile_photo_url' => $user->profile_photo_url ?? null,
-            ],
-            'token' => $token
-        ]);
     }
 
     /**

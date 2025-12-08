@@ -25,7 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'email_verified_at',
-        'remember_token',
+        'fcm_token',
         'streak',
         'last_streak_date',
     ];
@@ -35,7 +35,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
+        'fcm_token',
     ];
 
     /**

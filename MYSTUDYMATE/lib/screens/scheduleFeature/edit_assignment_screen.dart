@@ -65,13 +65,13 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     
-    if (pickedDate != null) {
+    if (pickedDate != null && mounted) {
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_deadline),
       );
       
-      if (pickedTime != null) {
+      if (pickedTime != null && mounted) {
         setState(() {
           _deadline = DateTime(
             pickedDate.year,
@@ -277,7 +277,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF5B9FED).withOpacity(0.1),
+                                    color: const Color(0xFF5B9FED).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: const Icon(Icons.calendar_today, color: Color(0xFF5B9FED), size: 20),
@@ -343,7 +343,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withOpacity(0.3),
+                                          color: Color(int.parse(colorOption['value'].substring(1), radix: 16) + 0xFF000000).withValues(alpha: 0.3),
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),
@@ -395,7 +395,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                               style: const TextStyle(fontSize: 13),
                             ),
                             value: _hasReminder,
-                            activeColor: const Color(0xFF5B9FED),
+                            activeThumbColor: const Color(0xFF5B9FED),
                             onChanged: (value) {
                               setState(() => _hasReminder = value);
                             },
@@ -412,7 +412,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             child: DropdownButtonFormField<int>(
-                              value: _reminderMinutes,
+                              initialValue: _reminderMinutes,
                               decoration: const InputDecoration(
                                 labelText: 'Remind me before',
                                 prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF5B9FED)),
@@ -474,7 +474,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                shadowColor: const Color(0xFF5B9FED).withOpacity(0.5),
+                                shadowColor: const Color(0xFF5B9FED).withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -500,7 +500,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -515,7 +515,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5B9FED).withOpacity(0.1),
+                  color: const Color(0xFF5B9FED).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: const Color(0xFF5B9FED), size: 20),

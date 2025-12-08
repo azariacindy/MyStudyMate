@@ -31,8 +31,8 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => WillPopScope(
-          onWillPop: () async => false,
+        builder: (context) => PopScope(
+          canPop: false,
           child: Center(
             child: Card(
               margin: const EdgeInsets.all(40),
@@ -87,10 +87,6 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
         widget.studyCard.id,
         questionCount: questionCount,
       );
-
-      // Debug: Print quiz data structure
-      print('DEBUG: Quiz Data: $quizData');
-      print('DEBUG: Questions count: ${quizData['questions']?.length ?? 0}');
 
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
@@ -201,7 +197,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
@@ -231,7 +227,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                                           .format(widget.studyCard.createdAt),
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.white.withOpacity(0.8),
+                                        color: Colors.white.withValues(alpha: 0.8),
                                       ),
                                     ),
                                   ],
@@ -264,7 +260,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -300,7 +296,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -314,7 +310,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withOpacity(0.1),
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -409,7 +405,7 @@ class _StudyCardDetailScreenState extends State<StudyCardDetailScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),

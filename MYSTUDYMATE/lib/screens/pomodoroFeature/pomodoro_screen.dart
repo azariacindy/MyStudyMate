@@ -42,24 +42,30 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   }
 
   Future<void> _initAudioPlayer() async {
-    // Set audio player mode ke MEDIA (bukan LOW_LATENCY)
-    // Ini akan pakai media volume system, bukan ringer volume
-    await _audioPlayer.setAudioContext(
-      AudioContext(
-        android: AudioContextAndroid(
-          isSpeakerphoneOn: true,
-          stayAwake: true,
-          contentType: AndroidContentType.music,
-          usageType: AndroidUsageType.media,
-          audioFocus: AndroidAudioFocus.gain,
+    try {
+      // Set audio player mode ke MEDIA (bukan LOW_LATENCY)
+      // Ini akan pakai media volume system, bukan ringer volume
+      await _audioPlayer.setAudioContext(
+        AudioContext(
+          android: AudioContextAndroid(
+            isSpeakerphoneOn: true,
+            stayAwake: true,
+            contentType: AndroidContentType.music,
+            usageType: AndroidUsageType.media,
+            audioFocus: AndroidAudioFocus.gain,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      debugPrint('Error initializing audio player: $e');
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _timer = null;
+    _audioPlayer.stop();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -589,8 +595,15 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FE),
         body: SafeArea(
@@ -697,7 +710,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
                           child: CircularProgressIndicator(
                             value: _progress,
                             strokeWidth: 10,
-                            backgroundColor: _timerColor.withOpacity(0.15),
+                            backgroundColor: _timerColor.withValues(alpha: 0.15),
                             valueColor: AlwaysStoppedAnimation<Color>(_timerColor),
                           ),
                         ),
@@ -749,7 +762,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
                               color: _buttonColor,
                               boxShadow: [
                                 BoxShadow(
-                                  color: _buttonColor.withOpacity(0.5),
+                                  color: _buttonColor.withValues(alpha: 0.5),
                                   blurRadius: 15,
                                   offset: const Offset(0, 5),
                                 ),
@@ -778,7 +791,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
                                   : Colors.yellow.shade100,
                               boxShadow: _isCompleted ? null : [
                                 BoxShadow(
-                                  color: Colors.yellow.shade200.withOpacity(0.5),
+                                  color: Colors.yellow.shade200.withValues(alpha: 0.5),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),

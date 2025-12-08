@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../services/schedule_service.dart';
@@ -25,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Schedule>> _schedulesFuture;
   late Future<List<Assignment>> _assignmentsFuture;
   String _userName = 'User';
+  String? _cachedProfilePhotoUrl;
 
   @override
   void initState() {
@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (user != null && mounted) {
         setState(() {
           _userName = user.name;
+          _cachedProfilePhotoUrl = user.profilePhotoUrl;
         });
       }
     } catch (e) {
@@ -181,12 +182,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   child: ClipOval(
-                    child: FutureBuilder(
-                      future: _authService.getCurrentUser(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data?.profilePhotoUrl != null) {
-                          return CachedNetworkImage(
-                            imageUrl: snapshot.data!.profilePhotoUrl!,
+                    child: _cachedProfilePhotoUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: _cachedProfilePhotoUrl!,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => const Icon(
                               CupertinoIcons.person,
@@ -198,15 +196,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Color(0xFF8B5CF6),
                               size: 28,
                             ),
-                          );
-                        }
-                        return const Icon(
-                          CupertinoIcons.person,
-                          color: Color(0xFF8B5CF6),
-                          size: 28,
-                        );
-                      },
-                    ),
+                            memCacheWidth: 96, // Optimize memory
+                            memCacheHeight: 96,
+                            maxWidthDiskCache: 96,
+                            maxHeightDiskCache: 96,
+                          )
+                        : const Icon(
+                            CupertinoIcons.person,
+                            color: Color(0xFF8B5CF6),
+                            size: 28,
+                          ),
                   ),
                 ),
               ),
@@ -489,9 +488,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Schedule Section - FIXED OVERFLOW
   Widget _buildScheduleSection(double screenWidth) {
-    return FutureBuilder<List<Schedule>>(
-      future: _schedulesFuture,
-      builder: (context, snapshot) {
+    return RepaintBoundary(
+      child: FutureBuilder<List<Schedule>>(
+        future: _schedulesFuture,
+        builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: Padding(
@@ -576,6 +576,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: groupedSchedules.length,
+                physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   final dateKey = groupedSchedules.keys.elementAt(index);
                   final daySchedules = groupedSchedules[dateKey]!;
@@ -670,6 +671,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
       },
+      ),
     );
   }
 
@@ -759,9 +761,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Assignments Section with Priority
   Widget _buildAssignmentsSection() {
-    return FutureBuilder<List<Assignment>>(
-      future: _assignmentsFuture,
-      builder: (context, snapshot) {
+    return RepaintBoundary(
+      child: FutureBuilder<List<Assignment>>(
+        future: _assignmentsFuture,
+        builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: Padding(
@@ -795,7 +798,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withOpacity(0.1),
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -821,7 +824,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
@@ -845,7 +848,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -857,13 +860,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(
                         Icons.assignment_turned_in_outlined,
                         size: 48,
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 0.3),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'No pending assignments',
                         style: TextStyle(
-                          color: Colors.grey.withOpacity(0.7),
+                          color: Colors.grey.withValues(alpha: 0.7),
                           fontSize: 14,
                         ),
                       ),
@@ -876,6 +879,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
       },
+    ),
     );
   }
 
@@ -901,12 +905,12 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: assignment.priorityColor.withOpacity(0.2),
+            color: assignment.priorityColor.withValues(alpha: 0.2),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: assignment.priorityColor.withOpacity(0.1),
+              color: assignment.priorityColor.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -922,13 +926,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    assignment.priorityColor.withOpacity(0.2),
-                    assignment.priorityColor.withOpacity(0.1),
+                    assignment.priorityColor.withValues(alpha: 0.2),
+                    assignment.priorityColor.withValues(alpha: 0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: assignment.priorityColor.withOpacity(0.3),
+                  color: assignment.priorityColor.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -966,10 +970,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: assignment.priorityColor.withOpacity(0.15),
+                          color: assignment.priorityColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: assignment.priorityColor.withOpacity(0.3),
+                            color: assignment.priorityColor.withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),
@@ -1007,21 +1011,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(
                         Icons.calendar_today,
                         size: 11,
-                        color: Colors.grey.withOpacity(0.7),
+                        color: Colors.grey.withValues(alpha: 0.7),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Deadline: ${assignment.deadline.day}/${assignment.deadline.month}/${assignment.deadline.year}',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.grey.withOpacity(0.7),
+                          color: Colors.grey.withValues(alpha: 0.7),
                         ),
                       ),
                       const Spacer(),
                       Icon(
                         Icons.access_time,
                         size: 11,
-                        color: Colors.grey.withOpacity(0.7),
+                        color: Colors.grey.withValues(alpha: 0.7),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -1031,7 +1035,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 11,
                           color: assignment.daysUntilDeadline >= 0
-                              ? Colors.grey.withOpacity(0.7)
+                              ? Colors.grey.withValues(alpha: 0.7)
                               : const Color(0xFFEF4444),
                           fontWeight: assignment.daysUntilDeadline < 0
                               ? FontWeight.bold

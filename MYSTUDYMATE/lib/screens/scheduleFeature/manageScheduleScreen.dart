@@ -691,138 +691,63 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                 title: 'Reminder Settings',
                 icon: Icons.notifications_outlined,
                 children: [
-                  // For Assignment: Show auto-reminder info (3 days before & after deadline)
-                  if (_selectedType == 'assignment') ...[
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF3B82F6), width: 1),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF3B82F6),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(Icons.alarm, color: Colors.white, size: 20),
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  'Auto Reminder Enabled',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1F2937),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'You will receive notifications at 07:00 AM for:',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6B7280),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildReminderSection(
-                            '📅 Before Deadline',
-                            [
-                              '3 days before',
-                              '2 days before',
-                              '1 day before',
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _buildReminderSection(
-                            '🔔 On Deadline Day',
-                            [
-                              'Deadline today!',
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _buildReminderSection(
-                            '⚠️ After Deadline (if not completed)',
-                            [
-                              '1 day overdue',
-                              '2 days overdue',
-                              '3 days overdue',
-                            ],
-                          ),
-                        ],
-                      ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
-                  ] else ...[
-                    // For Lecture/Event: Show toggle and dropdown
+                    child: SwitchListTile(
+                      title: const Text(
+                        'Enable Reminder',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        _hasReminder ? 'You will be notified before the schedule' : 'No reminder will be sent',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      value: _hasReminder,
+                      activeColor: const Color(0xFF3B82F6),
+                      onChanged: (value) {
+                        setState(() => _hasReminder = value);
+                      },
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    ),
+                  ),
+                  if (_hasReminder) ...[
+                    const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
-                      child: SwitchListTile(
-                        title: const Text(
-                          'Enable Reminder',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: DropdownButtonFormField<int>(
+                        value: _reminderMinutes,
+                        decoration: const InputDecoration(
+                          labelText: 'Remind me before',
+                          prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF3B82F6)),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
                         ),
-                        subtitle: Text(
-                          _hasReminder ? 'You will be notified before the schedule' : 'No reminder will be sent',
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        value: _hasReminder,
-                        activeColor: const Color(0xFF3B82F6),
+                        items: const [
+                          DropdownMenuItem(value: 5, child: Text('5 minutes before')),
+                          DropdownMenuItem(value: 10, child: Text('10 minutes before')),
+                          DropdownMenuItem(value: 15, child: Text('15 minutes before')),
+                          DropdownMenuItem(value: 30, child: Text('30 minutes before')),
+                          DropdownMenuItem(value: 60, child: Text('1 hour before')),
+                        ],
                         onChanged: (value) {
-                          setState(() => _hasReminder = value);
+                          if (value != null) {
+                            setState(() => _reminderMinutes = value);
+                          }
                         },
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       ),
                     ),
-                    if (_hasReminder) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: DropdownButtonFormField<int>(
-                          value: _reminderMinutes,
-                          decoration: const InputDecoration(
-                            labelText: 'Remind me before',
-                            prefixIcon: Icon(Icons.timer_outlined, color: Color(0xFF3B82F6)),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 5, child: Text('5 minutes before')),
-                            DropdownMenuItem(value: 10, child: Text('10 minutes before')),
-                            DropdownMenuItem(value: 15, child: Text('15 minutes before')),
-                            DropdownMenuItem(value: 30, child: Text('30 minutes before')),
-                            DropdownMenuItem(value: 60, child: Text('1 hour before')),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() => _reminderMinutes = value);
-                            }
-                          },
-                        ),
-                      ),
-                    ],
                   ],
                 ],
               ),

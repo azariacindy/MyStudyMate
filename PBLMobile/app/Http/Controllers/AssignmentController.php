@@ -56,8 +56,8 @@ class AssignmentController extends Controller
                 $cacheKey .= "_search_" . md5($search);
             }
 
-            // Cache for 30 seconds (adjust as needed)
-            $assignments = Cache::remember($cacheKey, 30, function () use ($userId, $status, $request, $search) {
+            // Cache for 5 minutes (300 seconds)
+            $assignments = Cache::remember($cacheKey, 300, function () use ($userId, $status, $request, $search) {
                 $query = Assignment::forUser($userId);
 
                 // Filter by status
@@ -281,7 +281,7 @@ class AssignmentController extends Controller
             $userId = $this->getUserId($request);
             
             // Cache weekly progress for 60 seconds
-            $data = Cache::remember("weekly_progress_user_{$userId}", 60, function () use ($userId) {
+            $data = Cache::remember("weekly_progress_user_{$userId}", 600, function () use ($userId) {
                 $total = Assignment::forUser($userId)->weekly()->count();
                 $completed = Assignment::forUser($userId)->weekly()->completed()->count();
                 $pending = $total - $completed;
@@ -319,7 +319,7 @@ class AssignmentController extends Controller
             $userId = $this->getUserId($request);
 
             // Cache for 30 seconds
-            $data = Cache::remember("assignments_by_status_user_{$userId}", 30, function () use ($userId) {
+            $data = Cache::remember("assignments_by_status_user_{$userId}", 300, function () use ($userId) {
                 return [
                     'overdue' => Assignment::forUser($userId)->overdue()->get(),
                     'due_today' => Assignment::forUser($userId)->dueToday()->get(),
