@@ -233,8 +233,8 @@ The following is the development of the MyStudyMate application display which ha
 ### ➕ Add Assignment
 <p align="center">
   <img src="MYSTUDYMATE\assets\progress1\add2.jpg" width="250">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_calendar.jpeg" width="250">
-  <img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\cal.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\notif.jpg" width="250">
 </p>
 
 ---
