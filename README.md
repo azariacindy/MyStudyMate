@@ -249,13 +249,13 @@ The following is the development of the MyStudyMate application display which ha
 ### ➕ Add Schedule
 <p align="center">
   <img src="MYSTUDYMATE\assets\progress1\add.jpg" width="250">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_timeForm.jpeg" width="250">
-  <img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\time.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\notif.jpg" width="250">
 </p>
 
 ### ✏️ Edit Schedule
 <p align="center">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_editForm.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\edit.jpg" width="250">
 </p>
 
 ---
