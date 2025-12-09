@@ -232,7 +232,7 @@ The following is the development of the MyStudyMate application display which ha
 
 ### ➕ Add Assignment
 <p align="center">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_assignmentForm.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\add2.jpg" width="250">
   <img src="MYSTUDYMATE/assets/progress1/dailyBoard_calendar.jpeg" width="250">
   <img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="250">
 </p>
@@ -248,7 +248,7 @@ The following is the development of the MyStudyMate application display which ha
 
 ### ➕ Add Schedule
 <p align="center">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_scheduleForm.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\add.jpg" width="250">
   <img src="MYSTUDYMATE/assets/progress1/dailyBoard_timeForm.jpeg" width="250">
   <img src="MYSTUDYMATE\assets\progress1\dailyBoard_notificationSlected.jpeg" width="250">
 </p>
@@ -269,7 +269,7 @@ The following is the development of the MyStudyMate application display which ha
 
 ### ➕ Add Event
 <p align="center">
-  <img src="MYSTUDYMATE/assets/progress1/dailyBoard_eventForm.jpeg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\add3.jpg" width="250">
 </p>
 
 ---
@@ -280,6 +280,17 @@ The following is the development of the MyStudyMate application display which ha
 </p>
 
 ---
+
+## ⏳ Study Card
+<p align="center">
+  <img src="MYSTUDYMATE\assets\progress1\IMG-20251209-WA0002.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\IMG-20251209-WA0003.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\IMG-20251209-WA0004.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\IMG-20251209-WA0006.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\WhatsApp Image 2025-12-09 at 09.02.44_83e35bb7.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\WhatsApp Image 2025-12-09 at 09.02.44_2317efd6.jpg" width="250">
+  <img src="MYSTUDYMATE\assets\progress1\WhatsApp Image 2025-12-09 at 09.04.31_f6ec6c76.jpg" width="250">
+</p>
 
 ## 👤 Profile
 
