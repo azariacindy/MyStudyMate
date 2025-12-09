@@ -52,13 +52,36 @@ class AuthService {
         return true;
       }
 
-      // Token invalid, hapus
+      // Token invalid (401/403), hapus
       await _clearAuth();
       return false;
+    } on DioException catch (e) {
+      // Jika 401/403 (unauthorized), hapus token
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        debugPrint('[Auth] Token invalid, clearing auth');
+        await _clearAuth();
+        return false;
+      }
+
+      // Network error atau server error (500, timeout, dll) - JANGAN hapus token
+      // Biarkan user tetap bisa masuk dengan token yang ada
+      debugPrint('[Auth] Network/server error during verification: ${e.message}');
+      debugPrint('[Auth] Keeping token, assuming temporarily offline');
+      
+      // Setup auth dengan token yang ada (offline mode)
+      final userId = await _storage.read(key: 'user_id');
+      if (userId != null) {
+        DioClient.setUserId(int.parse(userId));
+      }
+      return true; // Return true untuk offline mode
     } catch (e) {
-      // Token invalid atau network error, hapus token
-      await _clearAuth();
-      return false;
+      // Unexpected error - tetap coba keep token
+      debugPrint('[Auth] Unexpected error during verification: $e');
+      final userId = await _storage.read(key: 'user_id');
+      if (userId != null) {
+        DioClient.setUserId(int.parse(userId));
+      }
+      return true; // Assume offline mode
     }
   }
 

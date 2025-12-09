@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import '../services/auth_service.dart';
 
@@ -137,15 +138,19 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _navigateToNext() async {
     // Verify token and setup authentication
+    debugPrint('[Splash] Checking authentication...');
     final isAuthenticated = await _authService.verifyAndSetupAuth();
+    debugPrint('[Splash] Authentication result: $isAuthenticated');
 
     if (!mounted) return;
 
     if (isAuthenticated) {
       // Token valid, user sudah login, langsung ke Home
+      debugPrint('[Splash] Navigating to Home');
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       // Token invalid atau tidak ada, ke Onboarding
+      debugPrint('[Splash] Navigating to Onboarding');
       Navigator.pushReplacementNamed(context, '/onboarding');
     }
   }
